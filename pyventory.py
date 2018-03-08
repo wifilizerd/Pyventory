@@ -13,7 +13,7 @@ def Logo():                                                     #Just a Cool Hea
             " \______   \__  |   |\   \ /   /\_   _____/ \      \__    ___/\_____  \\\______   \__  |   |       \n"
             "  |     ___//   |   | \   Y   /  |    __)_  /   |   \|    |    /   |   \|       _//   |   |       \n"
             "  |    |    \____   |  \     /   |        \/    |    \    |   /    |    \    |   \\\____   |       \n"
-            "  |____|    / ______|   \___/   /_______  /\____|__  /____|   \_______  /____|_  // ______| v0.6.1 \n"
+            "  |____|    / ______|   \___/   /_______  /\____|__  /____|   \_______  /____|_  // ______| v0.6 \n"
             "            \/                          \/         \/                 \/       \/ \/              "
             "\033[1;37m"                                             #set color of text back to white
            )
@@ -167,9 +167,9 @@ def FileBrowser(_extention, _new):                              #Used to select 
     else:  
         return(_files[int(_filechoose)])                            #returns filename based on location in list 
 
-def columnselect(_filename):                                    #lists info in CSV file from the first row so user can select the column based on content.
+def columnselect(_filename, _savefile):                         #lists info in CSV file from the first row so user can select the column based on content.
     _count = 0
-    _INVlist = Convert2List(_filename, 0, )
+    _INVlist = Convert2List(_filename, 0, _savefile)
     print("\033[1;32m" + 'Select the Column you wish to use.')      #listing help info of known column from inventory files.
     print('Known Coumns for defult exports ONLY')
     print('0 - Asset tages')
@@ -214,17 +214,18 @@ def addinfo(_filename, _scan):                                  #used to gather 
 def SCANandCHECK():                                             #Interface for scanning or entering information to check with,
     # CONFIG                                                        # designed to enter in asset tage and search the inventory file for the tag. 
     _ADD = 2
+    if _DEBUG < 1:
+        os.system('cls')
+    print("\033[1;32m" + 'Select file to save to.' + "\033[1;37m")
+    _Savefile = FileBrowser('.csv', 1)
     if _DEBUG < 1:                                                  # also works with Serial numbers.
         os.system('cls')
     print("\033[1;32m" + 'Select your Inventory file.' + "\033[1;37m")
     _INVfile = FileBrowser('.csv', 0)
     if _DEBUG < 1:
         os.system('cls')
-    _INVcol = columnselect(_INVfile)
-    if _DEBUG < 1:
-        os.system('cls')
-    print("\033[1;32m" + 'Select file to save to.' + "\033[1;37m")
-    _Savefile = FileBrowser('.csv', 1)
+    _INVcol = columnselect(_INVfile, _Savefile)
+    
     if _DEBUG > 0:
         print(_INVfile)
         print(_INVcol)
@@ -237,7 +238,7 @@ def SCANandCHECK():                                             #Interface for s
     ' ___  ___   _   _  _                _    ___ _  _ ___ ___ _  __ \n'
     '/ __|/ __| /_\ | \| |  __ _ _ _  __| |  / __| || | __/ __| |/ / \n'
     '\__ | (__ / _ \| .` | / _` |   \/ _` | | (__| __ | _| (__| | <  \n'
-    '|___/\___/_/ \_|_|\_| \__,_|_||_\__,_|  \___|_||_|___\___|_|\_\ v0.2.1'                                                               
+    '|___/\___/_/ \_|_|\_| \__,_|_||_\__,_|  \___|_||_|___\___|_|\_\ v0.3'                                                               
     + "\033[1;37m") #white
     print('')
     print('press "x" then enter to exit')
@@ -289,22 +290,22 @@ def SCANandCHECK():                                             #Interface for s
                         _askverify = 1
                         break
                             
-def CheckandExport():
+def CheckandExport():                                           #Interface to Check what records have not been entered/scanned and list all avalable info.
     # CONFIG                                                         
-    if _DEBUG < 1:
-        os.system('cls')
-    print("\033[1;32m" + 'Select your Inventory file.' + "\033[1;37m")
-    _INVfile = FileBrowser('.csv', 0)
-    if _DEBUG < 1:
-        os.system('cls')
-    _INVcol = columnselect(_INVfile)
     if _DEBUG < 1:
         os.system('cls')
     print("\033[1;32m" + 'Select your Scanned file.' + "\033[1;37m")
     _scanfile = FileBrowser('.csv', 0)
     if _DEBUG < 1:
         os.system('cls')
-    _scancol = columnselect(_scanfile) 
+    _scancol = columnselect(_scanfile, _scanfile) 
+    if _DEBUG < 1:
+        os.system('cls')
+    print("\033[1;32m" + 'Select your Inventory file.' + "\033[1;37m")
+    _INVfile = FileBrowser('.csv', 0)
+    if _DEBUG < 1:
+        os.system('cls')
+    _INVcol = columnselect(_INVfile, _scanfile)
     if _DEBUG > 0:
         print(_INVfile)
         print(_INVcol)
@@ -318,7 +319,7 @@ def CheckandExport():
     "   ___ _           _                  _   ___                   _   \n"
     "  / __| |_  ___ __| |__  __ _ _ _  __| | | __|_ ___ __  ___ _ _| |_ \n"
     " | (__| ' \/ -_) _| / / / _` | ' \/ _` | | _|\ \ / '_ \/ _ \ '_|  _|\n"
-    "  \___|_||_\___\__|_\_\ \__,_|_||_\__,_| |___/_\_\ .__/\___/_|  \__| v0.2.1\n"   
+    "  \___|_||_\___\__|_\_\ \__,_|_||_\__,_| |___/_\_\ .__/\___/_|  \__| v0.3\n"   
     "                                                 |_|                "                                                            
     + "\033[1;37m")
     print('')
