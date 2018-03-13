@@ -214,15 +214,24 @@ def SCANandCHECK():                                             #Interface for s
     # CONFIG                                                        # designed to enter in asset tage and search the inventory file for the tag. 
     _ADD = 2
     if _DEBUG < 1:
-        os.system('cls')
+        if sys.platform == 'win32':
+            os.system('cls')
+        elif sys.platform == 'darwin':
+            os.system('clear')
     print("\033[1;32m" + 'Select file to save to.' + "\033[1;37m")
     _Savefile = FileBrowser('.csv', 1)
     if _DEBUG < 1:                                                  # also works with Serial numbers.
-        os.system('cls')
+        if sys.platform == 'win32':
+            os.system('cls')
+        elif sys.platform == 'darwin':
+            os.system('clear')
     print("\033[1;32m" + 'Select your Inventory file.' + "\033[1;37m")
     _INVfile = FileBrowser('.csv', 0)
     if _DEBUG < 1:
-        os.system('cls')
+        if sys.platform == 'win32':
+            os.system('cls')
+        elif sys.platform == 'darwin':
+            os.system('clear')
     _INVcol = columnselect(_INVfile, _Savefile)
     
     if _DEBUG > 0:
@@ -230,7 +239,10 @@ def SCANandCHECK():                                             #Interface for s
         print(_INVcol)
         print(_Savefile)    
     if _DEBUG < 1:
-        os.system('cls')
+        if sys.platform == 'win32':
+            os.system('cls')
+        elif sys.platform == 'darwin':
+            os.system('clear')
     Logo()
     #http://patorjk.com/software/taag/#p=display&f=Small&t=SCAN%20and%20CHECK 'SMALL' font
     print("\033[1;32m" + #green
@@ -293,21 +305,33 @@ def SCANandCHECK():                                             #Interface for s
 def CheckandExport():                                           #Interface to Check what records have not been entered/scanned and list all avalable info.
     # CONFIG                                                         
     if _DEBUG < 1:
-        os.system('cls')
+        if sys.platform == 'win32':
+            os.system('cls')
+        elif sys.platform == 'darwin':
+            os.system('clear')
     print("\033[1;32m" + 'Select your Scanned file.' + "\033[1;37m")
     _scanfile = FileBrowser('.csv', 0)
     if _DEBUG > 0:
         print(_scanfile)
         pause=raw_input(':')
     if _DEBUG < 1:
-        os.system('cls')
+        if sys.platform == 'win32':
+            os.system('cls')
+        elif sys.platform == 'darwin':
+            os.system('clear')
     _scancol = columnselect(_scanfile, _scanfile) 
     if _DEBUG < 1:
-        os.system('cls')
+        if sys.platform == 'win32':
+            os.system('cls')
+        elif sys.platform == 'darwin':
+            os.system('clear')
     print("\033[1;32m" + 'Select your Inventory file.' + "\033[1;37m")
     _INVfile = FileBrowser('.csv', 0)
     if _DEBUG < 1:
-        os.system('cls')
+        if sys.platform == 'win32':
+            os.system('cls')
+        elif sys.platform == 'darwin':
+            os.system('clear')
     _INVcol = columnselect(_INVfile, _scanfile)
     if _DEBUG > 0:
         print(_INVfile)
@@ -315,7 +339,10 @@ def CheckandExport():                                           #Interface to Ch
         print(_scanfile)
         print(_scancol)    
     if _DEBUG < 1:
-        os.system('cls')
+        if sys.platform == 'win32':
+            os.system('cls')
+        elif sys.platform == 'darwin':
+            os.system('clear')
     Logo()
     #http://patorjk.com/software/taag/#p=display&f=Small&t=SCAN%20and%20SHOW 'SMALL' font
     print("\033[1;32m" + 
@@ -345,7 +372,10 @@ def CheckandExport():                                           #Interface to Ch
 
 def Interface():
     while True:
-        os.system('cls')
+        if sys.platform == 'win32':
+            os.system('cls')
+        elif sys.platform == 'darwin':
+            os.system('clear')
         Logo()
         Help('main')
         _interfacemenu = raw_input('Pyventory:')
