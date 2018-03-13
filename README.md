@@ -24,4 +24,8 @@ Warrenty:
 THERE IS NONE, by using this probram you agree that there is no warrenty and that this program is free to use at your own risk.
 this is all my personal time, so that means that any bug reports will take some time to get to. 
 
+Tested On:
+Windows 10 with python 2.7
+Macos X 10.12 with python 2.7 and python 3
+
 Enjoy!
