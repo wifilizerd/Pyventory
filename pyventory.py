@@ -1,6 +1,6 @@
 #!/Python27/pythonw.exe
 #python 2.7
-#Pyventory - 0.6
+#Pyventory - 0.6.1
 # import all needed libraries
 import sys, os, csv
 
@@ -13,7 +13,7 @@ def Logo():                                                     #Just a Cool Hea
             " \______   \__  |   |\   \ /   /\_   _____/ \      \__    ___/\_____  \\\______   \__  |   |       \n"
             "  |     ___//   |   | \   Y   /  |    __)_  /   |   \|    |    /   |   \|       _//   |   |       \n"
             "  |    |    \____   |  \     /   |        \/    |    \    |   /    |    \    |   \\\____   |       \n"
-            "  |____|    / ______|   \___/   /_______  /\____|__  /____|   \_______  /____|_  // ______| v0.6 \n"
+            "  |____|    / ______|   \___/   /_______  /\____|__  /____|   \_______  /____|_  // ______| v0.6.1 \n"
             "            \/                          \/         \/                 \/       \/ \/              "
             "\033[1;37m"                                             #set color of text back to white
            )
@@ -70,7 +70,7 @@ def FileBrowser(_extention, _new):                              #Used to select 
         print(_files)
     if _new == 1:                                                   #allows user to create a new filename if wanted, however also allows file create restrictions. when set to 0
         print('or type name of new file(no extention)')    
-    _filechoose = raw_input(':')
+    _filechoose = raw_input('File:')
     if _DEBUG > 0:
         print(_filechoose)
         print(_files[int(_filechoose)])
@@ -91,20 +91,28 @@ def FileBrowser(_extention, _new):                              #Used to select 
     else:  
         return(_files[int(_filechoose)])                            #returns filename based on location in list 
 
-def columnselect(_filename, _savefile):                         #lists info in CSV file from the first row so user can select the column based on content.
-    _count = 0
-    _INVlist = Convert2List(_filename, 0)
-    print("\033[1;32m" + 'Select the Column you wish to use.')      #listing help info of known column from inventory files.
-    print('Known Coumns for defult exports ONLY')
-    print('0 - Asset tages')
-    print('9 - Wired Mac address')
-    print('10 - Wireless Mac address')
-    print('29 - Serial Number')
-    print("\033[1;37m")
-    for asset in _INVlist[0]:
-        print('     ' + str(_count) + ' ' + asset)
-        _count += 1
-    _columnchoose = raw_input('select column to check agenst:')
+def columnselect(_filename):                                    #lists info in CSV file from the first row so user can select the column based on content.
+    _row = 0
+    _columnchoose = 'n'
+    while _columnchoose == 'n':
+        print(_row)
+        _count = 0
+        _INVlist = Convert2List(_filename, 0)
+        for asset in _INVlist[int(_row)]:
+            print('     ' + str(_count) + ' ' + asset)
+            _count += 1
+        print("\033[1;32m" + 'Select the Column you wish to use.')      #listing help info of known column from inventory files.
+        print('Known Coumns for defult exports ONLY')
+        print('0 - Asset tages')
+        print('9 - Wired Mac address')
+        print('10 - Wireless Mac address')
+        print('27 - Room Number')
+        print('29 - Serial Number')
+        print('n - for a new list if needed info not displayed')
+        print("\033[1;37m")
+        _columnchoose = raw_input('Column:')
+        if _columnchoose.lower() == 'n':
+            _row += 1
     return(_columnchoose)
 
 def addinfo(_filename, _scan):                                  #used to gather info about assets that are not found in list then stored for later entery.
@@ -137,7 +145,9 @@ def addinfo(_filename, _scan):                                  #used to gather 
 
 def SCANandCHECK():                                             #Interface for scanning or entering information to check with,
     # CONFIG                                                        # designed to enter in asset tage and search the inventory file for the tag. 
-    _ADD = 2
+    _ADD = 2                                                        # also works with Serial numbers.
+    _RoomNumber = 'all'
+    _Roomcol = ''
     if _DEBUG < 1:
         if sys.platform == 'win32':
             os.system('cls')
@@ -145,7 +155,7 @@ def SCANandCHECK():                                             #Interface for s
             os.system('clear')
     print("\033[1;32m" + 'Select file to save to.' + "\033[1;37m")
     _Savefile = FileBrowser('.csv', 1)
-    if _DEBUG < 1:                                                  # also works with Serial numbers.
+    if _DEBUG < 1:                                                 
         if sys.platform == 'win32':
             os.system('cls')
         elif sys.platform == 'darwin':
@@ -157,7 +167,7 @@ def SCANandCHECK():                                             #Interface for s
             os.system('cls')
         elif sys.platform == 'darwin':
             os.system('clear')
-    _INVcol = columnselect(_INVfile, _Savefile)
+    _INVcol = columnselect(_INVfile)
     
     if _DEBUG > 0:
         print(_INVfile)
@@ -187,7 +197,7 @@ def SCANandCHECK():                                             #Interface for s
 
     _scan = 0
     while True:                                                     #Start of teh entery process this is the loop that will take info and check in the inventory file.
-        _scan = raw_input(':')
+        _scan = raw_input('Scan:')
         if _scan.lower() == 'add':                                  #add command used to turn on adding info if entery is not found.
             _ADD = 1
             print('Taking notes is ENABLED')
@@ -202,11 +212,40 @@ def SCANandCHECK():                                             #Interface for s
             print('Ask each time to take notes')
         elif _scan.lower() == 'help':                               #help commadn used to show the help screen
             Help('scan')
+        elif _scan.lower() == 'room':
+            if _Roomcol == '':
+                _Roomcol = columnselect(_INVfile)
+            _RoomList = Convert2List(_INVfile, _Roomcol)
+            _Rooms = []
+            for room in _RoomList:
+                if room[int(_Roomcol)] not in _Rooms:
+                    _Rooms.append(room[int(_Roomcol)])
+            for r in _Rooms:
+                print(r)
+            print("\033[1;32m" + " enter 'all' to check all rooms" + "\033[1;37m") #white
+            _RoomNumber = raw_input('Room:')
+
+            
+            
         elif _scan.lstrip('0') in _assetLIST or _scan in _assetLIST:#compaire of entery and inventory info.
-            for row in Convert2List(_INVfile, _INVcol):
-                if row[int(_INVcol)] == _scan.lstrip('0') or row[int(_INVcol)] == _scan:
-                    print("\033[1;32m" + str(row) + "\033[1;37m")
-                    writefile((_Savefile + "-scanned"),'csv', row)
+            if _RoomNumber == 'all':
+                for row in Convert2List(_INVfile, _INVcol):
+                    if row[int(_INVcol)] == _scan.lstrip('0') or row[int(_INVcol)] == _scan:
+                        print("\033[1;32m" + str(row) + "\033[1;37m")
+                        writefile((_Savefile + "-scanned"),'csv', row)
+            else:
+                for row in Convert2List(_INVfile, _INVcol):
+                    if row[int(_INVcol)] == _scan.lstrip('0') or row[int(_INVcol)] == _scan:
+                        if row[int(_Roomcol)].upper() == _RoomNumber.upper():
+                            print("\033[1;32m" + str(row) + "\033[1;37m")
+                            writefile((_Savefile + "-scanned"),'csv', row)
+                        else:
+                            print("\033[1;33m" + _scan + ' is listed in room ' + str(row[int(_Roomcol)]) + "\033[1;37m")
+                            print("\033[1;32m" + str(row) + "\033[1;37m")
+                            writefile((_Savefile + "-scanned"),'csv', row)
+                            writefile((_Savefile + "-NotFound"),'csv', ([str(_scan), str(row[int(_Roomcol)])]))
+                            print("\033[1;33m" + 'Notes add to "NotFound" List.' + "\033[1;37m")
+
         elif _scan.lower() == 'x':                                  #x commadn used to exit scan and check
             break
         else:
@@ -214,7 +253,7 @@ def SCANandCHECK():                                             #Interface for s
             print("\033[1;31m" + _scan + ' and ' + str(_scan).lstrip('0') + ' not found' + "\033[1;37m")
             if _ADD == 1:
                 print("\033[1;33m" 'add information for asset tage ' + _scan)
-                addinfo((_Savefile + "-notfound"), str(_scan))
+                addinfo((_Savefile + "-NotFound"), str(_scan))
             elif _ADD == 2:
                 _askverify = 0
                 while _askverify == 0:
@@ -238,13 +277,13 @@ def CheckandExport():                                           #Interface to Ch
     _scanfile = FileBrowser('.csv', 0)
     if _DEBUG > 0:
         print(_scanfile)
-        pause=raw_input(':')
+        pause=raw_input('Check:')
     if _DEBUG < 1:
         if sys.platform == 'win32':
             os.system('cls')
         elif sys.platform == 'darwin':
             os.system('clear')
-    _scancol = columnselect(_scanfile, _scanfile) 
+    _scancol = columnselect(_scanfile) 
     if _DEBUG < 1:
         if sys.platform == 'win32':
             os.system('cls')
@@ -257,7 +296,7 @@ def CheckandExport():                                           #Interface to Ch
             os.system('cls')
         elif sys.platform == 'darwin':
             os.system('clear')
-    _INVcol = columnselect(_INVfile, _scanfile)
+    _INVcol = columnselect(_INVfile)
     if _DEBUG > 0:
         print(_INVfile)
         print(_INVcol)
