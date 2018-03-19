@@ -17,7 +17,8 @@ Export a list of all items that have not been scanned, and any items that were n
 if item in list did not contain the into you are looking for it will list those items in a missingINFO file.
 
 Changelog:
-0.6- after months of testing and reworking pyventory is now ready to be posted on GitHub,
+0.6.1 - Added room feature that allows user to search only barcodes that are located in a specified room, pyventory will if the barcode is found and room is incorrect will shoe current known data and note the new room number for latter update.
+0.6 - after months of testing and reworking pyventory is now ready to be posted on GitHub,
 
 
 Warrenty:
