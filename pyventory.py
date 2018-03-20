@@ -115,6 +115,28 @@ def columnselect(_filename):                                    #lists info in C
             _row += 1
     return(_columnchoose)
 
+def Counter(_list):
+    count = 0
+    for i in _list:
+        count += 1
+    return(count)
+
+def Countroom(_list, _room, _col):
+    count = 0
+    for l in _list:
+        if l[int(_col)] == _room:
+            count += 1
+    return(count)
+
+def Dupcheck(_list):
+    _nodup = []
+    for row in _list:
+        if row not in _nodup:                                   #checking for duplicates
+            _nodup.append(row)    
+        else:
+            pass
+    return(_nodup)
+
 def addinfo(_filename, _scan):                                  #used to gather info about assets that are not found in list then stored for later entery.
     _scan = _scan
     _asset = raw_input('Asset tage:')
@@ -143,7 +165,7 @@ def addinfo(_filename, _scan):                                  #used to gather 
     print("\033[1;37m")
     writefile((_filename),('csv'), (_asset, str(_scan), _serial, _type, _make, _model, _cpu, _ram, _hdd, _os, _school, _room, _user, _compname, _mac, _wmac, _installdate, _owner, _usertype, _status, _year, _yearrotate, _rotate, _notes))
 
-def SCANandCHECK():                                             #Interface for scanning or entering information to check with,
+def SCANandCHECK():                                             #Interface for scanning or entering information to check with,``
     # CONFIG                                                        # designed to enter in asset tage and search the inventory file for the tag. 
     _ADD = 2                                                        # also works with Serial numbers.
     _RoomNumber = 'all'
@@ -153,7 +175,7 @@ def SCANandCHECK():                                             #Interface for s
             os.system('cls')
         elif sys.platform == 'darwin':
             os.system('clear')
-    print("\033[1;32m" + 'Select file to save to.' + "\033[1;37m")
+    print("\033[1;32m" + 'Select your Scanned file or create new one.' + "\033[1;37m")
     _Savefile = FileBrowser('.csv', 1)
     if _DEBUG < 1:                                                 
         if sys.platform == 'win32':
@@ -178,6 +200,14 @@ def SCANandCHECK():                                             #Interface for s
             os.system('cls')
         elif sys.platform == 'darwin':
             os.system('clear')
+        
+    _assetLIST = []
+    for row in Convert2List(_INVfile, _INVcol):                     # convert list of lists into a single list of specified column info.
+        _assetLIST.append(row[int(_INVcol)].lstrip('0'))
+    if (_Savefile + "-scanned.csv") in os.listdir("."):
+        _saveLIST = []
+        for row in Convert2List(_Savefile + "-scanned.csv", 0):                     
+            _saveLIST.append(row[0])
     Logo()
     #http://patorjk.com/software/taag/#p=display&f=Small&t=SCAN%20and%20CHECK 'SMALL' font
     print("\033[1;32m" + #green
@@ -190,13 +220,13 @@ def SCANandCHECK():                                             #Interface for s
     print('Ask each time to take notes')
     print('Type "help" for help menu')
     print('press "x" then enter to exit')
+    if (_Savefile + "-scanned.csv") in os.listdir("."):             #adding percent complete NEED to CHECK FOR SDUPLICATES
+        print("\033[1;33m" + str(Counter(Dupcheck(_saveLIST))) + '/' + str(Counter(Dupcheck(_assetLIST))) + ' Devices Scanned' + "\033[1;37m")
     
-    _assetLIST = []
-    for row in Convert2List(_INVfile, _INVcol):                     # convert list of lists into a single list of specified column info.
-        _assetLIST.append(row[int(_INVcol)].lstrip('0'))
+
 
     _scan = 0
-    while True:                                                     #Start of teh entery process this is the loop that will take info and check in the inventory file.
+    while True:                                                     #Start of the entery process this is the loop that will take info and check in the inventory file.
         _scan = raw_input('Scan:')
         if _scan.lower() == 'add':                                  #add command used to turn on adding info if entery is not found.
             _ADD = 1
@@ -224,9 +254,6 @@ def SCANandCHECK():                                             #Interface for s
                 print(r)
             print("\033[1;32m" + " enter 'all' to check all rooms" + "\033[1;37m") #white
             _RoomNumber = raw_input('Room:')
-
-            
-            
         elif _scan.lstrip('0') in _assetLIST or _scan in _assetLIST:#compaire of entery and inventory info.
             if _RoomNumber == 'all':
                 for row in Convert2List(_INVfile, _INVcol):
@@ -334,6 +361,66 @@ def CheckandExport():                                           #Interface to Ch
         else:
             pass
 
+def Stats():                                                        
+    if _DEBUG < 1:
+        if sys.platform == 'win32':
+            os.system('cls')
+        elif sys.platform == 'darwin':
+            os.system('clear')
+    print("\033[1;32m" + 'Select your Scanned file.' + "\033[1;37m")
+    _scanfile = FileBrowser('.csv', 0)
+    if _DEBUG > 0:
+        print(_scanfile)
+        pause=raw_input('Check:')
+    if _DEBUG < 1:
+        if sys.platform == 'win32':
+            os.system('cls')
+        elif sys.platform == 'darwin':
+            os.system('clear')
+    _scancol = columnselect(_scanfile) 
+    if _DEBUG < 1:
+        if sys.platform == 'win32':
+            os.system('cls')
+        elif sys.platform == 'darwin':
+            os.system('clear')
+    print("\033[1;32m" + 'Select your Inventory file.' + "\033[1;37m")
+    _INVfile = FileBrowser('.csv', 0)
+    if _DEBUG < 1:
+        if sys.platform == 'win32':
+            os.system('cls')
+        elif sys.platform == 'darwin':
+            os.system('clear')
+    _INVcol = columnselect(_INVfile)
+    if _DEBUG < 1:
+        if sys.platform == 'win32':
+            os.system('cls')
+        elif sys.platform == 'darwin':
+            os.system('clear')
+    _Roomcol = columnselect(_INVfile)
+    _Roomlist = []
+    for room in Convert2List(_INVfile, _Roomcol):
+        _Roomlist.append(room[int(_Roomcol)])
+    _Rooms = Dupcheck(_Roomlist)
+    
+    
+    for i in sorted(_Rooms):
+        _assetlist = Convert2List(_INVfile, _Roomcol)
+        _savelist = Convert2List(_scanfile, _Roomcol)
+        print(i + "      " + str(Countroom(_assetlist, i, _Roomcol)) + '/' + str(Countroom(_savelist, i, _Roomcol)))
+        
+
+    # if _DEBUG > 0:
+    #     print(_INVfile)
+    #     print(_INVcol)
+    #     print(_scanfile)
+    #     print(_scancol)    
+    # if _DEBUG < 1:
+    #     if sys.platform == 'win32':
+    #         os.system('cls')
+    #     elif sys.platform == 'darwin':
+    #         os.system('clear')
+    # Logo()
+
 def Interface():
     while True:
         if sys.platform == 'win32':
@@ -351,3 +438,4 @@ def Interface():
             break
 
 Interface()
+# Stats()
