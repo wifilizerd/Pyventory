@@ -51,10 +51,13 @@ def Convert2List(_filename, _column):                           #Read data from 
     _filelist = []                                                  #set blank list to recive data
     for row in list(_filereader):
         if row:                                                     #check if there is data on tha row.
-            if row[int(_column)] == '':                                  #check if there is data in the field
+            try:
+                if row[int(_column)] == '':                                  #check if there is data in the field
+                    pass
+                else:
+                    _filelist.append(row)                       #appedn data to list in UPPER case
+            except ValueError:
                 pass
-            else:
-                _filelist.append(row)                       #appedn data to list in UPPER case
     return(_filelist)
 
 def FileBrowser(_extention, _new):                              #Used to select what file to load and create new files if wanted.
