@@ -31,6 +31,7 @@ def Help(_menu):                                                #The Help Screen
             "add        enable taking notes if the recorde is not found in inventory file.\n"
             "notadd     disable taking notes if the recorde is not found in inventory file.\n"
             "ask        ask each time to take notes if the recorde is not found in inventory file.\n"
+            "room       Select a room to check devices in.\n"
         )   
     elif _menu == 'export':                                         #CheckandExport Help Menu
         pass
@@ -54,7 +55,7 @@ def Convert2List(_filename, _column):                           #Read data from 
             if row[int(_column)] == '':                                  #check if there is data in the field
                 pass
             else:
-                _filelist.append(row)                       #appedn data to list in UPPER case
+                _filelist.append(row)                               #append data to list in UPPER case
     return(_filelist)
 
 def FileBrowser(_extention, _new):                              #Used to select what file to load and create new files if wanted.
@@ -95,7 +96,6 @@ def columnselect(_filename):                                    #lists info in C
     _row = 0
     _columnchoose = 'n'
     while _columnchoose == 'n':
-        print(_row)
         _count = 0
         _INVlist = Convert2List(_filename, 0)
         for asset in _INVlist[int(_row)]:
@@ -362,6 +362,7 @@ def CheckandExport():                                           #Interface to Ch
             pass
 
 def Stats():                                                        
+    #CONFIG
     if _DEBUG < 1:
         if sys.platform == 'win32':
             os.system('cls')
@@ -396,6 +397,8 @@ def Stats():
             os.system('cls')
         elif sys.platform == 'darwin':
             os.system('clear')
+    print("Please Select what column the room number is located on.\n")  
+    pause=raw_input('Notice:Press enter for List.') 
     _Roomcol = columnselect(_INVfile)
     _Roomlist = []
     for room in Convert2List(_INVfile, _Roomcol):
@@ -406,20 +409,20 @@ def Stats():
     for i in sorted(_Rooms):
         _assetlist = Convert2List(_INVfile, _Roomcol)
         _savelist = Convert2List(_scanfile, _Roomcol)
-        print(i + "      " + str(Countroom(_assetlist, i, _Roomcol)) + '/' + str(Countroom(_savelist, i, _Roomcol)))
-        
+        print(i + "      " + str(Countroom(_savelist, i, _Roomcol))) + '/' + str(Countroom(_assetlist, i, _Roomcol))
+        writefile((_scanfile[:-12] + "-Statistics"),('csv'), (str(i),str(Countroom(_savelist, i, _Roomcol)) + '/' + str(Countroom(_assetlist, i, _Roomcol))))
 
-    # if _DEBUG > 0:
-    #     print(_INVfile)
-    #     print(_INVcol)
-    #     print(_scanfile)
-    #     print(_scancol)    
-    # if _DEBUG < 1:
-    #     if sys.platform == 'win32':
-    #         os.system('cls')
-    #     elif sys.platform == 'darwin':
-    #         os.system('clear')
-    # Logo()
+    if _DEBUG > 0:
+        print(_INVfile)
+        print(_INVcol)
+        print(_scanfile)
+        print(_scancol)    
+    if _DEBUG < 1:
+        if sys.platform == 'win32':
+            os.system('cls')
+        elif sys.platform == 'darwin':
+            os.system('clear')
+    Logo()
 
 def Interface():
     while True:
@@ -434,8 +437,10 @@ def Interface():
             SCANandCHECK()
         elif _interfacemenu.lower() == 'export':
             CheckandExport()
+        elif _interfacemenu.lower() == 'stats':
+            Stats()
         elif _interfacemenu.lower() == 'exit' or _interfacemenu.lower() == 'x':
             break
 
-Interface()
-# Stats()
+# Interface()
+Stats()
