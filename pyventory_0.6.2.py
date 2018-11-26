@@ -1,6 +1,7 @@
 #!/Python27/pythonw.exe
+#1/bin/python
 #python 2.7
-#Pyventory - 0.6.1
+#Pyventory - 0.6.2
 # import all needed libraries
 import sys, os, csv
 
@@ -13,7 +14,7 @@ def Logo():                                                     #Just a Cool Hea
             " \______   \__  |   |\   \ /   /\_   _____/ \      \__    ___/\_____  \\\______   \__  |   |       \n"
             "  |     ___//   |   | \   Y   /  |    __)_  /   |   \|    |    /   |   \|       _//   |   |       \n"
             "  |    |    \____   |  \     /   |        \/    |    \    |   /    |    \    |   \\\____   |       \n"
-            "  |____|    / ______|   \___/   /_______  /\____|__  /____|   \_______  /____|_  // ______| v0.6.1 \n"
+            "  |____|    / ______|   \___/   /_______  /\____|__  /____|   \_______  /____|_  // ______| v0.6.2 \n"
             "            \/                          \/         \/                 \/       \/ \/              "
             "\033[1;37m"                                             #set color of text back to white
            )
@@ -31,7 +32,7 @@ def Help(_menu):                                                #The Help Screen
             "add        enable taking notes if the recorde is not found in inventory file.\n"
             "notadd     disable taking notes if the recorde is not found in inventory file.\n"
             "ask        ask each time to take notes if the recorde is not found in inventory file.\n"
-            "room       Select a room to check devices in.\n"
+            "room       set room number to check.\n"
         )   
     elif _menu == 'export':                                         #CheckandExport Help Menu
         pass
@@ -189,7 +190,7 @@ def SCANandCHECK():                                             #Interface for s
             os.system('cls')
         elif sys.platform == 'darwin':
             os.system('clear')
-    _INVcol = columnselect(_INVfile)
+    _INVcol = 0                                                     # Original Code: columnselect(_INVfile)
     
     if _DEBUG > 0:
         print(_INVfile)
@@ -244,21 +245,28 @@ def SCANandCHECK():                                             #Interface for s
             Help('scan')
         elif _scan.lower() == 'room':
             if _Roomcol == '':
-                _Roomcol = columnselect(_INVfile)
+                _Roomcol = 27                                         # Original Code: columnselect(_INVfile)
             _RoomList = Convert2List(_INVfile, _Roomcol)
             _Rooms = []
             for room in _RoomList:
-                if room[int(_Roomcol)] not in _Rooms:
-                    _Rooms.append(room[int(_Roomcol)])
+                if room[int(_Roomcol)].upper() not in _Rooms:
+                    _Rooms.append(room[int(_Roomcol)].upper())
             for r in _Rooms:
                 print(r)
             print("\033[1;32m" + " enter 'all' to check all rooms" + "\033[1;37m") #white
             _RoomNumber = raw_input('Room:')
-        elif _scan.lstrip('0') in _assetLIST or _scan in _assetLIST:#compaire of entery and inventory info.
+        elif _scan.lstrip('0') in _assetLIST or _scan in _assetLIST:        #compaire of entery and inventory info.
             if _RoomNumber == 'all':
                 for row in Convert2List(_INVfile, _INVcol):
                     if row[int(_INVcol)] == _scan.lstrip('0') or row[int(_INVcol)] == _scan:
-                        print("\033[1;32m" + str(row) + "\033[1;37m")
+                        # print("\033[1;32m" + str(row) + "\033[1;37m")
+                        print("\033[1;32m" + 'Asset Tag:    ' + str(row[0]) + "\033[1;37m")
+                        print("\033[1;32m" + 'Serial #:     ' + str(row[29]) + "\033[1;37m")
+                        print("\033[1;32m" + 'Device Name:  ' + str(row[3]) + "\033[1;37m")
+                        print("\033[1;32m" + 'Room #:       ' + str(row[27]) + "\033[1;37m")
+                        print("\033[1;32m" + 'Wired Mac:    ' + str(row[9]) + "\033[1;37m")
+                        print("\033[1;32m" + 'Wireless Mac: ' + str(row[10]) + "\033[1;37m")
+                        print("\033[1;32m" + 'School:       ' + str(row[28]) + ' - ' + str(row[42]) + "\033[1;37m")
                         writefile((_Savefile + "-scanned"),'csv', row)
             else:
                 for row in Convert2List(_INVfile, _INVcol):
@@ -270,10 +278,10 @@ def SCANandCHECK():                                             #Interface for s
                             print("\033[1;33m" + _scan + ' is listed in room ' + str(row[int(_Roomcol)]) + "\033[1;37m")
                             print("\033[1;32m" + str(row) + "\033[1;37m")
                             writefile((_Savefile + "-scanned"),'csv', row)
-                            writefile((_Savefile + "-NotFound"),'csv', ([str(_scan), str(row[int(_Roomcol)])]))
+                            writefile((_Savefile + "-NotFound"),'csv', ([str(_scan), str(_RoomNumber.upper())]))
                             print("\033[1;33m" + 'Notes add to "NotFound" List.' + "\033[1;37m")
 
-        elif _scan.lower() == 'x':                                  #x commadn used to exit scan and check
+        elif _scan.lower() == 'x' or _scan.lower() == 'exit':                            #x command used to exit scan and check
             break
         else:
             writefile((_Savefile + "-scanned"),'csv', [_scan])      #add to filename to destiguish different files.
@@ -442,5 +450,5 @@ def Interface():
         elif _interfacemenu.lower() == 'exit' or _interfacemenu.lower() == 'x':
             break
 
-# Interface()
-Stats()
+Interface()
+# Stats()
