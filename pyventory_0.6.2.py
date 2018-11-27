@@ -39,13 +39,13 @@ def Help(_menu):                                                #The Help Screen
 
 def writefile(_filename, _extention, _info):                    #setup file to write to.
     _file = _filename + '.' + _extention                               
-    _writefile = open(_file, "ab")                                  #'ab'will create file also 'wb' will overwrite everytime the file is opened
+    _writefile = open(_file, "abU")                                  #'ab'will create file also 'wb' will overwrite everytime the file is opened
     _writefilewriter = csv.writer(_writefile)                       #Setup CSV writer
     _writefilewriter.writerow(_info)                                #write info to _filename given _extention allows to used this def to write to other files types
     _writefile.close()                                              #close file after writing
 
 def CSVReader(_filename):                                       #Setup CSV reader.
-    _file = open(_filename, "r")
+    _file = open(_filename, "rU")
     return(csv.reader(_file))
   
 def Convert2List(_filename, _column):                           #Read data from file and add it to a list.
@@ -272,11 +272,25 @@ def SCANandCHECK():                                             #Interface for s
                 for row in Convert2List(_INVfile, _INVcol):
                     if row[int(_INVcol)] == _scan.lstrip('0') or row[int(_INVcol)] == _scan:
                         if row[int(_Roomcol)].upper() == _RoomNumber.upper():
-                            print("\033[1;32m" + str(row) + "\033[1;37m")
+                            # print("\033[1;32m" + str(row) + "\033[1;37m")
+                            print("\033[1;32m" + 'Asset Tag:    ' + str(row[0]) + "\033[1;37m")
+                            print("\033[1;32m" + 'Serial #:     ' + str(row[29]) + "\033[1;37m")
+                            print("\033[1;32m" + 'Device Name:  ' + str(row[3]) + "\033[1;37m")
+                            print("\033[1;32m" + 'Room #:       ' + str(row[27]) + "\033[1;37m")
+                            print("\033[1;32m" + 'Wired Mac:    ' + str(row[9]) + "\033[1;37m")
+                            print("\033[1;32m" + 'Wireless Mac: ' + str(row[10]) + "\033[1;37m")
+                            print("\033[1;32m" + 'School:       ' + str(row[28]) + ' - ' + str(row[42]) + "\033[1;37m")
                             writefile((_Savefile + "-scanned"),'csv', row)
                         else:
-                            print("\033[1;33m" + _scan + ' is listed in room ' + str(row[int(_Roomcol)]) + "\033[1;37m")
-                            print("\033[1;32m" + str(row) + "\033[1;37m")
+                            # print("\033[1;33m" + _scan + ' is listed in room ' + str(row[int(_Roomcol)]) + "\033[1;37m")
+                            # print("\033[1;32m" + str(row) + "\033[1;37m")
+                            print("\033[1;33m" + 'Asset Tag:    ' + str(row[0]) + "\033[1;37m")
+                            print("\033[1;33m" + 'Serial #:     ' + str(row[29]) + "\033[1;37m")
+                            print("\033[1;33m" + 'Device Name:  ' + str(row[3]) + "\033[1;37m")
+                            print("\033[1;33m" + 'Room #:       ' + str(row[27]) + "\033[1;37m")
+                            print("\033[1;33m" + 'Wired Mac:    ' + str(row[9]) + "\033[1;37m")
+                            print("\033[1;33m" + 'Wireless Mac: ' + str(row[10]) + "\033[1;37m")
+                            print("\033[1;33m" + 'School:       ' + str(row[28]) + ' - ' + str(row[42]) + "\033[1;37m")
                             writefile((_Savefile + "-scanned"),'csv', row)
                             writefile((_Savefile + "-NotFound"),'csv', ([str(_scan), str(_RoomNumber.upper())]))
                             print("\033[1;33m" + 'Notes add to "NotFound" List.' + "\033[1;37m")
@@ -318,7 +332,7 @@ def CheckandExport():                                           #Interface to Ch
             os.system('cls')
         elif sys.platform == 'darwin':
             os.system('clear')
-    _scancol = columnselect(_scanfile) 
+    _scancol = 0                     # columnselect(_scanfile) 
     if _DEBUG < 1:
         if sys.platform == 'win32':
             os.system('cls')
@@ -331,7 +345,7 @@ def CheckandExport():                                           #Interface to Ch
             os.system('cls')
         elif sys.platform == 'darwin':
             os.system('clear')
-    _INVcol = columnselect(_INVfile)
+    _INVcol = 0                      # columnselect(_INVfile)
     if _DEBUG > 0:
         print(_INVfile)
         print(_INVcol)
