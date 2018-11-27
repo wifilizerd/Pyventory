@@ -39,7 +39,7 @@ def Help(_menu):                                                #The Help Screen
 
 def writefile(_filename, _extention, _info):                    #setup file to write to.
     _file = _filename + '.' + _extention                               
-    _writefile = open(_file, "abU")                                  #'ab'will create file also 'wb' will overwrite everytime the file is opened
+    _writefile = open(_file, "ab")                                  #'ab'will create file also 'wb' will overwrite everytime the file is opened
     _writefilewriter = csv.writer(_writefile)                       #Setup CSV writer
     _writefilewriter.writerow(_info)                                #write info to _filename given _extention allows to used this def to write to other files types
     _writefile.close()                                              #close file after writing
