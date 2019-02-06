@@ -4,12 +4,16 @@
 #Pyventory - 0.6.4
 # import all needed libraries
 import sys, os, csv 
+from tkinter import filedialog
+from tkinter import *
 
 # Gobal Variables
 _DEBUG = 2    # 0 = no output, 1 =  Standered Output, 2 = Detail output, 3 = Basic Debug, 4 = pause Debug , 5 = everything,
 InventoryFile = ""
 ScannedFile =  ""
-
+window = Tk()
+window.title('Pyventory')
+window.configure(background='black')
 
 _TC = {                                                 # COLOR List
     #http://ozzmaker.com/add-colour-to-text-in-python/
@@ -118,9 +122,11 @@ def setupFiles():                                      # Used to Load both Inven
     global InventoryFile
     Logo('MAIN')
     p_print(1, _TC['_GREEN'], 'Select your Inventory file.')
-    InventoryFile = FileBrowser('.csv', False)
+    InventoryFile = window.filename = filedialog.askopenfilename(initialdir = "/",title = "Select Inventory file",filetypes = (("csv files","*.csv"),("all files","*.*")))
+    # InventoryFile = FileBrowser('.csv', False)
     p_print(1, _TC['_GREEN'], 'Select your Scanned file or create new one.')
-    ScannedFile = FileBrowser('.csv', True)
+    ScannedFile = window.filename = filedialog.asksaveasfilename(initialdir = "/",title = "Select Scanned file",filetypes = (("csv files","*.csv"),("all files","*.*")))
+    # ScannedFile = FileBrowser('.csv', True)
      
 def writefile(_filename, _info):                        # Used to Write information to Files.
     p_print(4, _TC['_HEADING'], '******writefile({0:}, {1:})******'.format(_filename, _info))
@@ -128,11 +134,17 @@ def writefile(_filename, _info):                        # Used to Write informat
     _openfilewriter = csv.writer(_openfile)                        #Setup CSV writer
     _openfilewriter.writerow(_info)                                #write info to _filename given _extention allows to used this def to write to other files types
     _openfile.close()
+
+def CSVReader(_filename):                               # Used to Read CSV files.
+    p_print(4, _TC['_HEADING'], '******CSVReader({0:})******'.format(_filename))
+    _file = open(_filename, "rU")
+    return(csv.reader(_file))
   
 def File2List(_filename, _column=_INV_ROW['Asset']):    # Used to read data from a CSV file and add it to a list if the _column has data.
     p_print(4, _TC['_HEADING'], '******File2List({0:}, {1:})******'.format(_filename, _column))
+    _filereader = CSVReader(_filename)
     _filelist = []                                                  #set blank list to recive data
-    for row in list(open(_filename, "rU")):
+    for row in list(_filereader):
         if row:                                                     #check if there is data on tha row.
             if row[int(_column)] == '':                                  #check if there is data in the field
                 pass
@@ -221,8 +233,7 @@ def GetSingleList(_INVList, _item):                     # USed to take a list of
 
 def GetAssetInfo(_asset):                               # Used to take an asset number and look up the row of info from the INVentory File.
     p_print(4, _TC['_HEADING'], '******GetAssetInfo({0:})******'.format(_asset))
-    INVcleanlist = CleanBlankRows(list(csv.reader(open(InventoryFile, "rU"))))
-    for row in INVcleanlist:
+    for row in CleanBlankRows(list(csv.reader(open(InventoryFile, "rU")))):
         p_print(4, _TC['_YELLOW'], row)
         item = row[_INV_ROW['Asset']]
         if _asset.lstrip('0') == item.lstrip('0'):
@@ -230,13 +241,12 @@ def GetAssetInfo(_asset):                               # Used to take an asset 
 
 def CountAssetsInRoom(_file, _rm):                      # Used to Count the Number of assets that ar listed in a room.
     p_print(4, _TC['_HEADING'], '******CountAssetsInRoom()******')
-    INVlist = GetSingleList(CleanBlankRows(list(csv.reader(open(InventoryFile, "rU")))), 'Asset')
-    FileList = Dupcheck(CleanBlankRows(list(csv.reader(open(_file, "rU")))))
+    # add variable for fileassetlist to increse speed of check
     count = 0
-    for row in FileList:
+    for row in Dupcheck(CleanBlankRows(list(csv.reader(open(_file, "rU"))))):
         p_print(3, _TC['_YELLOW'], row)
         p_print(3, _TC['_YELLOW'], GetAssetInfo(row[_INV_ROW['Asset']]))
-        if row[_INV_ROW['Asset']] in INVlist:
+        if row[_INV_ROW['Asset']] in GetSingleList(CleanBlankRows(list(csv.reader(open(InventoryFile, "rU")))), 'Asset'):
             if _rm.upper() == GetAssetInfo(row[_INV_ROW['Asset']])[_INV_ROW['Room #']]:
                 p_print(3, _TC['_YELLOW'], GetAssetInfo(row[_INV_ROW['Asset']]))
                 count += 1    
@@ -309,22 +319,25 @@ def DisplayCurrentScan(_cscanlist, _rm):                # Used to display asste 
 
 def DisplayProgress(_rm):                               # USed to Display the percent complete in each room.
     p_print(4, _TC['_HEADING'], '******DisplayProgress({0:})******'.format(_rm))
-    RoomList = GetSingleList(CleanBlankRows(list(csv.reader(open(InventoryFile, "rU")))), 'Room #')
+  
     if _rm.upper() == 'ALL':
         # for room in sorted(GetSingleList(CleanBlankRows(list(csv.reader(open(InventoryFile, "rU")))), 'Room #')):
-        for room in sorted(RoomList):
-            scannedinroom = CountAssetsInRoom(ScannedFile, room)
-            INVinroom = CountAssetsInRoom(InventoryFile, room)
-            roompercent = (float(scannedinroom/int(INVinroom))*100)
+        for room in ['B142', 'C123']:
+            roompercent = (float(CountAssetsInRoom(ScannedFile, room)/int(CountAssetsInRoom(InventoryFile, room)))*100)
             _c = "_YELLOW"
             if roompercent <= 25.0:
                 _c = "_RED"
             elif roompercent == 100.0:
                 _c = "_GREEN"
-            p_print(1, _TC[_c], '{0:18} - {1:>3}/{2:<3} {3:>3.0f}%'.format(room, scannedinroom, INVinroom, roompercent))
-    elif _rm.upper in RoomList:
-        pass
-   
+            p_print(1, _TC[_c], '{0:18} - {1:>3}/{2:<3} {3:>3.0f}%'.format(room, CountAssetsInRoom(ScannedFile, room), CountAssetsInRoom(InventoryFile, room), roompercent))
+
+    
+    # if _rm.upper() in GetSingleList(CleanBlankRows(list(csv.reader(open(InventoryFile, "rU")))), 'Room #'):
+    #     roomassetlist = ListAssetsInRoom(_rm)
+    #     for asset in Dupcheck(roomassetlist):
+    #         if asset in Dupcheck(GetSingleList(CleanBlankRows(list(csv.reader(open(ScannedFile, "rU")))), 'Asset')):
+    #             roomassetlist.remove(asset)
+     
 def ListAssetsInRoom(_rm):                              # Used to List all asste listed as in a selected room.
     # global InventoryFile
     assetlist = []
@@ -353,9 +366,12 @@ def CheckScan(_scan, _rm):                              # Used to Check the asse
 def ScanMenu():                                         # The UI for the scan interface.
     p_print(4, _TC['_HEADING'], "******ScanMenu()******")
     # VARIABLES
+    global ScannedFile
+    global InventoryFile
     scan = ''
     roomnumber = 'ALL'
     currentscanlist = []
+    print(InventoryFile)
     input('')
     inventoryassetlist = GetSingleList(CleanBlankRows(list(csv.reader(open(InventoryFile, "rU")))), 'Asset')
 
@@ -390,9 +406,11 @@ def ScanMenu():                                         # The UI for the scan in
 def ProgressMenu():                                     # The UI for the Progress Interface.
     p_print(4, _TC['_HEADING'], '******ProgressMenu()******')
     # VARIABLES
-    # ScannedAssetList = GetSingleList(CleanBlankRows(list(csv.reader(open(ScannedFile, "rU")))), 'Asset')
-    # inventoryassetlist = GetSingleList(CleanBlankRows(list(csv.reader(open(InventoryFile, "rU")))), 'Asset')
-    # MissingFile = (ScannedFile.split('-')[0] + '-NotScanned.csv')
+    # global ScannedFile
+    # global InventoryFile
+    ScannedAssetList = GetSingleList(CleanBlankRows(list(csv.reader(open(ScannedFile, "rU")))), 'Asset')
+    inventoryassetlist = GetSingleList(CleanBlankRows(list(csv.reader(open(InventoryFile, "rU")))), 'Asset')
+    MissingFile = (ScannedFile.split('-')[0] + '-NotScanned.csv')
     RoomsList = GetSingleList(CleanBlankRows(list(csv.reader(open(InventoryFile, "rU")))), 'Room #')
     progressmenu = ''
 
@@ -404,10 +422,8 @@ def ProgressMenu():                                     # The UI for the Progres
     p_print(2, _TC['_YELLOW'], Help('progress'))
     
     while progressmenu.upper() != 'X':
-        if progressmenu in RoomsList or progressmenu.upper() == 'ALL':
+        if progressmenu:
             DisplayProgress(progressmenu)
-        else:
-            pass
 
         progressmenu = input('Progress:')
 

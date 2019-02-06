@@ -463,30 +463,6 @@ def Stats():
         p_print(1, _TC[_c], '{0:16} - {1:>3}/{2:3} {3:.0f}%'.format(room, str(ScanInRoom(_assetlist,_savelist,room)), str(Countroom(_assetlist, room, _Roomcol)), float(int(ScanInRoom(_assetlist,_savelist,room)))/int(Countroom(_assetlist, room, _Roomcol))*100))
         p_print(2, _TC[_c], '{0:16} - {1:>3}/{2:3} {3:.0f}%'.format(room, str(ScanInRoom(_assetlist,_savelist,room)), str(Countroom(_assetlist, room, _Roomcol)), float(int(ScanInRoom(_assetlist,_savelist,room)))/int(Countroom(_assetlist, room, _Roomcol))*100))
 
-        #     p_print(1, _TC["_RED"], '{0:16} - {1:>3}/{2:3} %{3:.0f}'.format(room, str(ScanInRoom(_assetlist,_savelist,room)), str(Countroom(_assetlist, room, _Roomcol)), float(int(ScanInRoom(_assetlist,_savelist,room)))/int(Countroom(_assetlist, room, _Roomcol))*100))
-        # if float(int(ScanInRoom(_assetlist,_savelist,room)))/int(Countroom(_assetlist, room, _Roomcol))*100 <= 99.9:
-        #     p_print(1, _TC["_GREEN"], '{0:16} - {1:>3}/{2:3} %{3:.0f}'.format(room, str(ScanInRoom(_assetlist,_savelist,room)), str(Countroom(_assetlist, room, _Roomcol)), float(int(ScanInRoom(_assetlist,_savelist,room)))/int(Countroom(_assetlist, room, _Roomcol))*100))
-        # if float(int(ScanInRoom(_assetlist,_savelist,room)))/int(Countroom(_assetlist, room, _Roomcol))*100 == 100.0:
-        # room + "  " + str(ScanInRoom(_assetlist,_savelist,room)) + '/' + str(Countroom(_assetlist, room, _Roomcol))+ ' ' + str("%"+str(float(int(ScanInRoom(_assetlist,_savelist,room)))/int(Countroom(_assetlist, room, _Roomcol))*100))
-
-    
-    # for i in sorted(_Rooms):
-    #     _assetlist = Convert2List(_INVfile, _Roomcol)
-    #     _savelist = Convert2List(_scanfile, _Roomcol)
-    #     print(i + "      " + str(Countroom(_savelist, i, _Roomcol))) + '/' + str(Countroom(_assetlist, i, _Roomcol))
-    #     writefile((_scanfile[:-12] + "-Statistics"),('csv'), (str(i),str(Countroom(_savelist, i, _Roomcol)) + '/' + str(Countroom(_assetlist, i, _Roomcol))))
-
-    # if _DEBUG > 0:
-    #     print(_INVfile)
-    #     print(_INVcol)
-    #     print(_scanfile)
-    #     print(_scancol)    
-    # if _DEBUG < 1:
-    #     if sys.platform == 'win32':
-    #         os.system('cls')
-    #     elif sys.platform == 'darwin':
-    #         os.system('clear')
-    # Logo()
 
 def Interface():
     while True:

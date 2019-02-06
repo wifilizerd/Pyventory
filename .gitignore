@@ -103,3 +103,7 @@ ENV/
 INV archive/
 
 Zip Archive/
+
+\.vscode/
+
+*.csv
