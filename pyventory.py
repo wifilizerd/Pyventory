@@ -1,16 +1,16 @@
 #!/Python27/pythonw.exe
 #1/bin/python
-#python 2.7
-#Pyventory - 0.6.3.1
+#python 3.7
+#Pyventory - 0.6.4
 # import all needed libraries
 import sys, os, csv
 
 # Gobal Variables
-_DEBUG = 2     # 0 = no output, 1 =  Standered Output, 2 = Detail output, 3 = Basic Debug, 4 = pause Debug , 5 = everything,
-InventoryFile = " "
-ScannedFile =  " "
+_DEBUG = 2    # 0 = no output, 1 =  Standered Output, 2 = Detail output, 3 = Basic Debug, 4 = pause Debug , 5 = everything,
+InventoryFile = ""
+ScannedFile =  ""
 
-_TC = {
+_TC = {                                                 # COLOR List
     #http://ozzmaker.com/add-colour-to-text-in-python/
     #TEST STYLE;TEXT COLOR; BG COLORm
     "_HEADING": "\033[4;37;40m",        # Underline/White/Black
@@ -24,16 +24,16 @@ _TC = {
     "_TEST":    "\033[1;31;40m"         # Testing
         }
 
-_INV_ROW = {
+_INV_ROW = {                                            # CSV Inventory Column Numbers
     "Asset":              0,
     "Make":               1,
-    "Class":              2,    # Inventory, Infrastructure, Printers
-    "Name":               3,    # Device Name
+    "Class":              2,        # Inventory, Infrastructure, Printers
+    "Name":               3,        # Device Name
     "Cpu":                4,
     "Modified by":        5,
     "Modified Date":      6,
-    "Rotation Eligible":  7,      # Yes/No, Eligible for Rotation
-    "Status":             8,      # Active, Condemned, Surplus
+    "Rotation Eligible":  7,        # Yes/No, Eligible for Rotation
+    "Status":             8,        # Active, Condemned, Surplus
     "Wired Mac Addr":     9,
     "Wireless Mac Addr":  10,
     "Server Mac Addr":    11,
@@ -65,13 +65,13 @@ _INV_ROW = {
     "School Desc":        42,     # School Name, Inventory Format 
 }
 
-def Logo(_head):                         #Just a Cool Heading for the program
+def Logo(_head):                                        # Used to call the logo and headings for the UI.
     if _head.upper() == 'MAIN':
         p_print(1, _TC['_GREEN'], " _______________.___.____   _______________ __________________________ _______________.___.       \n"
             " \______   \__  |   |\   \ /   /\_   _____/ \      \__    ___/\_____  \\\______   \__  |   |       \n"
             "  |     ___//   |   | \   Y   /  |    __)_  /   |   \|    |    /   |   \|       _//   |   |       \n"
             "  |    |    \____   |  \     /   |        \/    |    \    |   /    |    \    |   \\\____   |       \n"
-            "  |____|    / ______|   \___/   /_______  /\____|__  /____|   \_______  /____|_  // ______| v0.6.3.1 \n"
+            "  |____|    / ______|   \___/   /_______  /\____|__  /____|   \_______  /____|_  // ______| v0.6.4 \n"
             "            \/                          \/         \/                 \/       \/ \/              ")
     elif _head.upper() == 'SCAN':       #http://patorjk.com/software/taag/#p=display&f=Small&t=SCAN%20and%20CHECK 'SMALL' font
         p_print(1, _TC["_GREEN"], ' ___  ___   _   _  _                _    ___ _  _ ___ ___ _  __ \n'
@@ -85,7 +85,7 @@ def Logo(_head):                         #Just a Cool Heading for the program
             "|_| |_| \___/\__, |_| \___/__/__/\n"   
             "             |___/               ")
 
-def Help(_menu):                                                #The Help Screen- broken down so specified potion can be called were needed.
+def Help(_menu):                                        # Used to call the Help info.
     if _menu == 'main':                                             #Pyventory Main Menu Help
         return(
             "Pyventory Help. \n"
@@ -111,44 +111,35 @@ def Help(_menu):                                                #The Help Screen
             "x          quit\n"
         )
 
-def setupFiles():
+def setupFiles():                                      # Used to Load both Inventory and Scanned files into pyventory memory.
+    p_print(4, _TC['_HEADING'], '******setupFiles()******')
     global ScannedFile
     global InventoryFile
-    ClearScreen()
+    # ClearScreen()
     Logo('MAIN')
     p_print(4, _TC['_HEADING'], '******setupFiles()******')
     p_print(1, _TC['_GREEN'], 'Select your Inventory file.')
-    InventoryFile = FileBrowser('.csv', 0)
-    ClearScreen()
+    InventoryFile = FileBrowser('.csv', False)
+    # ClearScreen()
     Logo('MAIN')
     p_print(4, _TC['_YELLOW'], "******SELECT SCANNED FILE******")
     p_print(1, _TC['_GREEN'], 'Select your Scanned file or create new one.')
-    ScannedFile = FileBrowser('.csv', 1)
-
-def setup(_list, _file):
-    p_print(4, _TC['_HEADING'], '******setup({0:}, {1:})******'.format(_list, _file))
-    I_list = []
-    p_print(4, _TC['_INFO'], 'Convert2List({0:},{1:})'.format(_file, _INV_ROW['Asset']))
-    for l in Convert2List(_file, _INV_ROW['Asset']):
-        I_list.append(l)
-    p_print(4, _TC['_INFO'], I_list)
-    return(I_list)
-
-        
-def writefile(_filename, _info):                                #setup file to write to.
+    ScannedFile = FileBrowser('.csv', True)
+     
+def writefile(_filename, _info):                        # Used to Write information to Files.
     p_print(4, _TC['_HEADING'], '******writefile({0:}, {1:})******'.format(_filename, _info))
-    _openfile = open(_filename, "ab")                              #'ab'will create file also 'wb' will overwrite everytime the file is opened
+    _openfile = open(_filename, "a")                              #'ab'will create file also 'wb' will overwrite everytime the file is opened
     _openfilewriter = csv.writer(_openfile)                        #Setup CSV writer
     _openfilewriter.writerow(_info)                                #write info to _filename given _extention allows to used this def to write to other files types
     _openfile.close()
 
-def CSVReader(_filename):                                       #Setup CSV reader.
+def CSVReader(_filename):                               # Used to Read CSV files.
     p_print(4, _TC['_HEADING'], '******CSVReader({0:})******'.format(_filename))
     _file = open(_filename, "rU")
     return(csv.reader(_file))
   
-def Convert2List(_filename, _column):                           #Read data from file and add it to a list.
-    p_print(4, _TC['_HEADING'], '******Convert2List({0:}, {1:})******'.format(_filename, _column))
+def File2List(_filename, _column=_INV_ROW['Asset']):    # Used to read data from a CSV file and add it to a list if the _column has data.
+    p_print(4, _TC['_HEADING'], '******File2List({0:}, {1:})******'.format(_filename, _column))
     _filereader = CSVReader(_filename)
     _filelist = []                                                  #set blank list to recive data
     for row in list(_filereader):
@@ -159,7 +150,15 @@ def Convert2List(_filename, _column):                           #Read data from 
                 _filelist.append(row)                               #append data to list in UPPER case
     return(_filelist)
 
-def FileBrowser(_extention, _new):                              #Used to select what file to load and create new files if wanted.
+def CleanBlankRows(_list):                              # Used to Clean Blank Rows from lists.
+    p_print(4, _TC['_HEADING'], '******CleanBlankRows({0:})******'.format(_list))
+    _cleanlist = []                                                  #set blank list to recive data
+    for row in _list:
+        if row:                                                     #check if there is data on tha row.
+            _cleanlist.append(row)                               #append data to list in UPPER case
+    return(_cleanlist)
+
+def FileBrowser(_extention, _new):                      # Used to Display and  select what file to load and create new files if needed.
     p_print(4, _TC['_HEADING'], '******FileBrowser({0:}, {1:})******'.format(_extention, _new))
     _filelist = os.listdir(".")                                     # list directory to a list
     count = 0
@@ -171,27 +170,33 @@ def FileBrowser(_extention, _new):                              #Used to select 
             count += 1
     _filechoose = ''
     while len(str(_filechoose)) < 1:
-        if _new == 1:
+        if _new == True:
             print('or type name of new Project.')
-        _filechoose = raw_input('File:')
+        _filechoose = input('File:')
         try:
-            str(_filechoose)
-            if str(_filechoose).lower() == 'x':
-                break
-            elif str(_filechoose) in str(range(0, (count + 1))):
-                p_print(4, _TC['_INFO'], files[int(_filechoose)])
-                return(files[int(_filechoose)])
+            p_print(4, _TC['_INFO'], _filechoose)
+            if _filechoose[0].upper() in ('ZYXWVUTSRQPONMLKJIHGFEDCBA'):
+                if _filechoose[0].upper() == 'X':
+                    break
+                else:    
+                    writefile((_filechoose + "-scanned.csv"), '')
+                    return(_filechoose + "-scanned.csv")
+            if _filechoose[0] in ('0123456789'):
+                if len(_filechoose) > 2:
+                    writefile((_filechoose + "-scanned.csv"), '')
+                    return(_filechoose + "-scanned.csv")
+                else:
+                    p_print(4, _TC['_INFO'], files[int(_filechoose)])
+                    return(files[int(_filechoose)])
             else:
-                if _new == 0:
+                if _new == False:
                     _filechoose = ''
                     p_print(1, _TC['_ERROR'], "NO new file at this point")
                     break
-                writefile((_filechoose + "-scanned.csv"), '')
-                return(_filechoose + "-scanned.csv")
         except ValueError:
             p_print(1, _TC['_ERROR'], 'ERROR: Please Enter Project Name or Number')
 
-def Dupcheck(_list):                                            #checking for duplicates
+def Dupcheck(_list):                                    # checks for duplicates data in a list.
     p_print(4, _TC['_HEADING'], '******Dupcheck(_list)******')
     _nodup = []
     for row in _list:
@@ -201,51 +206,51 @@ def Dupcheck(_list):                                            #checking for du
             pass
     return(_nodup)
 
-def p_print(_debug, _color, _string):
+def p_print(_debug, _color, _string):                   # Used as an specialized Print Command.
     if _debug <= _DEBUG:
         print(_color + str(_string) + _TC["_RESET"])
         if _debug == 4:
-            raw_input('Waiting...')
+            input('Waiting...')
         
-def ClearScreen():
+def ClearScreen():                                      # Used to Clear the Screen fo rthe UI, based on the OS being used.
     if sys.platform == 'win32':
         os.system('cls')
     elif sys.platform == 'darwin':
         os.system('clear')
 
-def GetRoomList(_INVList):
-    p_print(4, _TC['_HEADING'], '******GetRoomList(InventoryFileList)******')
+def GetSingleList(_INVList, _item):                     # USed to take a list of lists and pull one column of info into one list.
+    p_print(4, _TC['_HEADING'], '******GetSingleList(InventoryFileList)******')
     _list = []
     p_print(4, _TC['_YELLOW'], _INVList)
     for _row in _INVList:
-        if _row[int(_INV_ROW['Room #'])].upper():
-            if _row[int(_INV_ROW['Room #'])].upper() not in _list:
-                _list.append(_row[int(_INV_ROW['Room #'])].upper())
-            
+        if _row[int(_INV_ROW[_item])].lstrip('0'):
+            if _row[int(_INV_ROW[_item])].upper().lstrip('0') not in _list:
+                _list.append(_row[int(_INV_ROW[_item])].upper().lstrip())
+    p_print(4, _TC['_YELLOW'], _list)        
     return(_list)
 
-def GetAssetInfo(_INVList, _asset):
-    for row in _INVList:
+def GetAssetInfo(_asset):                               # Used to take an asset number and look up the row of info from the INVentory File.
+    p_print(4, _TC['_HEADING'], '******GetAssetInfo({0:})******'.format(_asset))
+    for row in CleanBlankRows(list(csv.reader(open(InventoryFile, "rU")))):
         p_print(4, _TC['_YELLOW'], row)
         item = row[_INV_ROW['Asset']]
         if _asset.lstrip('0') == item.lstrip('0'):
             return(row)   
 
-def RoomCounter(_INVList, _SCANList, _room):
+def CountAssetsInRoom(_file, _rm):                      # Used to Count the Number of assets that ar listed in a room.
+    p_print(4, _TC['_HEADING'], '******CountAssetsInRoom()******')
+    # add variable for fileassetlist to increse speed of check
     count = 0
-    if _SCANList:
-        for scan in _SCANList:
-            for row in _INVList:
-                if scan.upper() == row[_INV_ROW['Asset']].upper():
-                    if _room.upper() == row[_INV_ROW['Room #']].upper():
-                        count += 1
-    else:
-        for row in _INVList:
-            if _room.upper() == row[_INV_ROW['Room #']].upper():
-                count += 1
+    for row in Dupcheck(CleanBlankRows(list(csv.reader(open(_file, "rU"))))):
+        p_print(3, _TC['_YELLOW'], row)
+        p_print(3, _TC['_YELLOW'], GetAssetInfo(row[_INV_ROW['Asset']]))
+        if row[_INV_ROW['Asset']] in GetSingleList(CleanBlankRows(list(csv.reader(open(InventoryFile, "rU")))), 'Asset'):
+            if _rm.upper() == GetAssetInfo(row[_INV_ROW['Asset']])[_INV_ROW['Room #']]:
+                p_print(3, _TC['_YELLOW'], GetAssetInfo(row[_INV_ROW['Asset']]))
+                count += 1    
     return(count)
 
-def AssetDisply(_list, _color):
+def AssetDisply(_list, _color):                         # Used to Print Asset info to UI
     p_print(4, _TC['_HEADING'], '******AssetDisplay({0:}, {1:})******'.format(_list, _color))
     if len(_list) > 2:
         # p_print(1, _TC['_HEADING'], ''.format('Asset Tag', 'Serial #', 'Name', 'Room #', 'Wire MAC', 'Wireless MAC', 'School # - Name'))
@@ -253,201 +258,197 @@ def AssetDisply(_list, _color):
     else:
         p_print(1, _TC[_color], '{0:>10}  :'.format(_list[_INV_ROW['Asset']]))
 
-def MakeMissing(_INVfile):
-    return(_INVfile.split('-')[0])
+def GetProjectName(_file):                              # Used to strip teh file name down to only the Project title.
+    return(_file.split('-')[0])
 
-def addinfo(_filename, _scan):                                  #used to gather info about assets that are not found in list then stored for later entery.
+def addinfo(_filename, _scan):                          # Used to gather info about assets that are not found in list then stored for later entery.
     p_print(4, _TC['_HEADING'], '******addinfo({0:}, {1:})******'.format(_filename, _scan))
     print('add information for asset tage ' + _scan)
     _scan = _scan
-    _asset = raw_input('Asset tage:')
-    _serial = raw_input('serial #:')
-    _type = raw_input('device type: ')
-    _make = raw_input('make: ')
-    _model = raw_input('model: ')
-    _cpu = raw_input('cpu: ')
-    _ram = raw_input('ram: ')
-    _hdd = raw_input('hard drive:')
-    _os = raw_input('OS: ')
-    _school = raw_input('school #: ')
-    _room = raw_input('room: ')
-    _user = raw_input('user: ')
-    _compname = raw_input('computer name: ')
-    _mac = raw_input('wired MAC: ')
-    _wmac =raw_input('wireless MAC: ')
-    _installdate = raw_input('install date: ')
-    _owner = raw_input('owner: ')
-    _usertype = raw_input('user type: ')
-    _status = raw_input('status: ')
-    _year = raw_input('mtg. year: ')
-    _yearrotate = raw_input('year to be rotated: ')
-    _rotate = raw_input('eligible for rotation: ')
-    _notes = raw_input('Notes: ')
+    _asset = input('Asset tage:')
+    _serial = input('serial #:')
+    _type = input('device type: ')
+    _make = input('make: ')
+    _model = input('model: ')
+    _cpu = input('cpu: ')
+    _ram = input('ram: ')
+    _hdd = input('hard drive:')
+    _os = input('OS: ')
+    _school = input('school #: ')
+    _room = input('room: ')
+    _user = input('user: ')
+    _compname = input('computer name: ')
+    _mac = input('wired MAC: ')
+    _wmac =input('wireless MAC: ')
+    _installdate = input('install date: ')
+    _owner = input('owner: ')
+    _usertype = input('user type: ')
+    _status = input('status: ')
+    _year = input('mtg. year: ')
+    _yearrotate = input('year to be rotated: ')
+    _rotate = input('eligible for rotation: ')
+    _notes = input('Notes: ')
     print("\033[1;37m")
     writefile((_filename), (_asset, str(_scan), _serial, _type, _make, _model, _cpu, _ram, _hdd, _os, _school, _room, _user, _compname, _mac, _wmac, _installdate, _owner, _usertype, _status, _year, _yearrotate, _rotate, _notes))
 
-def SCANandCHECK():                                             #Scan asset tage and Check them in an inventory file
-    p_print(4, _TC['_HEADING'], "******SCANandCHECK()******")
+def RoomSelect():                                       # Used to select a room to check with.
+    # global InventoryFile
+    p_print(4, _TC['_HEADING'], "******RoomSelect(InventoryFile)******")    
+    p_print(3, _TC['_YELLOW'], GetSingleList(CleanBlankRows(list(csv.reader(open(InventoryFile, "rU")))), 'Room #'))
+    for r in GetSingleList(CleanBlankRows(list(csv.reader(open(InventoryFile, "rU")))), 'Room #'):
+        print(r)
+    p_print(1, _TC['_GREEN'], " enter 'all' to check all rooms")
+    return(input('Room:'))
+
+def DisplayCurrentScan(_cscanlist, _rm):                # Used to display asste info from the curren scan list to the UI.
+    # global InventoryFile
+    for asset in _cscanlist:
+        p_print(4, _TC['_YELLOW'], asset)
+        if asset in GetSingleList(CleanBlankRows(list(csv.reader(open(InventoryFile, "rU")))), 'Asset'):
+            if _rm.upper() == 'ALL':
+                AssetDisply(GetAssetInfo(asset), '_GREEN')
+            else:
+                if _rm.upper() == GetAssetInfo(asset)[_INV_ROW["Room #"]].upper():
+                    AssetDisply(GetAssetInfo(asset), '_GREEN')
+                else:
+                    AssetDisply(GetAssetInfo(asset), '_YELLOW')
+        else:
+            AssetDisply([asset], '_RED')
+
+def DisplayProgress(_rm):                               # USed to Display the percent complete in each room.
+    p_print(4, _TC['_HEADING'], '******DisplayProgress({0:})******'.format(_rm))
+  
+    if _rm.upper() == 'ALL':
+        # for room in sorted(GetSingleList(CleanBlankRows(list(csv.reader(open(InventoryFile, "rU")))), 'Room #')):
+        for room in ['B142', 'C123']:
+            roompercent = (float(CountAssetsInRoom(ScannedFile, room)/int(CountAssetsInRoom(InventoryFile, room)))*100)
+            _c = "_YELLOW"
+            if roompercent <= 25.0:
+                _c = "_RED"
+            elif roompercent == 100.0:
+                _c = "_GREEN"
+            p_print(1, _TC[_c], '{0:18} - {1:>3}/{2:<3} {3:>3.0f}%'.format(room, CountAssetsInRoom(ScannedFile, room), CountAssetsInRoom(InventoryFile, room), roompercent))
+
+    
+    # if _rm.upper() in GetSingleList(CleanBlankRows(list(csv.reader(open(InventoryFile, "rU")))), 'Room #'):
+    #     roomassetlist = ListAssetsInRoom(_rm)
+    #     for asset in Dupcheck(roomassetlist):
+    #         if asset in Dupcheck(GetSingleList(CleanBlankRows(list(csv.reader(open(ScannedFile, "rU")))), 'Asset')):
+    #             roomassetlist.remove(asset)
+     
+def ListAssetsInRoom(_rm):                              # Used to List all asste listed as in a selected room.
+    # global InventoryFile
+    assetlist = []
+    for row in Dupcheck(CleanBlankRows(list(csv.reader(open(InventoryFile, "rU"))))):
+        if _rm.upper() == row[_INV_ROW['Room #']].upper():
+            assetlist.append(row[_INV_ROW['Asset']])
+    return(assetlist)
+
+def CheckScan(_scan, _rm):                              # Used to Check the asset tag that has been entered agesnt the inventory file.
+    if _rm.upper() == 'ALL':
+        for row in CleanBlankRows(list(csv.reader(open(InventoryFile, "rU")))):
+            if row[_INV_ROW['Asset']] == _scan:
+                AssetDisply(row, '_GREEN')
+                writefile(ScannedFile, [row[_INV_ROW['Asset']]])
+    else:
+        for row in CleanBlankRows(list(csv.reader(open(InventoryFile, "rU")))):
+            if row[_INV_ROW['Asset']] == _scan:
+                if _rm.upper() == row[_INV_ROW['Room #']].upper():
+                    AssetDisply(row, '_GREEN')
+                    writefile(ScannedFile, [row[_INV_ROW['Asset']]])
+                else:
+                    AssetDisply(row, '_YELLOW')
+                    writefile(ScannedFile, [row[_INV_ROW['Asset']]])
+                    writefile((ScannedFile[:-11] + "NotFound.csv"), [_scan, _rm.upper()])
+
+def ScanMenu():                                         # The UI for the scan interface.
+    p_print(4, _TC['_HEADING'], "******ScanMenu()******")
     # VARIABLES
-    _ADD = 'ASK'                #Used to indicate Note taking
-    Scan = 0                    #VAR set for taking asset tags
-    InventoryAssetList = []
-    RoomNumber = 'ALL'
-    RoomsList = []             #List of Rooms
-    ScannedAssetList = []      #list of scanned asset tags
-    currentscan = []
-    ScannedList = []
-    InventoryList = []
-    _helpscreen = ''
     global ScannedFile
     global InventoryFile
+    scan = ''
+    roomnumber = 'ALL'
+    currentscanlist = []
+    print(InventoryFile)
+    input('')
+    inventoryassetlist = GetSingleList(CleanBlankRows(list(csv.reader(open(InventoryFile, "rU")))), 'Asset')
 
-    ClearScreen()
-    ScannedList = setup(ScannedList, ScannedFile)
-    InventoryList = setup(InventoryList, InventoryFile)
-
-    p_print(4, _TC['_YELLOW'], "******SCANNED LIST******")
-    p_print(4, _TC['_YELLOW'], str(ScannedList))
-    p_print(4, _TC['_YELLOW'], "******INVENTORY LIST******")
-    p_print(4, _TC['_YELLOW'], str(InventoryList)) 
-    
-    for row in ScannedList:                     
-        ScannedAssetList.append(row[_INV_ROW['Asset']])
-    for row in InventoryList:                     
-        InventoryAssetList.append(row[_INV_ROW['Asset']])
-      
-    
-    # p_print(1, _TC['_HEADING'], '{0:8}   :   {1:14}    :   {2:14}    :   {3:12}    :   {4:14}    :   {5:14}    :   {6:40}'.format('Asset Tag', 'Serial #', 'Name', 'Room #', 'Wire MAC', 'Wireless MAC', 'School # - Name'))
-    while Scan != 'x':          #Start of the entery process this is the loop that will take info and check in the inventory file.
+    #INTERFACE
+    while scan != 'x':
         ClearScreen()
         Logo('MAIN')
         Logo('SCAN')
         print('')
         p_print(2, _TC["_YELLOW"], Help('scan'))
-        if _helpscreen == 1:
+        
+        if str(scan).upper() == 'HELP':
             p_print(1, _TC['_YELLOW'], Help('scan'))
-            _helpscreen = 0
-
-# ADD/NOTADD/ASK---------------------------------------------------------------------- 
-        if _ADD == 'ADD':
-            p_print(1, _TC['_YELLOW'],'Taking notes ALWAYS')
-        elif _ADD == 'NOTADD':
-            p_print(1, _TC['_YELLOW'], 'Not taking Notes')
-        elif _ADD == 'ASK':
-            p_print(1, _TC['_YELLOW'], 'ASK each time to take notes')
-# --------------------------------------------------------------------------------------- 
-        
-               
-        
-
-        
-        p_print(1,_TC['_YELLOW'], '{0:>4}/{1:<0} - {2:}'.format(len(Dupcheck(ScannedAssetList)), len(Dupcheck(InventoryAssetList)), 'Devices Scanned'))
+        p_print(1,_TC['_YELLOW'], '{0:>4}/{1:<0} - {2:}'.format(len(Dupcheck(CleanBlankRows(list(csv.reader(open(ScannedFile, "rU")))))), len(Dupcheck(inventoryassetlist)), 'Devices Scanned'))
         p_print(1, _TC['_HEADING'], '{0:>10} : {1:16} : {2:17} : {3:12} : {4:19} : {5:19} : {6:25}'.format('Asset Tag', 'Serial #', 'Name', 'Room #', 'Wire MAC', 'Wireless MAC', 'School # - Name'))
+        p_print(3, _TC['_INFO'], currentscanlist) 
+        DisplayCurrentScan(currentscanlist, roomnumber)
         
-        p_print(3, _TC['_INFO'], currentscan) 
-
-        for asset in currentscan:
-                p_print(4, _TC['_YELLOW'], asset)
-                if asset in InventoryAssetList or asset.lstrip('0') in InventoryAssetList:
-                    if RoomNumber.upper() == 'ALL':
-                        AssetDisply(GetAssetInfo(InventoryList, asset), '_GREEN')
-                    else:
-                        if RoomNumber.upper() == GetAssetInfo(InventoryList, asset)[_INV_ROW["Room #"]].upper():
-                            AssetDisply(GetAssetInfo(InventoryList, asset), '_GREEN')
-                        else:
-                            AssetDisply(GetAssetInfo(InventoryList, asset), '_YELLOW')
-                else:
-                    AssetDisply([asset], '_RED')
-
-        Scan = raw_input('Scan - ' + RoomNumber.upper() +":")
-        
-        if Scan.upper() == 'ADD':                                  #add command used to turn on adding info if entery is not found.
-            _ADD = 'ADD'
-        elif Scan.upper() == 'NOTADD':                             #notadd commadn used to turn off adding info in entery in not found
-            _ADD = 'NOTADD'
-        elif Scan.upper() == 'ASK':                                #ask command used to set program to ask user each time a record is not found if info should be added.
-            _ADD = 'ASK'
-        
-        elif Scan.upper() == 'HELP':                               #help commadn used to show the help screen
-            _helpscreen = 1
-        
-        elif Scan.upper() == 'ROOM':
-# RoomNumberSelect--------------------------------------------------------------------        
-            RoomsList = GetRoomList(InventoryList)
-            p_print(3, _TC['_YELLOW'], str(RoomsList))
-            for r in RoomsList:
-                print(r)
-            p_print(1, _TC['_GREEN'], " enter 'all' to check all rooms")
-            RoomNumber = raw_input('Room:')
-# -----------------------------------------------------------------------        
-# ScanandCheckCore---------------------------------------------------------------------------------------        
-        elif Scan in InventoryAssetList or Scan.lstrip('0') in InventoryAssetList:        #compaire of entery and inventory Asset.
-            currentscan.append(Scan)
-            if RoomNumber.upper() == 'ALL':
-                for row in InventoryList:
-                    if row[_INV_ROW['Asset']] == Scan.lstrip('0') or row[_INV_ROW['Asset']] == Scan:
-                        AssetDisply(row, '_GREEN')
-                        writefile(ScannedFile, [row[_INV_ROW['Asset']]])
-            else:
-                for row in InventoryList:
-                    if row[_INV_ROW['Asset']] == Scan.lstrip('0') or row[_INV_ROW['Asset']] ==Scan:
-                        if RoomNumber.upper() == row[_INV_ROW['Room #']].upper():
-                            AssetDisply(row, '_GREEN')
-                            writefile(ScannedFile, [row[_INV_ROW['Asset']]])
-                        else:
-                            AssetDisply(row, '_YELLOW')
-                            writefile(ScannedFile, [row[_INV_ROW['Asset']]])
-                            writefile((ScannedFile[:-11] + "NotFound.csv"), [str(Scan), str(RoomNumber).upper()])
-                            p_print(1, _TC['_YELLOW'], 'Notes add to "NotFound" List.')
-
-        elif Scan.upper() == 'X' or Scan.upper() == 'EXIT':                            #x command used to exit scan and check
-            break
+        scan = input('Scan - ' + roomnumber.upper() +":")
+        if str(scan).upper() == 'ROOM':
+            roomnumber = RoomSelect()
+        elif str(scan).lstrip('0') == '':
+            pass
+        elif str(scan).lstrip('0') in inventoryassetlist:
+            currentscanlist.append(str(scan).lstrip('0'))
+            CheckScan(scan, roomnumber)
         else:
-            writefile(ScannedFile, [Scan])      #add to filename to destiguish different files.
-            currentscan.append(Scan)
-            if _ADD == 'NOTADD':
-                pass
-            else:
-                p_print(1, _TC['_RED'], '{0:} and {1:} Not Found'.format(Scan, Scan.lstrip('0')))
-                if _ADD == 'ADD':
-                    addinfo((ScannedFile[:-11] + "NotFound.csv"), str(Scan))
-            
-                elif _ADD == 'ASK':
-                    _verify = 0
-                    while _verify == 0:
-                        print('Do you want to add info (y or n)?')
-                        _ask = raw_input(':')
-                        if _ask.lower() == 'y':
-                            _verify = 1
-                            addinfo((ScannedFile[:-11] + "NotFound.csv"), str(Scan))
-                        if _ask.lower() == 'n':
-                            _verify = 1
-                            break
+            currentscanlist.append(str(scan).lstrip('0'))
+            writefile(ScannedFile, [str(scan).lstrip('0')])      #add to filename to destiguish different files.
+            p_print(1, _TC['_RED'], '{0:} Not Found'.format(str(scan).lstrip('0')))
 
-def ProgressPage():                                                        
-    p_print(4, _TC['_HEADING'], '******ProgressPage()******')
-#  --setup--------------------------------------------------------------------------
-    ScannedList = []
-    InventoryList = []
-    ScannedAssetList = []
-    InventoryAssetList = []
-    RoomsList = []
+def ProgressMenu():                                     # The UI for the Progress Interface.
+    p_print(4, _TC['_HEADING'], '******ProgressMenu()******')
+    # VARIABLES
+    # global ScannedFile
+    # global InventoryFile
+    ScannedAssetList = GetSingleList(CleanBlankRows(list(csv.reader(open(ScannedFile, "rU")))), 'Asset')
+    inventoryassetlist = GetSingleList(CleanBlankRows(list(csv.reader(open(InventoryFile, "rU")))), 'Asset')
+    MissingFile = (ScannedFile.split('-')[0] + '-NotScanned.csv')
+    RoomsList = GetSingleList(CleanBlankRows(list(csv.reader(open(InventoryFile, "rU")))), 'Room #')
     progressmenu = ''
-    _helpscreen = 0
-    global ScannedFile
-    global InventoryFile  
-    MissingFile = (MakeMissing(ScannedFile) + '-NotScanned.csv')
 
+    #INTERFACE
     ClearScreen()
-    ScannedList = setup(ScannedList, ScannedFile)
-    InventoryList = setup(InventoryList, InventoryFile)
+    # Logo('MAIN')
+    Logo('PROGRESS')
+    print('')
+    p_print(2, _TC['_YELLOW'], Help('progress'))
     
-    for row in ScannedList:                     
-        ScannedAssetList.append(row[_INV_ROW['Asset']])
-    for row in InventoryList:                     
-        InventoryAssetList.append(row[_INV_ROW['Asset']])
-    RoomsList = GetRoomList(InventoryList)
- 
+    while progressmenu.upper() != 'X':
+        if progressmenu:
+            DisplayProgress(progressmenu)
+
+        progressmenu = input('Progress:')
+
+def ProgressPage():                                    # OLD Progress Menu...                   
+    # p_print(4, _TC['_HEADING'], '******ProgressPage()******')
+    # ScannedList = []
+    # InventoryList = []
+    # ScannedAssetList = []
+    # InventoryAssetList = []
+    # RoomsList = []
+    # progressmenu = ''
+    # _helpscreen = 0
+    # global ScannedFile
+    # global InventoryFile  
+    # MissingFile = (GetProjectName(ScannedFile) + '-NotScanned.csv')
+
+
+    # ClearScreen()
+    # ScannedList = setup(ScannedList, ScannedFile)
+    # InventoryList = setup(InventoryList, InventoryFile)
+    
+    # for row in CleanBlankRows(list(csv.reader(open(ScannedFile, "rU")))):                     
+    #     ScannedAssetList.append(row[_INV_ROW['Asset']])
+    # for row in CleanBlankRows(list(csv.reader(open(InventoryFile, "rU")))):                     
+    #     InventoryAssetList.append(row[_INV_ROW['Asset']])
+
+    # RoomsList = GetRoomList(InventoryList)
     
     # totalpercent = (float(len(Dupcheck(ScannedAssetList)))/int(len(Dupcheck(InventoryList))))*100
     while progressmenu.lower() != 'x':
@@ -456,6 +457,7 @@ def ProgressPage():
         Logo('PROGRESS')
         print('')
         p_print(2, _TC['_YELLOW'], Help('progress'))
+        
         if progressmenu.lower() == 'all':
             for _room in sorted(RoomsList):
                 p_print(4, _TC['_YELLOW'], _room)
@@ -469,6 +471,7 @@ def ProgressPage():
  
         elif progressmenu.lower() == 'help':
             p_print(2, _TC['_YELLOW'], Help('progress'))
+        
         elif progressmenu.lower() == 'export':
             p_print(1, _TC['_INFO'], 'Exporting Records to file...')
             p_print(3, _TC['_INFO'], MissingFile)
@@ -498,21 +501,22 @@ def ProgressPage():
             p_print(1, _TC['_HEADING'], progressmenu.upper())
             p_print(1, _TC['_HEADING'], '{0:>10} : {1:15} : {2:17} : {3:12} : {4:19} : {5:19} : {6:40}'.format('Asset Tag', 'Serial #', 'Name', 'Room #', 'Wire MAC', 'Wireless MAC', 'School # - Name'))
             for asset in Dupcheck(RoomAssetList):
-                AssetDisply(GetAssetInfo(InventoryList, asset), '_YELLOW')
+                AssetDisply(GetAssetInfo(asset), '_YELLOW')
     
-        progressmenu = raw_input('Progress:')
+        progressmenu = input('Progress:')
         
-
-def Interface():
+def MainMenu():                                         # The UI for the Main Menu.
     ClearScreen()
+    p_print(4, _TC['_HEADING'], '******Interface()******')
     _interfacemenu = 'update' 
     while _interfacemenu != 'x':
         ClearScreen()
-        p_print(4, _TC['_HEADING'], '******Interface()******')
         if _interfacemenu.lower() == 'scan':
-            SCANandCHECK()
+            ScanMenu()
         elif _interfacemenu.lower() == 'progress':
-            ProgressPage()
+            ProgressMenu()
+        elif _interfacemenu.lower() == 'test':
+            ProgressMenu()
         elif _interfacemenu.lower() == 'update':
             setupFiles()
             _interfacemenu = ''
@@ -521,6 +525,6 @@ def Interface():
         p_print(2, _TC['_YELLOW'], Help('main'))
         if _interfacemenu.lower() == 'help':
             p_print(1, _TC['_YELLOW'], Help('main'))
-        _interfacemenu = raw_input('Pyventory:')
+        _interfacemenu = input('Pyventory:')
 
-Interface()
+MainMenu()
