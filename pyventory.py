@@ -64,8 +64,7 @@ class Directories:                                          # Directories
         "Username":           33,
         "UserType":           34,     # Student, Teacher, Admin, Etc
         "Rotation Year":      35,     # Year to be Rotated
-        "School Name":        36,     # School Name, Scan File Format
-        "School Desc":        42,     # School Name, Inventory Format  
+        "School Name":        42,     # School Name, Scan File Format 
         }
     _Schools = {                                            # Directory of all Locations and codes
         "Administration Bldg." : "99",
@@ -201,9 +200,7 @@ class Directories:                                          # Directories
         "Rotation Year":      24,     # Year to be Rotated
         "Rotation Eligible":  25,        # Yes/No, Eligible for Rotation
         "School Name":        26,     # School Name, Scan File Format
-        "School Desc":        27,     # School Name, Inventory Format
-        "Scan Year":          28,     # Scan Year example (19-20,20-21)
-    }
+        "Scan Year":          27,}     # Scan Year example (19-20,20-21)
       
 class Utilities:                                            #Utilities
     def Logo(self, _head):                                        # Used to call the logo and headings for the UI.
@@ -282,6 +279,7 @@ class Utilities:                                            #Utilities
             self.p_print(4, Directories._TC['_INFO'], row)
             if row[Directories._INV_ROW['Asset']] in Updated_pyventory_db:
                 Updated_pyventory_db[row[Directories._INV_ROW['Asset']]].append({
+                    "Asset": row[Directories._INV_ROW["Asset"]],
                     "Serial #": row[Directories._INV_ROW["Serial #"]],
                     "Class": row[Directories._INV_ROW["Class"]],       
                     "Device Type": row[Directories._INV_ROW["Device Type"]],    
@@ -308,11 +306,11 @@ class Utilities:                                            #Utilities
                     "Rotation Year": row[Directories._INV_ROW["Rotation Year"]],    
                     "Rotation Eligible": row[Directories._INV_ROW["Rotation Eligible"]],        
                     "School Name": row[Directories._INV_ROW["School Name"]],    
-                    "School Desc": row[Directories._INV_ROW["School Desc"]]
                     })
             else:
                 Updated_pyventory_db[row[Directories._INV_ROW['Asset']]] = []
                 Updated_pyventory_db[row[Directories._INV_ROW['Asset']]].append({
+                    "Asset": row[Directories._INV_ROW["Asset"]],
                     "Serial #": row[Directories._INV_ROW["Serial #"]],
                     "Class": row[Directories._INV_ROW["Class"]],       
                     "Device Type": row[Directories._INV_ROW["Device Type"]],    
@@ -339,7 +337,6 @@ class Utilities:                                            #Utilities
                     "Rotation Year": row[Directories._INV_ROW["Rotation Year"]],    
                     "Rotation Eligible": row[Directories._INV_ROW["Rotation Eligible"]],        
                     "School Name": row[Directories._INV_ROW["School Name"]],    
-                    "School Desc": row[Directories._INV_ROW["School Desc"]],
                     "Scan Year": [],
                     })
 
@@ -472,16 +469,16 @@ class Utilities:                                            #Utilities
         self.p_print(5, Directories._TC['_HEADING'], '******AssetDisplay({0:}, {1:})******'.format(_list, _color))
         if len(_list) > 2:
             self.p_print(1, Directories._TC[_color], '{0:>10} : {1:16} : {2:17} : {3:12} : {4:19} : {5:19} : {6:3} - {7:}'.format(
-                _list[Directories._PV_ROW['Asset']], 
-                _list[Directories._PV_ROW['Serial #']], 
-                _list[Directories._PV_ROW['Name']], 
-                _list[Directories._PV_ROW['Room #']], 
-                _list[Directories._PV_ROW['Wired Mac Addr']], 
-                _list[Directories._PV_ROW['Wireless Mac Addr']], 
-                _list[Directories._PV_ROW['School #']], 
-                _list[Directories._PV_ROW['School Desc']]))
-        else:
-            self.p_print(1, Directories._TC[_color], '{0:>10}  :'.format(_list[Directories._PV_ROW['Asset']]))
+                _list[0], 
+                _list[1], 
+                _list[2], 
+                _list[3], 
+                _list[4], 
+                _list[5], 
+                _list[6], 
+                _list[7]))
+        # else:
+        #     self.p_print(1, Directories._TC[_color], '{0:>10}  :'.format())
     def GetProjectName(_file):                              # Used to strip teh file name down to only the Project title.
         return(_file.split('-')[0])
     def addinfo(_filename, _scan):                          # Used to gather info about assets that are not found in list then stored for later entery.
@@ -521,18 +518,31 @@ class Utilities:                                            #Utilities
         p_print(1, Directories._TC['_GREEN'], " enter 'all' to check all rooms")
         return(input('Room:'))
     def DisplayCurrentScan(self, _cscanlist, _rm='ALL'):                # Used to display asste info from the curren scan list to the UI.
+        with open(pyventory_db) as db_file:
+            data = json.load(db_file)
         self.p_print(4, Directories._TC["_HEADING"], "******DisplayCurrentScan(_cscanlist(_list(see list _DEBUG = 5), {0:})******".format(_rm))
         self.p_print(5, Directories._TC["_HEADING"], "******DisplayCurrentScan({0:}, {1:})******".format(_cscanlist, _rm))
         for asset in _cscanlist:
+            data_list = []
             self.p_print(4, Directories._TC['_YELLOW'], asset)
-            if asset in self.GetSingleList(self.CSV2List(pyventory_db), 'Asset'):
+            if asset in data:
+                for i in data[asset]:
+                    data_list.append(i["Asset"])
+                    data_list.append(i["Serial #"])
+                    data_list.append(i["Name"])
+                    data_list.append(i["Room #"])
+                    data_list.append(i["Wired Mac Addr"])
+                    data_list.append(i["Wireless Mac Addr"])
+                    data_list.append(i["School #"])
+                    data_list.append(i["School Name"])
+                self.p_print(5, Directories._TC['_INFO'], data_list)    
                 if _rm.upper() == 'ALL':
-                    self.AssetDisply(self.GetAssetInfo(asset), '_GREEN')
-                else:
-                    if _rm.upper() == self.GetAssetInfo(asset)[Directories._INV_ROW["Room #"]].upper():
-                        self.AssetDisply(self.GetAssetInfo(asset), '_GREEN')
-                    else:
-                        self.AssetDisply(self.GetAssetInfo(asset), '_YELLOW')
+                    self.AssetDisply(data_list, '_GREEN')
+                # else:
+                #     if _rm.upper() == self.GetAssetInfo(asset)[Directories._INV_ROW["Room #"]].upper():
+                #         self.AssetDisply(self.GetAssetInfo(asset), '_GREEN')
+                #     else:
+                #         self.AssetDisply(self.GetAssetInfo(asset), '_YELLOW')
             else:
                 self.AssetDisply([asset], '_RED')
     def DisplayProgress(_rm):                               # USed to Display the percent complete in each room.
@@ -561,24 +571,23 @@ class Utilities:                                            #Utilities
         return(assetlist)
     def CheckScan(self, _scan, _rm='ALL'):                              # Used to Check the asset tag that has been entered agesnt the inventory file.
         global currentscanlist
-        if self.numberChecker(_scan) == False:
-            self.p_print(1, Directories._TC['_RED'], 'Invalid Entry')
-        else:
-            if _rm.upper() == 'ALL':
-                for row in self.CSV2List(pyventory_db):
-                    if row[Directories._PV_ROW['Asset']] == _scan:
-                        currentscanlist.append(_scan)
+        # if self.numberChecker(_scan) == False:
+        #     self.p_print(1, Directories._TC['_RED'], 'Invalid Entry')
+        # else:
+        if _rm.upper() == 'ALL':
+            if _scan in pyventory_db:
+                    currentscanlist.append(_scan)
+                    # writeFile(ScannedFile, [row[_INV_ROW['Asset']]])
+        # else:
+        #     for row in self.CSV2List(pyventory_db):
+        #         if row[Directories._PV_ROW['Asset']] == _scan:
+        #             if _rm.upper() == row[Directories._PV_ROW['Room #']].upper():
+        #                 currentscanlist.append(_scan)
+        #                 # writeFile(ScannedFile, [row[_INV_ROW['Asset']]])
+        #             else:
+        #                 currentscanlist.append(_scan)
                         # writeFile(ScannedFile, [row[_INV_ROW['Asset']]])
-            else:
-                for row in self.CSV2List(pyventory_db):
-                    if row[Directories._PV_ROW['Asset']] == _scan:
-                        if _rm.upper() == row[Directories._PV_ROW['Room #']].upper():
-                            currentscanlist.append(_scan)
-                            # writeFile(ScannedFile, [row[_INV_ROW['Asset']]])
-                        else:
-                            currentscanlist.append(_scan)
-                            # writeFile(ScannedFile, [row[_INV_ROW['Asset']]])
-                            # writeFile((ScannedFile[:-11] + "NotFound.csv"), [_scan, _rm.upper()])
+                        # writeFile((ScannedFile[:-11] + "NotFound.csv"), [_scan, _rm.upper()])
     def numberChecker(self, _scan):
         checklist = []
         for num in _scan:
@@ -776,7 +785,7 @@ class Interfacetemp:
             mainUtil.p_print(2, Directories._TC["_YELLOW"], mainUtil.Help(self._logo))
             
             if self.interfaceResponce.upper() == "SCAN":
-                pvDBAsset_list = mainUtil.GetSingleList(mainUtil.CSV2List(pyventory_db), 'Asset')
+                # pvDBAsset_list = mainUtil.GetSingleList(mainUtil.CSV2List(pyventory_db), 'Asset')
                 while self.interfaceResponce.upper() == "SCAN":
                     mainUtil.ClearScreen()
                     mainUtil.Logo(self._logo)
@@ -797,9 +806,10 @@ class Interfacetemp:
                     elif self.scanResponce.upper() == 'HELP':
                         mainUtil.p_print(1, Directories._TC["_YELLOW"], mainUtil.Help(self._logo))
                     elif mainUtil.numberChecker(self.scanResponce) == self.scanResponce:
-                        if self.scanResponce in mainUtil.GetSingleList(self.CSV2List(pyventory_db), 'Asset'):
+                        if self.scanResponce in pyventory_db:
                             mainUtil.CheckScan(self.scanResponce)
                         else:
+                            # append process
                             currentscanlist.append(self.scanResponce) 
                     else:
                         pass  
