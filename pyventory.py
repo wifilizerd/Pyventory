@@ -3,10 +3,10 @@
 #python 3.7
 #Pyventory - 0.6.4
 # import all needed libraries
-import sys, os, csv, json 
+import sys, os, csv, json, datetime 
 
 # Gobal Variables
-_DEBUG = 2          # 0 = no output, 1 =  Standered Output, 2 = Detail output, 3 = Basic Debug, 4 = pause Debug , 5 = everything,
+_DEBUG = 3          # 0 = no output, 1 =  Standered Output, 2 = Detail output, 3 = Basic Debug, 4 = pause Debug , 5 = everything,
 # InventoryFile = ""
 
 pyventory_db = ".pv_db.json"
@@ -267,46 +267,50 @@ class Utilities:                                            #Utilities
             return('Please Run Update before Continuing.')
     def pyventory_db_update(self, _filename):               # db update system 
         self.p_print(4, Directories._TC['_HEADING'], '******pyventory_db_update({})******'.format(_filename))
-        
+        with open(pyventory_db, 'r') as json_file:
+            data = json.load(json_file)
         Updated_pyventory_db = {}
                 
         updatefile_list = self.CSV2List(_filename)
         self.p_print(4, Directories._TC['_INFO'], updatefile_list)
         self.p_print(1, Directories._TC["_INFO"], "Updating Pyventory Database, Please Wait...")
         
-        
         for row in updatefile_list:
             self.p_print(4, Directories._TC['_INFO'], row)
-            if row[Directories._INV_ROW['Asset']] in Updated_pyventory_db:
-                Updated_pyventory_db[row[Directories._INV_ROW['Asset']]].append({
-                    "Asset": row[Directories._INV_ROW["Asset"]],
-                    "Serial #": row[Directories._INV_ROW["Serial #"]],
-                    "Class": row[Directories._INV_ROW["Class"]],       
-                    "Device Type": row[Directories._INV_ROW["Device Type"]],    
-                    "Make": row[Directories._INV_ROW["Make"]],
-                    "Model": row[Directories._INV_ROW["Model"]],
-                    "Cpu": row[Directories._INV_ROW["Cpu"]],
-                    "Product #": row[Directories._INV_ROW["Product #"]],
-                    "Ram": row[Directories._INV_ROW["Ram"]],
-                    "OS": row[Directories._INV_ROW["OS"]],
-                    "Hdd": row[Directories._INV_ROW["Hdd"]],
-                    "School #": row[Directories._INV_ROW["School #"]],
-                    "Room #": row[Directories._INV_ROW["Room #"]],
-                    "Username": row[Directories._INV_ROW["Username"]],
-                    "IP Addr": row[Directories._INV_ROW["IP Addr"]],
-                    "Name": row[Directories._INV_ROW["Name"]],        
-                    "Wired Mac Addr": row[Directories._INV_ROW["Wired Mac Addr"]],
-                    "Wireless Mac Addr": row[Directories._INV_ROW["Wireless Mac Addr"]],
-                    "Server Mac Addr": row[Directories._INV_ROW["Server Mac Addr"]],
-                    "InstallDate": row[Directories._INV_ROW["InstallDate"]],
-                    "Owner": row[Directories._INV_ROW["Owner"]],
-                    "UserType": row[Directories._INV_ROW["UserType"]],    
-                    "Status": row[Directories._INV_ROW["Status"]],      
-                    "Mfg Year": row[Directories._INV_ROW["Mfg Year"]],
-                    "Rotation Year": row[Directories._INV_ROW["Rotation Year"]],    
-                    "Rotation Eligible": row[Directories._INV_ROW["Rotation Eligible"]],        
-                    "School Name": row[Directories._INV_ROW["School Name"]],    
-                    })
+            if row[Directories._INV_ROW['Asset']] in data:
+                for i in data[row[Directories._INV_ROW['Asset']]]:
+                    datecode = i["Scan Year"]
+                    Updated_pyventory_db[row[Directories._INV_ROW['Asset']]] = []
+                    Updated_pyventory_db[row[Directories._INV_ROW['Asset']]].append({
+                        "Asset": row[Directories._INV_ROW["Asset"]],
+                        "Serial #": row[Directories._INV_ROW["Serial #"]],
+                        "Class": row[Directories._INV_ROW["Class"]],       
+                        "Device Type": row[Directories._INV_ROW["Device Type"]],    
+                        "Make": row[Directories._INV_ROW["Make"]],
+                        "Model": row[Directories._INV_ROW["Model"]],
+                        "Cpu": row[Directories._INV_ROW["Cpu"]],
+                        "Product #": row[Directories._INV_ROW["Product #"]],
+                        "Ram": row[Directories._INV_ROW["Ram"]],
+                        "OS": row[Directories._INV_ROW["OS"]],
+                        "Hdd": row[Directories._INV_ROW["Hdd"]],
+                        "School #": row[Directories._INV_ROW["School #"]],
+                        "Room #": row[Directories._INV_ROW["Room #"]],
+                        "Username": row[Directories._INV_ROW["Username"]],
+                        "IP Addr": row[Directories._INV_ROW["IP Addr"]],
+                        "Name": row[Directories._INV_ROW["Name"]],        
+                        "Wired Mac Addr": row[Directories._INV_ROW["Wired Mac Addr"]],
+                        "Wireless Mac Addr": row[Directories._INV_ROW["Wireless Mac Addr"]],
+                        "Server Mac Addr": row[Directories._INV_ROW["Server Mac Addr"]],
+                        "InstallDate": row[Directories._INV_ROW["InstallDate"]],
+                        "Owner": row[Directories._INV_ROW["Owner"]],
+                        "UserType": row[Directories._INV_ROW["UserType"]],    
+                        "Status": row[Directories._INV_ROW["Status"]],      
+                        "Mfg Year": row[Directories._INV_ROW["Mfg Year"]],
+                        "Rotation Year": row[Directories._INV_ROW["Rotation Year"]],    
+                        "Rotation Eligible": row[Directories._INV_ROW["Rotation Eligible"]],        
+                        "School Name": row[Directories._INV_ROW["School Name"]],
+                        "Scan Year": datecode,
+                        })
             else:
                 Updated_pyventory_db[row[Directories._INV_ROW['Asset']]] = []
                 Updated_pyventory_db[row[Directories._INV_ROW['Asset']]].append({
@@ -331,7 +335,7 @@ class Utilities:                                            #Utilities
                     "Server Mac Addr": row[Directories._INV_ROW["Server Mac Addr"]],
                     "InstallDate": row[Directories._INV_ROW["InstallDate"]],
                     "Owner": row[Directories._INV_ROW["Owner"]],
-                    "UserType": row[Directories._INV_ROW["UserType"]],    
+                    "UserType":  row[Directories._INV_ROW["UserType"]],    
                     "Status": row[Directories._INV_ROW["Status"]],      
                     "Mfg Year": row[Directories._INV_ROW["Mfg Year"]],
                     "Rotation Year": row[Directories._INV_ROW["Rotation Year"]],    
@@ -341,7 +345,7 @@ class Utilities:                                            #Utilities
                     })
 
         with open(pyventory_db, 'w') as outfile:
-            json.dump(Updated_pyventory_db, outfile)
+            json.dump(Updated_pyventory_db, outfile, sort_keys=True, indent=4)
             
 
         # for urow in updated_pyventory_db_list:
@@ -571,13 +575,15 @@ class Utilities:                                            #Utilities
         return(assetlist)
     def CheckScan(self, _scan, _rm='ALL'):                              # Used to Check the asset tag that has been entered agesnt the inventory file.
         global currentscanlist
-        # if self.numberChecker(_scan) == False:
-        #     self.p_print(1, Directories._TC['_RED'], 'Invalid Entry')
-        # else:
         if _rm.upper() == 'ALL':
-            if _scan in pyventory_db:
-                    currentscanlist.append(_scan)
-                    # writeFile(ScannedFile, [row[_INV_ROW['Asset']]])
+            with open(pyventory_db) as pv_data:
+                data = json.load(pv_data)
+            if _scan in data:
+                currentscanlist.append(_scan)
+                for i in data[_scan]:
+                    i["Scan Year"].append("18-19")
+            else:
+                pass
         # else:
         #     for row in self.CSV2List(pyventory_db):
         #         if row[Directories._PV_ROW['Asset']] == _scan:
@@ -600,6 +606,13 @@ class Utilities:                                            #Utilities
             return(False) 
         else:
             return(_scan)
+    def ScanYearGen(self):
+        now = datetime.datetime.now()
+        tyear = now.year
+        tmonth = now.month
+
+        return("{0:}-{1:}".format(str(tyear)[2:], str(tyear+1)[2:]) if tmonth > 6 else "{0:}-{1:}".format(str(tyear-1)[2:], str(tyear)[2:]))
+    
 
 class Interface:                                            #Interface
     def ScanMenu():                                         # The UI for the scan interface.
@@ -806,11 +819,7 @@ class Interfacetemp:
                     elif self.scanResponce.upper() == 'HELP':
                         mainUtil.p_print(1, Directories._TC["_YELLOW"], mainUtil.Help(self._logo))
                     elif mainUtil.numberChecker(self.scanResponce) == self.scanResponce:
-                        if self.scanResponce in pyventory_db:
-                            mainUtil.CheckScan(self.scanResponce)
-                        else:
-                            # append process
-                            currentscanlist.append(self.scanResponce) 
+                        mainUtil.CheckScan(self.scanResponce)
                     else:
                         pass  
 
