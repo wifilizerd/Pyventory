@@ -1,21 +1,22 @@
 #!/Python27/pythonw.exe
 #1/bin/python
 #python 3.7
-#Pyventory - 0.6.4
+#Pyventory - 0.6.4.1
 # import all needed libraries
 import sys, os, csv, json, datetime 
 
 # Gobal Variables
-_DEBUG = 3          # 0 = no output, 1 =  Standered Output, 2 = Detail output, 3 = Basic Debug, 4 = pause Debug , 5 = everything,
+_DEBUG = 2          # 0 = no output, 1 =  Standered Output, 2 = Detail output, 3 = Basic Debug, 4 = pause Debug , 5 = everything,
 # InventoryFile = ""
 
 pyventory_db = ".pv_db.json"
+autoSave_file = "~autosave.csv"
 # ScannedFile =  ""
 currentscanlist = []
 
-class Directories:                                          # Directories
-    _TC = {                                                 # COLOR List
-        # http://ozzmaker.com/add-colour-to-text-in-python/
+class Directories:          # Directories
+    # http://ozzmaker.com/add-colour-to-text-in-python/
+    _TC = {                     # TEXT COLOR
                                             # TExT STYLE/TEXT COLOR/BG COLOR
         "_HEADING": "\033[4;37;40m",        # Underline/White/Black
         "_WARNING": "\033[0;30;43m",        # Bold/Black/Yellow
@@ -27,16 +28,16 @@ class Directories:                                          # Directories
         "_RESET":   "\033[0;37;40m",        # No Effect/White/Black
         "_TEST":    "\033[1;31;40m"         # Testing
         }
-    _INV_ROW = {                                            # CSV Inventory Column Numbers
-        "Asset":              0,
-        "Make":               1,
-        "Class":              2,        # Inventory, Infrastructure, Printers
-        "Name":               3,        # Device Name
-        "Cpu":                4,
-        "Modified by":        5,
-        "Modified Date":      6,
-        "Rotation Eligible":  7,        # Yes/No, Eligible for Rotation
-        "Status":             8,        # Active, Condemned, Surplus
+    _INV_ROW = {                # CSV Inventory Column Numbers
+        "Asset":              0,            # Asset Tag Number
+        "Make":               1,            # Device Make (Apple, HP, Samsung)
+        "Class":              2,            # Inventory, Infrastructure, Printers
+        "Name":               3,            # Device Name
+        "Cpu":                4,            # CPU
+        "Modified by":        5,            # Last Modified Username
+        "Modified Date":      6,            # Last Modified Date
+        "Rotation Eligible":  7,            # Yes/No, Eligible for Rotation
+        "Status":             8,            # Active, Condemned, Surplus
         "Wired Mac Addr":     9,
         "Wireless Mac Addr":  10,
         "Server Mac Addr":    11,
@@ -66,7 +67,7 @@ class Directories:                                          # Directories
         "Rotation Year":      35,     # Year to be Rotated
         "School Name":        42,     # School Name, Scan File Format 
         }
-    _Schools = {                                            # Directory of all Locations and codes
+    _Schools = {                # Directory of all Locations and codes (05/2019)
         "Administration Bldg." : "99",
         "Alpine Elementary School" : "103",
         "American Fork High School" : "704",
@@ -172,54 +173,24 @@ class Directories:                                          # Directories
         "Willowcreek Middle School" : "496",
         "Windsor Elementary School" : "286"   
         }
-    _PV_ROW = {
-        "Asset":              0,
-        "Serial #":           1,
-        "Class":              2,        # Inventory, Infrastructure, Printers
-        "Device Type":        3,     # Laptop, Chromebook, etc
-        "Make":               4,
-        "Model":              5,
-        "Cpu":                6,
-        "Product #":          7,
-        "Ram":                8,
-        "OS":                 9,
-        "Hdd":                10,
-        "School #":           11,
-        "Room #":             12,
-        "Username":           13,
-        "IP Addr":            14,
-        "Name":               15,        # Device Name
-        "Wired Mac Addr":     16,
-        "Wireless Mac Addr":  17,
-        "Server Mac Addr":    18,
-        "InstallDate":        19,
-        "Owner":              20,
-        "UserType":           21,     # Student, Teacher, Admin, Etc
-        "Status":             22,        # Active, Condemned, Surplus
-        "Mfg Year":           23,
-        "Rotation Year":      24,     # Year to be Rotated
-        "Rotation Eligible":  25,        # Yes/No, Eligible for Rotation
-        "School Name":        26,     # School Name, Scan File Format
-        "Scan Year":          27,}     # Scan Year example (19-20,20-21)
-      
-class Utilities:                                            #Utilities
-    def Logo(self, _head):                                        # Used to call the logo and headings for the UI.
-        if _head.upper() == 'MAIN':
+class Utilities:            # Utilities
+    def Logo(self, _head):      # Used to call the logo and headings for the UI.
+        if _head.upper() == 'MAIN':         # PYVENTORY
             self.p_print(1, Directories._TC['_GREEN'], 
                 " _______________.___.____   _______________ __________________________ _______________.___.       \n"
                 " \______   \__  |   |\   \ /   /\_   _____/ \      \__    ___/\_____  \\\______   \__  |   |       \n"
                 "  |     ___//   |   | \   Y   /  |    __)_  /   |   \|    |    /   |   \|       _//   |   |       \n"
                 "  |    |    \____   |  \     /   |        \/    |    \    |   /    |    \    |   \\\____   |       \n"
-                "  |____|    / ______|   \___/   /_______  /\____|__  /____|   \_______  /____|_  // ______| v0.6.4 \n"
+                "  |____|    / ______|   \___/   /_______  /\____|__  /____|   \_______  /____|_  // ______| v0.6.4.1 \n"
                 "            \/                          \/         \/                 \/       \/ \/              ")
-        elif _head.upper() == 'SCAN':       
+        elif _head.upper() == 'SCAN':       # SCAN AND CHECK       
             self.p_print(1, Directories._TC["_GREEN"], 
                 # http://patorjk.com/software/taag/#p=display&f=Small&t=SCAN%20and%20CHECK 'SMALL' font
                 ' ___  ___   _   _  _                _    ___ _  _ ___ ___ _  __ \n'
                 '/ __|/ __| /_\ | \| |  __ _ _ _  __| |  / __| || | __/ __| |/ / \n'
                 '\__ | (__ / _ \| .` | / _` |   \/ _` | | (__| __ | _| (__| | <  \n'
                 '|___/\___/_/ \_|_|\_| \__,_|_||_\__,_|  \___|_||_|___\___|_|\_\ \n')
-        elif _head.upper() == 'PROGRESS':     
+        elif _head.upper() == 'PROGRESS':   # PROGRESS     
             self.p_print(1, Directories._TC["_GREEN"], 
                 # http://patorjk.com/software/taag/#p=display&f=Small&t=SCAN%20and%20SHOW 'SMALL' font
                 " ___                             \n"
@@ -227,8 +198,8 @@ class Utilities:                                            #Utilities
                 "|  _/ '_/ _ \/ _` | '_/ -_|_-<_-<\n"
                 "|_| |_| \___/\__, |_| \___/__/__/\n"   
                 "             |___/               ")
-    def Help(self, _help):                                        # Used to call the Help info.
-        if _help.upper() == 'MAIN':                                     # Pyventory Main Menu Help
+    def Help(self, _help):      # Used to call the Help info.
+        if _help.upper() == 'MAIN':         # Pyventory Main Menu Help
             return(
                 "Pyventory Help. \n"
                 "scan       open scan and check function.\n"
@@ -237,7 +208,7 @@ class Utilities:                                            #Utilities
                 "help       open additional info.\n"
                 "x          quit\n"
             )
-        elif _help.upper() == 'SCAN':                                   # ScanandCheck Help Menu
+        elif _help.upper() == 'SCAN':       # Scan and Check Help Menu
             return(
                 "ScanandCheck Help. \n"
                 "add        enable taking notes if the recorde is not found in inventory file.\n"
@@ -246,42 +217,45 @@ class Utilities:                                            #Utilities
                 "room       set room number to check.\n"
                 "x          quit\n"
             )   
-        elif _help.upper() == 'PROGRESS':                               # ProgressPage Help Menu
+        elif _help.upper() == 'PROGRESS':   # Progress Page Help Menu
             return(
                 "all        Show all Room and there current Progress.\n"
                 "(room #)   Show All not scanned devices in the room.\n"
                 "export     Saves all Not Scanned Asset info to a file. \n"
                 "x          quit\n"
             )
-        elif _help.upper() == "UPDATE":
+        elif _help.upper() == "UPDATE":     # in place for the current interface setup, used for allowing the menu to run update.
             return(
                 "Updateing Pyventory Database......."
             )
         else:
             return('null')
     
-    def pyventory_db_check(self):
+    def pyventory_db_check(self):               # Used to check if the pyventory_db has been created then prompts user to updated if no database file is found.
+        self.p_print(4, Directories._TC['_HEADING'], '******pyventory_db_chec()******')
         if os.path.exists(pyventory_db):
             return('DB is good')
         else:
             return('Please Run Update before Continuing.')
-    def pyventory_db_update(self, _filename):               # db update system 
+    def pyventory_db_update(self, _filename):   # databnase update modual
         self.p_print(4, Directories._TC['_HEADING'], '******pyventory_db_update({})******'.format(_filename))
-        with open(pyventory_db, 'r') as json_file:
-            data = json.load(json_file)
+        if os._exists(pyventory_db):                # Check if file exists
+            data = self.jsonOpenSave('OPEN', '')
+        else:
+            data = {}
         Updated_pyventory_db = {}
                 
-        updatefile_list = self.CSV2List(_filename)
+        updatefile_list = self.CSV2List(_filename)          # takes a .CSV file from inventory database and turn it to a list for proccessing.
         self.p_print(4, Directories._TC['_INFO'], updatefile_list)
         self.p_print(1, Directories._TC["_INFO"], "Updating Pyventory Database, Please Wait...")
         
         for row in updatefile_list:
             self.p_print(4, Directories._TC['_INFO'], row)
-            if row[Directories._INV_ROW['Asset']] in data:
+            if row[Directories._INV_ROW['Asset']] in data:      # check if asset tage is in Database.
                 for i in data[row[Directories._INV_ROW['Asset']]]:
-                    datecode = i["Scan Year"]
-                    Updated_pyventory_db[row[Directories._INV_ROW['Asset']]] = []
-                    Updated_pyventory_db[row[Directories._INV_ROW['Asset']]].append({
+                    datecode = i["Scan Year"]           # pulled from existing data to be added to new database.
+                    Updated_pyventory_db[row[Directories._INV_ROW['Asset']]] = []   # create new record in json file
+                    Updated_pyventory_db[row[Directories._INV_ROW['Asset']]].append({   # add data to record
                         "Asset": row[Directories._INV_ROW["Asset"]],
                         "Serial #": row[Directories._INV_ROW["Serial #"]],
                         "Class": row[Directories._INV_ROW["Class"]],       
@@ -343,26 +317,16 @@ class Utilities:                                            #Utilities
                     "School Name": row[Directories._INV_ROW["School Name"]],    
                     "Scan Year": [],
                     })
-
-        with open(pyventory_db, 'w') as outfile:
-            json.dump(Updated_pyventory_db, outfile, sort_keys=True, indent=4)
-            
-
-        # for urow in updated_pyventory_db_list:
-        #     self.p_print(3, Directories._TC['_INFO'], urow)
-        #     self.writeFile('temppv.csv', urow)
-        # os.remove(pyventory_db)
-        # os.rename('temppv.csv', pyventory_db)        
-                                     
-    def FileBrowser(self, _extention, _new):                      # Used to Display and  select what file to load and create new files if needed.
+        self.jsonOpenSave('SAVE', Updated_pyventory_db)                            
+    def FileBrowser(self, _extention, _new):    # Used to Display and  select what file to load. basic text interface file browser
         self.p_print(4, Directories._TC['_HEADING'], '******FileBrowser({0:}, {1:})******'.format(_extention, _new))
-        _filelist = os.listdir(".")                                     # list directory to a list
+        _filelist = os.listdir(".") # list directory to a list
         count = 0
         files = []
         for filename in _filelist:
-            if filename.endswith(_extention):                                #if file ends with specified extention.
-                files.append(filename)                                      #add file to list (_files)
-                print('     {0:} - {1:}'.format(count, filename))
+            if filename.endswith(_extention):   # if file ends with specified extention.
+                files.append(filename)          # then add file to list (_files)
+                print('     {0:} - {1:}'.format(count, filename))   # print out list of file names to select from
                 count += 1
         _filechoose = ''
         while len(str(_filechoose)) < 1:
@@ -391,53 +355,51 @@ class Utilities:                                            #Utilities
                         break
             except ValueError:
                 self.p_print(1, Directories._TC['_ERROR'], 'ERROR: Please Enter Project Name or Number')
-        
-    def writeFile(self, _filename, _info):                        # Used to Write information to Files.
-        self.p_print(4, Directories._TC['_HEADING'], '******writeFile({0:}, {1:})******'.format(_filename, _info))
-        _openfile = open(_filename, "a")                              #'ab'will create file also 'wb' will overwrite everytime the file is opened
-        _openfilewriter = _openfile.write(_openfile)                        
-        _openfile.close()
+    def CSVwriter(self, _filename, _info):      # Writes(appends) data to CSV files one line at a time.
+        with open(_filename, 'a') as _file:
+            _writer = csv.writer(_file)
+            _writer.writerow([_info]) 
     def CSV2List(self, _filename, _column=Directories._INV_ROW['Asset']):    # Used to read data from a CSV file and add it to a list if the _column has data.
         self.p_print(4, Directories._TC['_HEADING'], '******CSV2List({0:}, {1:})******'.format(_filename, _column))
-        _filelist = []                                                  #set blank list to recive data
+        _filelist = []  # set blank list to recive data
         for row in csv.reader(open(_filename, newline='')):
-            if row:                                                     #check if there is data on tha row.
-                if row[int(_column)] == '':                                  #check if there is data in the field
+            if row: # check if there is data on tha row.
+                if row[int(_column)] == '': # check if there is data in the field
                     pass
                 else:
-                    _filelist.append(row)                               #append data to list in UPPER case
+                    _filelist.append(row)   # append data to list in UPPER case
         self.p_print(4, Directories._TC['_INFO'], _filelist)
         return(_filelist)
-    def CleanBlankRows(self,_list):                              # Used to Clean Blank Rows from lists.
+    def CleanBlankRows(self,_list):             # Used to remove Blank Rows from lists.
         self.p_print(4, Directories._TC['_HEADING'], '******CleanBlankRows(_list(see list _DEBUG = 5))******')
         self.p_print(5, Directories._TC['_HEADING'], '******CleanBlankRows({0:})******'.format(_list))
-        _cleanlist = []                                                  #set blank list to recive data
+        _cleanlist = [] # set blank list to recive data
         for row in _list:
-            if row:                                                     #check if there is data on tha row.
-                _cleanlist.append(row)                               #append data to list in UPPER case
+            if row: # check if there is data on tha row.
+                _cleanlist.append(row)  # append data to list in UPPER case
         return(_cleanlist)
-    def Dupcheck(self, _list):                                    # Used to checks for duplicates data in a list.
-        p_print(4, Directories._TC['_HEADING'], '******Dupcheck(_list(see list _DEBUG = 5))******')
-        p_print(5, Directories._TC['_HEADING'], '******Dupcheck({0:})******'.format(_list))
+    def Dupcheck(self, _list):                  # Used to checks for duplicates data in a list.
+        self.p_print(4, Directories._TC['_HEADING'], '******Dupcheck(_list(see list _DEBUG = 5))******')
+        self.p_print(5, Directories._TC['_HEADING'], '******Dupcheck({0:})******'.format(_list))
         _nodup = []
         for row in _list:
-            if row not in _nodup:
+            if row not in _nodup:   # checking if data already exits in new list
                 _nodup.append(row)
             else:
                 pass
-        return(_nodup)
-    def p_print(self, _debug, _color, _string):                   # Used as a specialized Print Command.
-        # No Print command to Endless loop.
+        return(_nodup)  # retunr new list
+    def p_print(self, _debug, _color, _string): # Used as a specialized Print Command.
+        # No Print Heading because of Endless loop.
         if _debug <= _DEBUG:
             print(_color + str(_string) + Directories._TC["_RESET"])
             if _debug >= 4:
                 input('Waiting...')   
-    def ClearScreen(self):                                      # Used to Clear the Screen fo rthe UI, based on the OS being used.
-        if sys.platform == 'win32':
+    def ClearScreen(self):                      # Used to Clear the Screen fo rthe UI, based on the OS being used.
+        if sys.platform == 'win32': # Windows
             os.system('cls')
-        elif sys.platform == 'darwin':
+        elif sys.platform == 'darwin':  # macOS
             os.system('clear')
-    def GetSingleList(self, _list, _column):                   # USed to take a list of lists and pull one column of info into one list.
+    def GetSingleList(self, _list, _column):    # Used to get one column of data from a csv List.
         self.p_print(4, Directories._TC['_HEADING'], '******GetSingleList(_INVlist(see list _DEBUG = 5), {0:})******'.format(_column))
         self.p_print(5, Directories._TC['_HEADING'], '******GetSingleList({0:}, {1:})******'.format(_list, _column))
         _Slist = []
@@ -447,28 +409,7 @@ class Utilities:                                            #Utilities
                     _Slist.append(_row[int(Directories._INV_ROW[_column])].upper().lstrip())
         self.p_print(4, Directories._TC['_YELLOW'], _Slist)        
         return(_Slist)
-    def GetAssetInfo(self, _asset):                               # Used to take an asset number and look up the row of info from the INVentory File.
-        self.p_print(4, Directories._TC['_HEADING'], '******GetAssetInfo({0:})******'.format(_asset))
-        # INVcleanlist = self.CSV2List(pyventory_db)
-        for row in self.CSV2List(pyventory_db):
-            self.p_print(4, Directories._TC['_YELLOW'], row)
-            # item = row[Directories._PV_ROW['Asset']]
-            if _asset.lstrip('0') == row[Directories._PV_ROW['Asset']].lstrip('0'):
-                return(row)   
-    def CountAssetsInRoom(self, _file, _rm):                      # Used to Count the Number of assets that are listed in a room.
-        self.p_print(4, Directories._TC['_HEADING'], '******CountAssetsInRoom({0:},{1:})******'.format(_file, _rm))
-        INVassetList = self.GetSingleList(self.CleanBlankRows(list(csv.reader(open(pyventory_db, "rU")))), 'Asset')
-        FileList = self.Dupcheck(self.CleanBlankRows(list(csv.reader(open(_file, "rU")))))
-        count = 0
-        for row in FileList:
-            self.p_print(4, Directories._TC['_YELLOW'], row)
-            self.p_print(4, Directories._TC['_YELLOW'], self.GetAssetInfo(row[Directories._INV_ROW['Asset']]))
-            if row[Directories._INV_ROW['Asset']] in INVassetList:
-                if _rm.upper() == self.GetAssetInfo(row[Directories._INV_ROW['Asset']])[Directories._INV_ROW['Room #']]:
-                    self.p_print(4, Directories._TC['_YELLOW'], self.GetAssetInfo(row[Directories._INV_ROW['Asset']]))
-                    count += 1    
-        return(count)
-    def AssetDisply(self, _list, _color):                         # Used to Print Asset info to UI
+    def AssetDisply(self, _list, _color):       # Used to Print Asset info to UI
         self.p_print(4, Directories._TC['_HEADING'], '******AssetDisplay(_list(_list(see list _DEBUG = 5), {:})******'.format(_color))
         self.p_print(5, Directories._TC['_HEADING'], '******AssetDisplay({0:}, {1:})******'.format(_list, _color))
         if len(_list) > 2:
@@ -481,54 +422,13 @@ class Utilities:                                            #Utilities
                 _list[5], 
                 _list[6], 
                 _list[7]))
-        # else:
-        #     self.p_print(1, Directories._TC[_color], '{0:>10}  :'.format())
-    def GetProjectName(_file):                              # Used to strip teh file name down to only the Project title.
-        return(_file.split('-')[0])
-    def addinfo(_filename, _scan):                          # Used to gather info about assets that are not found in list then stored for later entery.
-        p_print(4, Directories._TC['_HEADING'], '******addinfo({0:}, {1:})******'.format(_filename, _scan))
-        print('add information for asset tage ' + _scan)
-        _scan = _scan
-        _asset = input('Asset tage:')
-        _serial = input('serial #:')
-        _type = input('device type: ')
-        _make = input('make: ')
-        _model = input('model: ')
-        _cpu = input('cpu: ')
-        _ram = input('ram: ')
-        _hdd = input('hard drive:')
-        _os = input('OS: ')
-        _school = input('school #: ')
-        _room = input('room: ')
-        _user = input('user: ')
-        _compname = input('computer name: ')
-        _mac = input('wired MAC: ')
-        _wmac =input('wireless MAC: ')
-        _installdate = input('install date: ')
-        _owner = input('owner: ')
-        _usertype = input('user type: ')
-        _status = input('status: ')
-        _year = input('mtg. year: ')
-        _yearrotate = input('year to be rotated: ')
-        _rotate = input('eligible for rotation: ')
-        _notes = input('Notes: ')
-        print("\033[1;37m")
-        writeFile((_filename), (_asset, str(_scan), _serial, _type, _make, _model, _cpu, _ram, _hdd, _os, _school, _room, _user, _compname, _mac, _wmac, _installdate, _owner, _usertype, _status, _year, _yearrotate, _rotate, _notes))
-    def RoomSelect():                                       # Used to select a room to check with.
-        p_print(4, Directories._TC["_HEADING"], "******RoomSelect()******")   
-        p_print(3, Directories._TC['_YELLOW'], GetSingleList(CleanBlankRows(list(csv.reader(open(InventoryFile, "rU")))), 'Room #'))
-        for r in GetSingleList(CleanBlankRows(list(csv.reader(open(InventoryFile, "rU")))), 'Room #'):
-            print(r)
-        p_print(1, Directories._TC['_GREEN'], " enter 'all' to check all rooms")
-        return(input('Room:'))
-    def DisplayCurrentScan(self, _cscanlist, _rm='ALL'):                # Used to display asste info from the curren scan list to the UI.
-        with open(pyventory_db) as db_file:
-            data = json.load(db_file)
+    def DisplayCurrentScan(self, _cscanlist, _rm='ALL'):    # Used to display asset info from the current scan list to the UI.
         self.p_print(4, Directories._TC["_HEADING"], "******DisplayCurrentScan(_cscanlist(_list(see list _DEBUG = 5), {0:})******".format(_rm))
         self.p_print(5, Directories._TC["_HEADING"], "******DisplayCurrentScan({0:}, {1:})******".format(_cscanlist, _rm))
+        data = self.jsonOpenSave('OPEN', '')
         for asset in _cscanlist:
             data_list = []
-            self.p_print(4, Directories._TC['_YELLOW'], asset)
+            self.p_print(4, Directories._TC['_INFO'], asset)
             if asset in data:
                 for i in data[asset]:
                     data_list.append(i["Asset"])
@@ -540,61 +440,25 @@ class Utilities:                                            #Utilities
                     data_list.append(i["School #"])
                     data_list.append(i["School Name"])
                 self.p_print(5, Directories._TC['_INFO'], data_list)    
-                if _rm.upper() == 'ALL':
+                if i["Serial #"]:   # control point, based on serial # 
                     self.AssetDisply(data_list, '_GREEN')
-                # else:
-                #     if _rm.upper() == self.GetAssetInfo(asset)[Directories._INV_ROW["Room #"]].upper():
-                #         self.AssetDisply(self.GetAssetInfo(asset), '_GREEN')
-                #     else:
-                #         self.AssetDisply(self.GetAssetInfo(asset), '_YELLOW')
-            else:
-                self.AssetDisply([asset], '_RED')
-    def DisplayProgress(_rm):                               # USed to Display the percent complete in each room.
-        p_print(4, Directories._TC['_HEADING'], '******DisplayProgress({0:})******'.format(_rm))
-        RoomList = GetSingleList(CleanBlankRows(list(csv.reader(open(InventoryFile, "rU")))), 'Room #')
-        if _rm.upper() == 'ALL':
-            # for room in sorted(GetSingleList(CleanBlankRows(list(csv.reader(open(InventoryFile, "rU")))), 'Room #')):
-            for room in sorted(RoomList):
-                scannedinroom = CountAssetsInRoom(ScannedFile, room)
-                INVinroom = CountAssetsInRoom(InventoryFile, room)
-                roompercent = (float(scannedinroom/int(INVinroom))*100)
-                _c = "_YELLOW"
-                if roompercent <= 25.0:
-                    _c = "_RED"
-                elif roompercent == 100.0:
-                    _c = "_GREEN"
-                p_print(1, Directories._TC[_c], '{0:18} - {1:>3}/{2:<3} {3:>3.0f}%'.format(room, scannedinroom, INVinroom, roompercent))
-        elif _rm.upper in RoomList:
-            pass
-    def ListAssetsInRoom(_rm):                              # Used to List all asste listed as in a selected room.
-        p_print(4, Directories._TC["_HEADING"], "******ListAssetsInRoom({0:})******".format(_rm))
-        assetlist = []
-        for row in Dupcheck(CleanBlankRows(list(csv.reader(open(InventoryFile, "rU"))))):
-            if _rm.upper() == row[_INV_ROW['Room #']].upper():
-                assetlist.append(row[_INV_ROW['Asset']])
-        return(assetlist)
-    def CheckScan(self, _scan, _rm='ALL'):                              # Used to Check the asset tag that has been entered agesnt the inventory file.
+                else:
+                    self.AssetDisply(data_list, '_RED')
+    def CheckScan(self, _scan, _rm='ALL'):      # Used to Check the asset tag that has been entered agesnt the inventory database.
+        self.p_print(4, Directories._TC['_HEADING'], '******CheckScan({0:},{1:})******'.format(_scan, _rm))
         global currentscanlist
-        if _rm.upper() == 'ALL':
+        if _rm.upper() == 'ALL':    #used when room was specified.
             with open(pyventory_db) as pv_data:
-                data = json.load(pv_data)
+                data = json.load(pv_data)    
             if _scan in data:
                 currentscanlist.append(_scan)
-                for i in data[_scan]:
-                    i["Scan Year"].append("18-19")
+                self.autoSave(_scan)
             else:
-                pass
-        # else:
-        #     for row in self.CSV2List(pyventory_db):
-        #         if row[Directories._PV_ROW['Asset']] == _scan:
-        #             if _rm.upper() == row[Directories._PV_ROW['Room #']].upper():
-        #                 currentscanlist.append(_scan)
-        #                 # writeFile(ScannedFile, [row[_INV_ROW['Asset']]])
-        #             else:
-        #                 currentscanlist.append(_scan)
-                        # writeFile(ScannedFile, [row[_INV_ROW['Asset']]])
-                        # writeFile((ScannedFile[:-11] + "NotFound.csv"), [_scan, _rm.upper()])
-    def numberChecker(self, _scan):
+                currentscanlist.append(_scan)
+                self.autoSave(_scan)
+                self.newAssetRecord(_scan)
+    def numberChecker(self, _scan):             # checks the entered asset tag to enforce numbers only
+        self.p_print(4, Directories._TC['_HEADING'], '******numberChecker({0:})******'.format(_scan))
         checklist = []
         for num in _scan:
             if num in '1234567890':
@@ -605,16 +469,78 @@ class Utilities:                                            #Utilities
             self.p_print(2, Directories._TC['_RED'], "Invalid Entry")
             return(False) 
         else:
-            return(_scan)
-    def ScanYearGen(self):
+            return(_scan)   # Green across the board!
+    def ScanYearGen(self):                      # generats the year code, based on what month it is. (i.e. 19-29)
+        self.p_print(4, Directories._TC['_HEADING'], '******ScanYearGen()******')
         now = datetime.datetime.now()
         tyear = now.year
         tmonth = now.month
-
         return("{0:}-{1:}".format(str(tyear)[2:], str(tyear+1)[2:]) if tmonth > 6 else "{0:}-{1:}".format(str(tyear-1)[2:], str(tyear)[2:]))
-    
+    def autoSave(self, _scan):                  # writes scan to the autosave file.
+        self.p_print(4, Directories._TC['_HEADING'], '******autoSave()******')
+        self.CSVwriter(autoSave_file, _scan)
+    def save2db(self):                          # Save changes to database.
+        self.p_print(4, Directories._TC['_HEADING'], '******save2db()******')
+        aSaveList = self.GetSingleList(self.CleanBlankRows(self.Dupcheck(self.CSV2List(autoSave_file))), 'Asset')
+        data = self.jsonOpenSave('OPEN', '')
 
-class Interface:                                            #Interface
+        for a in aSaveList:
+            self.p_print(4, Directories._TC["_INFO"], a)
+            for i in data[a]:
+                if self.ScanYearGen() in i["Scan Year"]:    # check if Year code is already in the list.
+                    pass
+                else:
+                    i["Scan Year"].append(self.ScanYearGen())
+                self.p_print(4, Directories._TC["_INFO"], i["Scan Year"])
+            
+        self.jsonOpenSave('SAVE', data)
+        os.remove(autoSave_file)    # delete autosave file when done.
+    def newAssetRecord(self, _scan):            # create new blank record in pyventory_db
+        self.p_print(4, Directories._TC['_HEADING'], '******newAssetRecord({0:})******'.format(_scan))
+        
+        data = self.jsonOpenSave('OPEN', '')
+        data[_scan] = []
+        data[_scan].append({
+            "Asset": _scan,
+            "Serial #": "",
+            "Class": "",       
+            "Device Type": "",    
+            "Make": "",
+            "Model": "",
+            "Cpu": "",
+            "Product #": "",
+            "Ram": "",
+            "OS": "",
+            "Hdd": "",
+            "School #": "",
+            "Room #": "",
+            "Username": "",
+            "IP Addr": "",
+            "Name": "",        
+            "Wired Mac Addr": "",
+            "Wireless Mac Addr": "",
+            "Server Mac Addr": "",
+            "InstallDate": "",
+            "Owner": "",
+            "UserType": "",    
+            "Status": "",      
+            "Mfg Year": "",
+            "Rotation Year": "",    
+            "Rotation Eligible": "",        
+            "School Name": "",    
+            "Scan Year": [],
+            })
+        self.jsonOpenSave("SAVE", data)
+    def jsonOpenSave(self, _opensave, _info):
+        if _opensave.upper() == "OPEN": 
+            with open(pyventory_db) as pv_data:
+                data = json.load(pv_data)
+                return(data)
+        if _opensave.upper() == "SAVE":
+            with open(pyventory_db, 'w') as outfile:    # open database file and write over it with new data
+                json.dump(_info, outfile, sort_keys=True, indent=4) # sort_key will sort teh rocrods and indent organizes the file to easy to read json.
+
+class Interface:            #Interface
     def ScanMenu():                                         # The UI for the scan interface.
         p_print(4, Directories._TC['_HEADING'], "******ScanMenu()******")
         # VARIABLES
@@ -813,9 +739,10 @@ class Interfacetemp:
                         'School #', 
                         'Name'))
                     mainUtil.DisplayCurrentScan(currentscanlist)
-                    self.scanResponce = input("scan:")
+                    self.scanResponce = input("scan-")
                     if self.scanResponce.upper() == 'X' or self.scanResponce.upper() == "EXIT":
-                        self.interfaceResponce = "none"
+                        mainUtil.save2db()
+                        self.interfaceResponce = "null"
                     elif self.scanResponce.upper() == 'HELP':
                         mainUtil.p_print(1, Directories._TC["_YELLOW"], mainUtil.Help(self._logo))
                     elif mainUtil.numberChecker(self.scanResponce) == self.scanResponce:
@@ -823,30 +750,29 @@ class Interfacetemp:
                     else:
                         pass  
 
-
             if self.interfaceResponce.upper() == "PROGRESS":
                 while self.interfaceResponce.upper() == "PROGRESS":
-                    self.pregressResponce = input("progress")
+                    self.pregressResponce = input("progress-")
                     if self.pregressResponce.upper() == "X" or self.pregressResponce.upper() == "EXIT":
-                        self.interfaceResponce = "none"
-                    print(self.pregressResponce)
+                        self.interfaceResponce = "null"
+                    elif self.pregressResponce.upper() == "ALL":
+                        
+                        pass
 
             if self.interfaceResponce.upper() == "UPDATE":
                 mainUtil.pyventory_db_update(mainUtil.FileBrowser(".csv", False))
                 self.interfaceResponce = "none"
 
             if self.interfaceResponce == 'Main':
-                self.interfaceResponce = input(self._logo + " Menu")
-                if mainUtil.Help(self.interfaceResponce) != 'null':
+                self.interfaceResponce = input(self._logo + " Menu-")
+                if mainUtil.Help(self.interfaceResponce) != 'null':         #is there is no help menu for the entry restart MENU()
                     self._logo = self.interfaceResponce
                     self._help = self.interfaceResponce
 
-                
-        
 
 #start
 user1 = Interfacetemp()
 user1.Menu()
 
 # test = Utilities()
-# test.CSV2List('MRJH2018-12102018.csv')
+# test.save2db()
