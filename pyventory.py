@@ -756,7 +756,6 @@ class Interfacetemp:
                     if self.pregressResponce.upper() == "X" or self.pregressResponce.upper() == "EXIT":
                         self.interfaceResponce = "null"
                     elif self.pregressResponce.upper() == "ALL":
-                        
                         pass
 
             if self.interfaceResponce.upper() == "UPDATE":
