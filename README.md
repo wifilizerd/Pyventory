@@ -3,14 +3,20 @@ Python based Inventory Assistant.
 
 You MUST have access to export a Comma Separated Value (CSV) file from the database you are using.
 
-SETUP:
-    1. Download Master-Pyventry.zip and extract all files, pyventory only requiers that python 3.7+ is installed.
+SETUP:✔
+    
+    1.Download Master-Pyventry.zip and extract all files, pyventory only requiers that python 3.7+ is installed.
+    
     2. Copy the export of inventory file into the pyventory folder (Must be a .CSV file).
+    
     3. run pyventory.
 
-Current Features:
+Current Features:👍
+    
     1. Enter/Scan barcodes and pyventory will use the inventory file provided to check if the barcode is in the database. 
+    
     2. Items that were not found in the inventory list Will show in Red,
+    
     3. Progress Menu allow you to see what you have and have not check off your inventory.
 
 Tested On:
