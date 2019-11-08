@@ -111,3 +111,5 @@ Python Archive/
 *.csv
 
 .pv_db.json
+
+\.DS_Store
