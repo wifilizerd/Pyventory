@@ -197,40 +197,58 @@ class Utilities:            # Utilities
                 "| _ \_ _ ___  __ _ _ _ ___ ______\n"
                 "|  _/ '_/ _ \/ _` | '_/ -_|_-<_-<\n"
                 "|_| |_| \___/\__, |_| \___/__/__/\n"   
-                "             |___/               ")
+                "             |___/               \n")
+        elif _head.upper() == 'DELETE':       #DELETE
+            self.p_print(1, Directories._TC["_GREEN"],
+                # http://patorjk.com/software/taag/#p=display&f=Small&t=DELETE%0A 'SMALL' font
+                " ___  ___ _    ___ _____ ___ \n"
+                "|   \| __| |  | __|_   _| __|\n"
+                "| |) | _|| |__| _|  | | | _| \n"
+                "|___/|___|____|___| |_| |___|\n")
     def Help(self, _help):      # Used to call the Help info.
         if _help.upper() == 'MAIN':         # Pyventory Main Menu Help
             return(
+                "\n"
                 "Pyventory Help. \n"
-                "scan       open scan and check function.\n"
-                "update     Change or update inventory and scanned files.\n"
-                "progress   shows list by room of devices scanned outof devices in room and percent complete in room\n"
-                "help       open additional info.\n"
-                "x          quit\n"
+                "scan           Open scan and check screen.\n"
+                "update         Update inventory Database.\n"
+                "progress       Shows lists by school and room, of inventory stats.\n"
+                "delete         Delete screen to remove records from database\n"
+                "help           Open this menu.\n"
+                "x or exit      Quit Program\n"
             )
         elif _help.upper() == 'SCAN':       # Scan and Check Help Menu
             return(
                 "ScanandCheck Help. \n"
-                "add        enable taking notes if the recorde is not found in inventory file.\n"
-                "notadd     disable taking notes if the recorde is not found in inventory file.\n"
-                "ask        ask each time to take notes if the recorde is not found in inventory file.\n"
-                "room       set room number to check.\n"
-                "x          quit\n"
+                "{ASSET TAG}    Enter the Asset tag to lookup\n"
+                # "add        enable taking notes if the recorde is not found in inventory file.\n"
+                # "notadd     disable taking notes if the recorde is not found in inventory file.\n"
+                # "ask        ask each time to take notes if the recorde is not found in inventory file.\n"
+                # "room       set room number to check.\n"
+                "x or exit      Save and Exit to Main Menu\n"
             )   
         elif _help.upper() == 'PROGRESS':   # Progress Page Help Menu
             return(
-                "all        Show all Room and there current Progress.\n"
-                "(room #)   Show All not scanned devices in the room.\n"
-                "export     Saves all Not Scanned Asset info to a file. \n"
-                "x          quit\n"
+                "Progress Help\n"
+                "all            Show all Room and there current Progress.\n"
+                "{school #}     Enter School # to show a list of only rooms in the school\n"
+                "{room #}       (Must enter school # fist) Lists all devices assigned to room#.\n"
+                # "export     Saves all Not Scanned Asset info to a file. \n"
+                "x or exit      Exit to Main Menu\n"
             )
         elif _help.upper() == "UPDATE":     # in place for the current interface setup, used for allowing the menu to run update.
             return(
-                "Updateing Pyventory Database......."
+                "Updateing Pyventory Database.......\n"
             )
         elif _help.upper() == 'DELETE':
             return(
-                "testing delete of record"
+                "Delete Help\n"
+                "{asset tag}    The Asset tag you wish to remove from the database.\n"
+                "help           Will Display This Message.\n"
+                "x or exit      Quit to Main Menu"
+                "\n"
+                "PLEASE NOTE: This will delete all record of the asset tage.\n"
+                "and you cannot recover from this action without a backup.\n"
             )
         else:
             return('null')
@@ -324,7 +342,6 @@ class Utilities:            # Utilities
                     })
                 
         self.jsonOpenSave('SAVE', Updated_pyventory_db) 
-
     def FileBrowser(self, _extention, _new):    # Used to Display and  select what file to load. basic text interface file browser
         self.p_print(4, Directories._TC['_HEADING'], '******FileBrowser({0:}, {1:})******'.format(_extention, _new))
         _filelist = os.listdir(".") # list directory to a list
@@ -488,20 +505,23 @@ class Utilities:            # Utilities
         self.CSVwriter(autoSave_file, _scan)
     def save2db(self):                          # Save changes to database.
         self.p_print(4, Directories._TC['_HEADING'], '******save2db()******')
-        aSaveList = self.GetSingleList(self.CleanBlankRows(self.Dupcheck(self.CSV2List(autoSave_file))), 'Asset')
-        data = self.jsonOpenSave('OPEN', '')
+        if os.path.exists(autoSave_file):
+            aSaveList = self.GetSingleList(self.CleanBlankRows(self.Dupcheck(self.CSV2List(autoSave_file))), 'Asset')
+            data = self.jsonOpenSave('OPEN', '')
 
-        for a in aSaveList:
-            self.p_print(4, Directories._TC["_INFO"], a)
-            for i in data[a]:
-                if self.ScanYearGen() in i["Scan Year"]:    # check if Year code is already in the list.
-                    pass
-                else:
-                    i["Scan Year"].append(self.ScanYearGen())
-                self.p_print(4, Directories._TC["_INFO"], i["Scan Year"])
-            
-        self.jsonOpenSave('SAVE', data)
-        os.remove(autoSave_file)    # delete autosave file when done.
+            for a in aSaveList:
+                self.p_print(4, Directories._TC["_INFO"], a)
+                for i in data[a]:
+                    if self.ScanYearGen() in i["Scan Year"]:    # check if Year code is already in the list.
+                        pass
+                    else:
+                        i["Scan Year"].append(self.ScanYearGen())
+                    self.p_print(4, Directories._TC["_INFO"], i["Scan Year"])
+                
+            self.jsonOpenSave('SAVE', data)
+            os.remove(autoSave_file)    # delete autosave file when done.
+        else:
+            pass
     def newAssetRecord(self, _scan):            # create new blank record in pyventory_db
         self.p_print(4, Directories._TC['_HEADING'], '******newAssetRecord({0:})******'.format(_scan))
         
@@ -545,7 +565,7 @@ class Utilities:            # Utilities
                 return(data)
         if _opensave.upper() == "SAVE":
             with open(pyventory_db, 'w') as outfile:    # open database file and write over it with new data
-                json.dump(_info, outfile, sort_keys=True, indent=4) # sort_key will sort teh rocrods and indent organizes the file to easy to read json.
+                json.dump(_info, outfile, sort_keys=True, indent=4) # sort_key will sort the records and indent organizes the file to easy to read json.
     def prograssSchoolList(self):
         schoollist = []
         data = self.jsonOpenSave('OPEN') 
@@ -575,25 +595,26 @@ class Utilities:            # Utilities
                         s,
                         self.scannedInSchool(s),
                         self.totalInSchool(s),
-                        str((self.scannedInSchool(s)/self.totalInSchool(s))*100)[:2]))
+                        ('0' if int(self.scannedInSchool(s)) == 0 else str((int(self.scannedInSchool(s))/int(self.totalInSchool(s)))*100)[:3])))
                 for r in self.progressRoomList(s):
-                    self.p_print(1, Directories._TC['_GREEN'] if self.scannedInSchool(s)/self.totalInSchool(s)*100 > 99 else Directories._TC['_RESET'], '|{0:^20}|{1:>4}/{2:<4}|{3:>5}%|'.format(
+                    self.p_print(1, (Directories._TC['_GREEN'] if ((self.scannedInRoom(s, r)/self.totalInRoom(s, r))*100 if self.scannedInRoom(s, r) > 0 else 0) > 99 else Directories._TC['_RESET']), '|{0:^20}|{1:>4}/{2:<4}|{3:>5}%|'.format(
                         ('{BLANK}' if r == '' else r),
                         self.scannedInRoom(s, r),
                         self.totalInRoom(s, r),
-                        str((self.scannedInSchool(s)/self.totalInSchool(s))*100)[:2]))
-        if school in schoollist:
+                        (0 if self.scannedInRoom(s, r) < 1 else str((self.scannedInRoom(s, r)/self.totalInRoom(s, r))*100)[:3])))
+        
+        elif school in schoollist:
             self.p_print(1, Directories._TC['_HEADING'], '|{0:<20}|{1:>4}/{2:<4}|{3:>5}%|'.format(
                         school,
                         self.scannedInSchool(school),
                         self.totalInSchool(school),
-                        str((self.scannedInSchool(school)/self.totalInSchool(school))*100)[:2]))
+                        ('0' if int(self.scannedInSchool(school)) == 0 else str((int(self.scannedInSchool(school))/int(self.totalInSchool(school)))*100)[:3])))
             for r in self.progressRoomList(school):
-                self.p_print(1, Directories._TC['_GREEN'] if self.scannedInSchool(school)/self.totalInSchool(school)*100 > 99 else Directories._TC['_RESET'], '|{0:^20}|{1:>4}/{2:<4}|{3:>5}%|'.format(
+                self.p_print(1, (Directories._TC['_GREEN'] if ((self.scannedInRoom(school, r)/self.totalInRoom(school, r))*100 if self.scannedInRoom(school, r) > 0 else 0) > 99 else Directories._TC['_RESET']), '|{0:^20}|{1:>4}/{2:<4}|{3:>5}%|'.format(
                     ('{BLANK}' if r == '' else r),
                     self.scannedInRoom(school, r),
                     self.totalInRoom(school, r),
-                    str((self.scannedInSchool(school)/self.totalInSchool(school))*100)[:2]))
+                    (0 if self.scannedInRoom(school, r) < 1 else str((self.scannedInRoom(school, r)/self.totalInRoom(school, r))*100)[:3])))
     def scannedInRoom(self, school, room): 
         count = 0
         data = self.jsonOpenSave('OPEN')
@@ -654,172 +675,7 @@ class Utilities:            # Utilities
                 self.AssetDisply(data_list, '_RED')
 
 
-        
-
-class Interface:            #Interface
-    def ScanMenu():                                         # The UI for the scan interface.
-        p_print(4, Directories._TC['_HEADING'], "******ScanMenu()******")
-        # VARIABLES
-        scan = ''
-        roomnumber = 'ALL'
-        currentscanlist = []
-        input('')
-        inventoryassetlist = GetSingleList(CleanBlankRows(list(csv.reader(open(InventoryFile, "rU")))), 'Asset')
-
-        #INTERFACE
-        while scan != 'x':
-            ClearScreen()
-            Logo('MAIN')
-            Logo('SCAN')
-            print('')
-            p_print(2, Directories._TC["_YELLOW"], Help('scan'))
-            
-            if str(scan).upper() == 'HELP':
-                p_print(1, Directories._TC['_YELLOW'], Help('scan'))
-            p_print(1,Directories._TC['_YELLOW'], '{0:>4}/{1:<0} - {2:}'.format(len(Dupcheck(CleanBlankRows(list(csv.reader(open(ScannedFile, "rU")))))), len(Dupcheck(inventoryassetlist)), 'Devices Scanned'))
-            p_print(1, Directories._TC['_HEADING'], '{0:>10} : {1:16} : {2:17} : {3:12} : {4:19} : {5:19} : {6:25}'.format('Asset Tag', 'Serial #', 'Name', 'Room #', 'Wire MAC', 'Wireless MAC', 'School # - Name'))
-            p_print(3, Directories._TC['_INFO'], currentscanlist) 
-            DisplayCurrentScan(currentscanlist, roomnumber)
-            
-            scan = input('Scan - ' + roomnumber.upper() +":")
-            if str(scan).upper() == 'ROOM':
-                roomnumber = RoomSelect()
-            elif str(scan).lstrip('0') == '':
-                pass
-            elif str(scan).lstrip('0') in inventoryassetlist:
-                currentscanlist.append(str(scan).lstrip('0'))
-                CheckScan(scan, roomnumber)
-            else:
-                currentscanlist.append(str(scan).lstrip('0'))
-                writeFile(ScannedFile, [str(scan).lstrip('0')])      #add to filename to destiguish different files.
-                p_print(1, Directories._TC['_RED'], '{0:} Not Found'.format(str(scan).lstrip('0')))
-    def ProgressMenu():                                     # The UI for the Progress Interface.
-        p_print(4, Directories._TC['_HEADING'], '******ProgressMenu()******')
-        # VARIABLES
-        # ScannedAssetList = GetSingleList(CleanBlankRows(list(csv.reader(open(ScannedFile, "rU")))), 'Asset')
-        # inventoryassetlist = GetSingleList(CleanBlankRows(list(csv.reader(open(InventoryFile, "rU")))), 'Asset')
-        # MissingFile = (ScannedFile.split('-')[0] + '-NotScanned.csv')
-        RoomsList = GetSingleList(CleanBlankRows(list(csv.reader(open(InventoryFile, "rU")))), 'Room #')
-        progressmenu = ''
-
-        #INTERFACE
-        ClearScreen()
-        # Logo('MAIN')
-        Logo('PROGRESS')
-        print('')
-        p_print(2, Directories._TC['_YELLOW'], Help('progress'))
-        
-        while progressmenu.upper() != 'X':
-            if progressmenu in RoomsList or progressmenu.upper() == 'ALL':
-                DisplayProgress(progressmenu)
-            else:
-                pass
-
-            progressmenu = input('Progress:')
-    def ProgressPage():                                     # OLD Progress Menu...                   
-        # p_print(4, Directories._TC['_HEADING'], '******ProgressPage()******')
-        # ScannedList = []
-        # InventoryList = []
-        # ScannedAssetList = []
-        # InventoryAssetList = []
-        # RoomsList = []
-        # progressmenu = ''
-        # _helpscreen = 0
-        # global ScannedFile
-        # global InventoryFile  
-        # MissingFile = (GetProjectName(ScannedFile) + '-NotScanned.csv')
-
-
-        # ClearScreen()
-        # ScannedList = setup(ScannedList, ScannedFile)
-        # InventoryList = setup(InventoryList, InventoryFile)
-        
-        # for row in CleanBlankRows(list(csv.reader(open(ScannedFile, "rU")))):                     
-        #     ScannedAssetList.append(row[_INV_ROW['Asset']])
-        # for row in CleanBlankRows(list(csv.reader(open(InventoryFile, "rU")))):                     
-        #     InventoryAssetList.append(row[_INV_ROW['Asset']])
-
-        # RoomsList = GetRoomList(InventoryList)
-        
-        # totalpercent = (float(len(Dupcheck(ScannedAssetList)))/int(len(Dupcheck(InventoryList))))*100
-        while progressmenu.lower() != 'x':
-            ClearScreen()
-            Logo('MAIN')
-            Logo('PROGRESS')
-            print('')
-            p_print(2, Directories._TC['_YELLOW'], Help('progress'))
-            
-            if progressmenu.lower() == 'all':
-                for _room in sorted(RoomsList):
-                    p_print(4, Directories._TC['_YELLOW'], _room)
-                    roompercent = (float(RoomCounter(Dupcheck(InventoryList), Dupcheck(ScannedAssetList), _room))/int(RoomCounter(Dupcheck(InventoryList), [], _room)))*100
-                    _c = "_YELLOW"
-                    if roompercent <= 25.0:
-                        _c = "_RED"
-                    elif roompercent == 100.0:
-                        _c = "_GREEN"
-                    p_print(1, Directories._TC[_c], '{0:18} - {1:>3}/{2:<3} {3:>3.0f}%'.format(_room, RoomCounter(Dupcheck(InventoryList), Dupcheck(ScannedAssetList), _room), RoomCounter(Dupcheck(InventoryList), [], _room), roompercent))
-    
-            elif progressmenu.lower() == 'help':
-                p_print(2, Directories._TC['_YELLOW'], Help('progress'))
-            
-            elif progressmenu.lower() == 'export':
-                p_print(1, Directories._TC['_INFO'], 'Exporting Records to file...')
-                p_print(3, Directories._TC['_INFO'], MissingFile)
-                
-                if os.path.exists(MissingFile):
-                    os.remove(MissingFile)
-
-                for room in sorted(RoomsList):
-                    p_print(3, Directories._TC['_INFO'], [room.upper()])
-                    writeFile(MissingFile, [room.upper()])
-                    for row in InventoryList:
-                        if row[_INV_ROW['Room #']].upper() == room.upper() and row[_INV_ROW['Asset']] not in ScannedAssetList:
-                            p_print(3, Directories._TC['_INFO'], ['', row])
-                            writeFile(MissingFile, ['', row])
-
-            elif progressmenu.upper() in RoomsList:
-                ClearScreen()
-                RoomAssetList = []
-                for row in Dupcheck(InventoryList):
-                    if progressmenu.upper() == row[_INV_ROW['Room #']].upper():
-                        RoomAssetList.append(row[_INV_ROW['Asset']])
-                p_print(4, Directories._TC['_INFO'], RoomAssetList)
-                for asset in Dupcheck(RoomAssetList):
-                    if asset in Dupcheck(ScannedAssetList):
-                        RoomAssetList.remove(asset)
-                p_print(4, Directories._TC['_INFO'], RoomAssetList)
-                p_print(1, Directories._TC['_HEADING'], progressmenu.upper())
-                p_print(1, Directories._TC['_HEADING'], '{0:>10} : {1:15} : {2:17} : {3:12} : {4:19} : {5:19} : {6:40}'.format('Asset Tag', 'Serial #', 'Name', 'Room #', 'Wire MAC', 'Wireless MAC', 'School # - Name'))
-                for asset in Dupcheck(RoomAssetList):
-                    AssetDisply(GetAssetInfo(asset), '_YELLOW')
-        
-            progressmenu = input('Progress:')
-    def MainMenu(self):                                         # The UI for the Main Menu.
-        mainUtil = Utilities()
-
-        mainUtil.ClearScreen()
-        mainUtil.p_print(4, Directories._TC['_HEADING'], '******Interface()******')
-        _interfacemenu = 'update' 
-        while _interfacemenu != 'x':
-            ClearScreen()
-            if _interfacemenu.lower() == 'scan':
-                ScanMenu()
-            elif _interfacemenu.lower() == 'progress':
-                ProgressMenu()
-            elif _interfacemenu.lower() == 'test':
-                ProgressMenu()
-            elif _interfacemenu.lower() == 'update':
-                setupFiles()
-                _interfacemenu = ''
-            ClearScreen()
-            Logo('MAIN')
-            p_print(2, Directories._TC['_YELLOW'], Help('main'))
-            if _interfacemenu.lower() == 'help':
-                p_print(1, Directories._TC['_YELLOW'], Help('main'))
-            _interfacemenu = input('Pyventory:')
-
-class Interfacetemp:
+class Interface:
     def __init__(self):
         pass
     def Menu(self, _logo = "Main", _help = "Main"):
@@ -873,6 +729,8 @@ class Interfacetemp:
                     self.pregressResponce = input("Progress-")
                     if self.pregressResponce.upper() == "X" or self.pregressResponce.upper() == "EXIT":
                         self.interfaceResponce = "null"
+                    elif self.pregressResponce.upper() == "HELP":
+                        mainUtil.p_print(2, Directories._TC["_YELLOW"], mainUtil.Help(self._logo))
                     elif self.pregressResponce.upper() == "ALL":
                         mainUtil.progressDisplay()
                     elif self.pregressResponce.upper() in schoollist:
@@ -881,7 +739,10 @@ class Interfacetemp:
                             self.schoolResponce = input("Progress/" + self.pregressResponce.upper() + '-')
                             if self.schoolResponce.upper() == 'X' or self.schoolResponce.upper() == 'EXIT':
                                  self.pregressResponce = 'null'
-                            
+
+                            elif self.schoolResponce.upper() == "HELP":
+                                mainUtil.p_print(2, Directories._TC["_YELLOW"], mainUtil.Help(self._logo))
+
                             elif self.schoolResponce.upper() == 'ALL':
                                 mainUtil.progressDisplay(self.pregressResponce.upper())
                             
@@ -896,13 +757,24 @@ class Interfacetemp:
                 self.interfaceResponce = "none"
             
             if self.interfaceResponce.upper() == "DELETE":
-                data = mainUtil.jsonOpenSave('OPEN')
-                self.deleteResponce = input("delete-")
-                for i in data:
-                    if str(self.deleteResponce).lstrip('0') in i: 
-                        print(self.deleteResponce)  
-                        # data.pop(self.deleteResponce)
-                mainUtil.jsonOpenSave('SAVE', data)
+                while self.interfaceResponce.upper() == 'DELETE':
+                    mainUtil.ClearScreen()
+                    mainUtil.Logo(self._logo)
+                    mainUtil.p_print(2, Directories._TC["_YELLOW"], mainUtil.Help(self._logo))
+                    data = mainUtil.jsonOpenSave('OPEN')
+                    mainUtil.p_print(1, Directories._TC['_WARNING'], 'PLEASE ENTER THE ASSET NUMBER YOU WANT TO REMOVE.')
+                    self.deleteResponce = input("Delete Record-")
+                    if self.deleteResponce.upper() == 'HELP':
+                        mainUtil.p_print(2, Directories._TC["_YELLOW"], mainUtil.Help(self._logo))
+                    if self.deleteResponce.upper() == "X" or self.deleteResponce.upper() == "EXIT":
+                        self.interfaceResponce = 'null'
+                    if str(self.deleteResponce).lstrip('0') in data:
+                        for i in data:
+                            if i == str(self.deleteResponce).lstrip('0'):
+                                del data[str(self.deleteResponce).lstrip('0')]
+                                mainUtil.p_print(1, Directories._TC['_WARNING'], '{0:} Has Been Removed.'.format(str(self.deleteResponce).lstrip('0')))
+                                break
+                        mainUtil.jsonOpenSave('SAVE', data)
 
 
 
@@ -914,8 +786,9 @@ class Interfacetemp:
 
 
 #start
-user1 = Interfacetemp()
+user1 = Interface()
 user1.Menu()
 
 # test = Utilities()
-# test.progressRoomDisplay("494", "B142")
+# test.scannedInSchool("494")
+# test.totalInSchool("494")
