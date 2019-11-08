@@ -1,7 +1,7 @@
 #!/Python27/pythonw.exe
 #1/bin/python
 #python 3.7
-#Pyventory - 0.6.4.1
+#Pyventory - 0.6.5
 # import all needed libraries
 import sys, os, csv, json, datetime 
 
@@ -67,112 +67,7 @@ class Directories:          # Directories
         "Rotation Year":      35,     # Year to be Rotated
         "School Name":        42,     # School Name, Scan File Format 
         }
-    _Schools = {                # Directory of all Locations and codes (05/2019)
-        "Administration Bldg." : "99",
-        "Alpine Elementary School" : "103",
-        "American Fork High School" : "704",
-        "American Fork Jr. High School" : "405",
-        "Aspen Elementary School" : "107",
-        "ATEC" : "819",
-        "Barratt Elementary School" : "112",
-        "Belmont Elementary" : "114",
-        "Black Ridge Elementary" : "115",
-        "Bonneville Elementary School" : "117",
-        "Brookhaven Elementary" : "203",
-        "Business Services" : "96",
-        "Canyon View Junior High School" : "411",
-        "Cascade Elementary School" : "121",
-        "Cedar Ridge Elementary School" : "123",
-        "Cedar Valley  Elementary School" : "125",
-        "Cedar Valley High School" : "721",
-        "Central Elementary School" : "129",
-        "Cherry Hill Elementary School" : "134",
-        "Clear Creek Camp" : "806",
-        "CTE" : "99",
-        "Dan Peterson School" : "810",
-        "Data Services" : "97",
-        "Deerfield Elementary School" : "138",
-        "District Media Center" : "95",
-        "Dry Creek Elementary" : "139",
-        "Eagle Valley Elementary School" : "141",
-        "Eaglecrest Elementary School" : "140",
-        "East Shore Online High School (Adult Ed)" : "790",
-        "East Transportation Department" : "85",
-        "Educational Services" : "92",
-        "Foothill Elementary School" : "144",
-        "Forbes Elementary School" : "145",
-        "Fox Hollow Elementary School" : "147",
-        "Freedom Elementary School" : "148",
-        "Frontier Middle School" : "417",
-        "Geneva Elementary School" : "156",
-        "Greenwood Elementary School" : "161",
-        "Grovecrest Elementary School" : "166",
-        "Harvest Elementary School" : "170",
-        "Hidden Hollow Elementary School" : "171",
-        "Highland Elementary School" : "172",
-        "Hillcrest Elementary School" : "175",
-        "Holbrooke Farms Elementary" : "113",
-        "Horizon School" : "808",
-        "Human Resources" : "94",
-        "Lakeridge Junior High School" : "423",
-        "Legacy Elementary School" : "183",
-        "Lehi Elementary School" : "187",
-        "Lehi High School" : "735",
-        "Lehi Junior High School" : "441",
-        "Lindon Elementary School" : "191",
-        "Lone Peak High School" : "737",
-        "Manila Elementary School" : "196",
-        "Meadow Elementary School" : "200",
-        "Mount Mahogany Elementary School" : "204",
-        "Mountain Ridge Junior High School" : "494",
-        "Mountain Trails Elementary School" : "205",
-        "Mountain View High School" : "739",
-        "North Point Elementary School" : "207",
-        "Northridge Elementary School" : "209",
-        "Nutrition Services Department" : "98",
-        "Oak Canyon Junior High School" : "485",
-        "Orchard Elementary School" : "212",
-        "Orem Elementary School" : "215",
-        "Orem High School" : "754",
-        "Orem Junior High School" : "459",
-        "Physical Facilities Department" : "83",
-        "Pleasant Grove High School" : "779",
-        "Pleasant Grove Junior High School" : "478",
-        "Polaris High School" : "782",
-        "Pony Express Elementary School" : "217",
-        "Purchasing Department" : "89",
-        "Ridgeline Elementary School" : "218",
-        "River Rock Elementary" : "201",
-        "Riverview Elementary School" : "219",
-        "Rocky Mountain Elementary School" : "220",
-        "Sage Hills Elementary School" : "222",
-        "Saratoga Shores Elementary School" : "223",
-        "Scera Park Elementary School" : "226",
-        "Sego Lily Elementary School" : "232",
-        "Sharon Elementary School" : "237",
-        "Shelley Elementary School" : "242",
-        "Skyridge High School" : "785",
-        "Snow Springs Elementary School" : "247",
-        "Special Education" : "93",
-        "Springside Elementary" : "202",
-        "Student Services" : "82",
-        "Summit Program" : "792",
-        "Suncrest Elementary School" : "253",
-        "Technology Department" : "91",
-        "Thunder Ridge Elementary School" : "256",
-        "Timberline Middle School" : "488",
-        "Timpanogos High School" : "786",
-        "Traverse Mountain Elementary School" : "258",
-        "Valley View Elementary School" : "264",
-        "Vineyard Elementary School" : "271",
-        "Vista Heights Middle School" : "490",
-        "West Transportation" : "86",
-        "Westfield Elementary School" : "275",
-        "Westlake High School" : "789",
-        "Westmore Elementary School" : "277",
-        "Willowcreek Middle School" : "496",
-        "Windsor Elementary School" : "286"   
-        }
+
 class Utilities:            # Utilities
     def Logo(self, _head):      # Used to call the logo and headings for the UI.
         if _head.upper() == 'MAIN':         # PYVENTORY
@@ -181,7 +76,7 @@ class Utilities:            # Utilities
                 " \______   \__  |   |\   \ /   /\_   _____/ \      \__    ___/\_____  \\\______   \__  |   |       \n"
                 "  |     ___//   |   | \   Y   /  |    __)_  /   |   \|    |    /   |   \|       _//   |   |       \n"
                 "  |    |    \____   |  \     /   |        \/    |    \    |   /    |    \    |   \\\____   |       \n"
-                "  |____|    / ______|   \___/   /_______  /\____|__  /____|   \_______  /____|_  // ______| v0.6.4.1 \n"
+                "  |____|    / ______|   \___/   /_______  /\____|__  /____|   \_______  /____|_  // ______| v0.6.5 \n"
                 "            \/                          \/         \/                 \/       \/ \/              ")
         elif _head.upper() == 'SCAN':       # SCAN AND CHECK       
             self.p_print(1, Directories._TC["_GREEN"], 

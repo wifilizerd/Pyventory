@@ -107,3 +107,5 @@ Zip Archive/
 \.vscode/
 
 *.csv
+
+.pv_db.json
