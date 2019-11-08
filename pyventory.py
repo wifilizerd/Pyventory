@@ -228,35 +228,40 @@ class Utilities:            # Utilities
             return(
                 "Updateing Pyventory Database......."
             )
+        elif _help.upper() == 'DELETE':
+            return(
+                "testing delete of record"
+            )
         else:
             return('null')
     
     def pyventory_db_check(self):               # Used to check if the pyventory_db has been created then prompts user to updated if no database file is found.
-        self.p_print(4, Directories._TC['_HEADING'], '******pyventory_db_chec()******')
+        self.p_print(4, Directories._TC['_HEADING'], '******pyventory_db_check()******')
         if os.path.exists(pyventory_db):
             return('DB is good')
         else:
             return('Please Run Update before Continuing.')
     def pyventory_db_update(self, _filename):   # databnase update modual
         self.p_print(4, Directories._TC['_HEADING'], '******pyventory_db_update({})******'.format(_filename))
-        if os._exists(pyventory_db):                # Check if file exists
-            data = self.jsonOpenSave('OPEN', '')
+        Updated_pyventory_db = {}
+        if os.path.exists(pyventory_db):                # Check if file exists
+            data = self.jsonOpenSave('OPEN')
+            Updated_pyventory_db.update(data)
         else:
             data = {}
-        Updated_pyventory_db = {}
-                
+          
         updatefile_list = self.CSV2List(_filename)          # takes a .CSV file from inventory database and turn it to a list for proccessing.
         self.p_print(4, Directories._TC['_INFO'], updatefile_list)
         self.p_print(1, Directories._TC["_INFO"], "Updating Pyventory Database, Please Wait...")
         
         for row in updatefile_list:
             self.p_print(4, Directories._TC['_INFO'], row)
-            if row[Directories._INV_ROW['Asset']] in data:      # check if asset tage is in Database.
-                for i in data[row[Directories._INV_ROW['Asset']]]:
+            if str(row[Directories._INV_ROW['Asset']]).lstrip('0') in data:      # check if asset tage is in Database.
+                for i in data[str(row[Directories._INV_ROW['Asset']]).lstrip('0')]:
                     datecode = i["Scan Year"]           # pulled from existing data to be added to new database.
-                    Updated_pyventory_db[row[Directories._INV_ROW['Asset']]] = []   # create new record in json file
-                    Updated_pyventory_db[row[Directories._INV_ROW['Asset']]].append({   # add data to record
-                        "Asset": row[Directories._INV_ROW["Asset"]],
+                    Updated_pyventory_db[str(row[Directories._INV_ROW['Asset']]).lstrip('0')] = []   # create new record in json file
+                    Updated_pyventory_db[str(row[Directories._INV_ROW['Asset']]).lstrip('0')].append({   # add data to record
+                        "Asset": str(row[Directories._INV_ROW['Asset']]).lstrip('0'),
                         "Serial #": row[Directories._INV_ROW["Serial #"]],
                         "Class": row[Directories._INV_ROW["Class"]],       
                         "Device Type": row[Directories._INV_ROW["Device Type"]],    
@@ -286,9 +291,9 @@ class Utilities:            # Utilities
                         "Scan Year": datecode,
                         })
             else:
-                Updated_pyventory_db[row[Directories._INV_ROW['Asset']]] = []
-                Updated_pyventory_db[row[Directories._INV_ROW['Asset']]].append({
-                    "Asset": row[Directories._INV_ROW["Asset"]],
+                Updated_pyventory_db[str(row[Directories._INV_ROW['Asset']]).lstrip('0')] = []
+                Updated_pyventory_db[str(row[Directories._INV_ROW['Asset']]).lstrip('0')].append({
+                    "Asset": str(row[Directories._INV_ROW['Asset']]).lstrip('0'),
                     "Serial #": row[Directories._INV_ROW["Serial #"]],
                     "Class": row[Directories._INV_ROW["Class"]],       
                     "Device Type": row[Directories._INV_ROW["Device Type"]],    
@@ -317,7 +322,9 @@ class Utilities:            # Utilities
                     "School Name": row[Directories._INV_ROW["School Name"]],    
                     "Scan Year": [],
                     })
-        self.jsonOpenSave('SAVE', Updated_pyventory_db)                            
+                
+        self.jsonOpenSave('SAVE', Updated_pyventory_db) 
+
     def FileBrowser(self, _extention, _new):    # Used to Display and  select what file to load. basic text interface file browser
         self.p_print(4, Directories._TC['_HEADING'], '******FileBrowser({0:}, {1:})******'.format(_extention, _new))
         _filelist = os.listdir(".") # list directory to a list
@@ -531,7 +538,7 @@ class Utilities:            # Utilities
             "Scan Year": [],
             })
         self.jsonOpenSave("SAVE", data)
-    def jsonOpenSave(self, _opensave, _info):
+    def jsonOpenSave(self, _opensave, _info=''):
         if _opensave.upper() == "OPEN": 
             with open(pyventory_db) as pv_data:
                 data = json.load(pv_data)
@@ -539,6 +546,115 @@ class Utilities:            # Utilities
         if _opensave.upper() == "SAVE":
             with open(pyventory_db, 'w') as outfile:    # open database file and write over it with new data
                 json.dump(_info, outfile, sort_keys=True, indent=4) # sort_key will sort teh rocrods and indent organizes the file to easy to read json.
+    def prograssSchoolList(self):
+        schoollist = []
+        data = self.jsonOpenSave('OPEN') 
+        for i in data:
+            for s in data[i]:
+                if s['School #'] not in schoollist and len(s['School #']) == 3:
+                    schoollist.append(s['School #'])
+        self.p_print(4, Directories._TC['_INFO'], schoollist)
+        schoollist.sort()
+        return(schoollist)
+    def progressRoomList(self, school):
+        roomlist = []
+        data = self.jsonOpenSave('OPEN') 
+        for i in data:
+            for s in data[i]:
+                if school in s['School #']:
+                    if s['Room #'].upper() not in roomlist:
+                        roomlist.append(s['Room #'].upper())
+        self.p_print(4, Directories._TC['_INFO'], roomlist)
+        roomlist.sort()
+        return(roomlist)
+    def progressDisplay(self, school='ALL'):
+        schoollist = self.prograssSchoolList()
+        if school == 'ALL':
+            for s in schoollist:
+                self.p_print(1, Directories._TC['_HEADING'], '|{0:<20}|{1:>4}/{2:<4}|{3:>5}%|'.format(
+                        s,
+                        self.scannedInSchool(s),
+                        self.totalInSchool(s),
+                        str((self.scannedInSchool(s)/self.totalInSchool(s))*100)[:2]))
+                for r in self.progressRoomList(s):
+                    self.p_print(1, Directories._TC['_GREEN'] if self.scannedInSchool(s)/self.totalInSchool(s)*100 > 99 else Directories._TC['_RESET'], '|{0:^20}|{1:>4}/{2:<4}|{3:>5}%|'.format(
+                        ('{BLANK}' if r == '' else r),
+                        self.scannedInRoom(s, r),
+                        self.totalInRoom(s, r),
+                        str((self.scannedInSchool(s)/self.totalInSchool(s))*100)[:2]))
+        if school in schoollist:
+            self.p_print(1, Directories._TC['_HEADING'], '|{0:<20}|{1:>4}/{2:<4}|{3:>5}%|'.format(
+                        school,
+                        self.scannedInSchool(school),
+                        self.totalInSchool(school),
+                        str((self.scannedInSchool(school)/self.totalInSchool(school))*100)[:2]))
+            for r in self.progressRoomList(school):
+                self.p_print(1, Directories._TC['_GREEN'] if self.scannedInSchool(school)/self.totalInSchool(school)*100 > 99 else Directories._TC['_RESET'], '|{0:^20}|{1:>4}/{2:<4}|{3:>5}%|'.format(
+                    ('{BLANK}' if r == '' else r),
+                    self.scannedInRoom(school, r),
+                    self.totalInRoom(school, r),
+                    str((self.scannedInSchool(school)/self.totalInSchool(school))*100)[:2]))
+    def scannedInRoom(self, school, room): 
+        count = 0
+        data = self.jsonOpenSave('OPEN')
+        for i in data:
+            for r in data[i]:
+                if r['School #'] == school and r['Room #'].upper() == room and self.ScanYearGen() in r['Scan Year']:
+                    count += 1
+        return(count)
+    def scannedInSchool(self, school):
+        count = 0
+        data = self.jsonOpenSave('OPEN')
+        for i in data:
+            for r in data[i]:
+                if r['School #'] == school and self.ScanYearGen() in r['Scan Year']:
+                    count += 1
+        return(count)
+    def totalInRoom(self, school, room):
+        count = 0
+        data = self.jsonOpenSave('OPEN')
+        for i in data:
+            for r in data[i]:
+                if r['School #'] == school and r['Room #'].upper() == room:
+                    count += 1
+        return(count)
+    def totalInSchool(self, school):
+        count = 0
+        data = self.jsonOpenSave('OPEN')
+        for i in data:
+            for r in data[i]:
+                if r['School #'] == school:
+                    count += 1
+        return(count)
+    def progressRoomDisplay(self, school, room):
+        data = self.jsonOpenSave('OPEN', '')
+        assetsinroom = []
+        
+        for i in data:
+            for r in data[i]:
+                if r['School #'].upper() == school and r['Room #'].upper() == room:
+                    assetsinroom.append(r['Asset'])
+        for asset in assetsinroom:
+            data_list = []
+            self.p_print(4, Directories._TC['_INFO'], asset)
+            for i in data[asset]:
+                data_list.append(i["Asset"])
+                data_list.append(i["Serial #"])
+                data_list.append(i["Name"])
+                data_list.append(i["Room #"])
+                data_list.append(i["Wired Mac Addr"])
+                data_list.append(i["Wireless Mac Addr"])
+                data_list.append(i["School #"])
+                data_list.append(i["School Name"])
+            self.p_print(5, Directories._TC['_INFO'], data_list)    
+            
+            if self.ScanYearGen() in i["Scan Year"]:   # control point, based on serial # 
+                self.AssetDisply(data_list, '_GREEN')
+            else:
+                self.AssetDisply(data_list, '_RED')
+
+
+        
 
 class Interface:            #Interface
     def ScanMenu():                                         # The UI for the scan interface.
@@ -739,28 +855,56 @@ class Interfacetemp:
                         'School #', 
                         'Name'))
                     mainUtil.DisplayCurrentScan(currentscanlist)
-                    self.scanResponce = input("scan-")
+                    self.scanResponce = input("Scan-")
                     if self.scanResponce.upper() == 'X' or self.scanResponce.upper() == "EXIT":
                         mainUtil.save2db()
                         self.interfaceResponce = "null"
                     elif self.scanResponce.upper() == 'HELP':
                         mainUtil.p_print(1, Directories._TC["_YELLOW"], mainUtil.Help(self._logo))
-                    elif mainUtil.numberChecker(self.scanResponce) == self.scanResponce:
-                        mainUtil.CheckScan(self.scanResponce)
+                    elif mainUtil.numberChecker(str(self.scanResponce).lstrip('0')) == str(self.scanResponce).lstrip('0'):
+                        mainUtil.CheckScan(str(self.scanResponce).lstrip('0'))
                     else:
                         pass  
 
             if self.interfaceResponce.upper() == "PROGRESS":
+                data = mainUtil.jsonOpenSave('OPEN')
+                schoollist = mainUtil.prograssSchoolList()
                 while self.interfaceResponce.upper() == "PROGRESS":
-                    self.pregressResponce = input("progress-")
+                    self.pregressResponce = input("Progress-")
                     if self.pregressResponce.upper() == "X" or self.pregressResponce.upper() == "EXIT":
                         self.interfaceResponce = "null"
                     elif self.pregressResponce.upper() == "ALL":
-                        pass
-
+                        mainUtil.progressDisplay()
+                    elif self.pregressResponce.upper() in schoollist:
+                        while self.pregressResponce.upper() in schoollist:
+                            roomlist = mainUtil.progressRoomList(self.pregressResponce.upper())
+                            self.schoolResponce = input("Progress/" + self.pregressResponce.upper() + '-')
+                            if self.schoolResponce.upper() == 'X' or self.schoolResponce.upper() == 'EXIT':
+                                 self.pregressResponce = 'null'
+                            
+                            elif self.schoolResponce.upper() == 'ALL':
+                                mainUtil.progressDisplay(self.pregressResponce.upper())
+                            
+                            elif self.schoolResponce.upper() in roomlist:
+                                mainUtil.progressRoomDisplay(self.pregressResponce, self.schoolResponce.upper())
+                            elif mainUtil.numberChecker(str(self.schoolResponce).lstrip('0')) == str(self.schoolResponce).lstrip('0'):
+                                mainUtil.CheckScan(str(self.schoolResponce).lstrip('0'))
+                                mainUtil.save2db()    
+                    
             if self.interfaceResponce.upper() == "UPDATE":
                 mainUtil.pyventory_db_update(mainUtil.FileBrowser(".csv", False))
                 self.interfaceResponce = "none"
+            
+            if self.interfaceResponce.upper() == "DELETE":
+                data = mainUtil.jsonOpenSave('OPEN')
+                self.deleteResponce = input("delete-")
+                for i in data:
+                    if str(self.deleteResponce).lstrip('0') in i: 
+                        print(self.deleteResponce)  
+                        # data.pop(self.deleteResponce)
+                mainUtil.jsonOpenSave('SAVE', data)
+
+
 
             if self.interfaceResponce == 'Main':
                 self.interfaceResponce = input(self._logo + " Menu-")
@@ -774,4 +918,4 @@ user1 = Interfacetemp()
 user1.Menu()
 
 # test = Utilities()
-# test.save2db()
+# test.progressRoomDisplay("494", "B142")
