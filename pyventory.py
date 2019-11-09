@@ -242,6 +242,7 @@ class Utilities:            # Utilities
         _filelist = os.listdir(".") # list directory to a list
         count = 0
         files = []
+        print('     {0:} - {1:}'.format('X', "Quit"))
         for filename in _filelist:
             if filename.endswith(_extention):   # if file ends with specified extention.
                 files.append(filename)          # then add file to list (_files)
@@ -249,29 +250,14 @@ class Utilities:            # Utilities
                 count += 1
         _filechoose = ''
         while len(str(_filechoose)) < 1:
-            if _new == True:
-                print('or type name of new Project.')
             _filechoose = input('File:')
             try:
                 self.p_print(4, Directories._TC['_INFO'], _filechoose)
-                if _filechoose[0].upper() in ('ZYXWVUTSRQPONMLKJIHGFEDCBA'):
-                    if _filechoose[0].upper() == 'X':
-                        break
-                    else:    
-                        self.writeFile((_filechoose + "-scanned.csv"), '')
-                        return(_filechoose + "-scanned.csv")
                 if _filechoose[0] in ('0123456789'):
-                    if len(_filechoose) > 2:
-                        self.writeFile((_filechoose + "-scanned.csv"), '')
-                        return(_filechoose + "-scanned.csv")
-                    else:
-                        self.p_print(4, Directories._TC['_INFO'], files[int(_filechoose)])
-                        return(files[int(_filechoose)])
+                    self.p_print(4, Directories._TC['_INFO'], files[int(_filechoose)])
+                    return(files[int(_filechoose)])
                 else:
-                    if _new == False:
-                        _filechoose = ''
-                        self.p_print(1, Directories._TC['_ERROR'], "NO new file at this point")
-                        break
+                    break
             except ValueError:
                 self.p_print(1, Directories._TC['_ERROR'], 'ERROR: Please Enter Project Name or Number')
     def CSVwriter(self, _filename, _info):      # Writes(appends) data to CSV files one line at a time.
@@ -493,7 +479,7 @@ class Utilities:            # Utilities
                         ('0' if int(self.scannedInSchool(s)) == 0 else str((int(self.scannedInSchool(s))/int(self.totalInSchool(s)))*100)[:3])))
                 for r in self.progressRoomList(s):
                     self.p_print(1, (Directories._TC['_GREEN'] if ((self.scannedInRoom(s, r)/self.totalInRoom(s, r))*100 if self.scannedInRoom(s, r) > 0 else 0) > 99 else Directories._TC['_RESET']), '|{0:^20}|{1:>4}/{2:<4}|{3:>5}%|'.format(
-                        ('{BLANK}' if r == '' else r),
+                        '{BLANK}' if r == '' else r.replace('\u000b', ''),
                         self.scannedInRoom(s, r),
                         self.totalInRoom(s, r),
                         (0 if self.scannedInRoom(s, r) < 1 else str((self.scannedInRoom(s, r)/self.totalInRoom(s, r))*100)[:3])))
@@ -506,7 +492,7 @@ class Utilities:            # Utilities
                         ('0' if int(self.scannedInSchool(school)) == 0 else str((int(self.scannedInSchool(school))/int(self.totalInSchool(school)))*100)[:3])))
             for r in self.progressRoomList(school):
                 self.p_print(1, (Directories._TC['_GREEN'] if ((self.scannedInRoom(school, r)/self.totalInRoom(school, r))*100 if self.scannedInRoom(school, r) > 0 else 0) > 99 else Directories._TC['_RESET']), '|{0:^20}|{1:>4}/{2:<4}|{3:>5}%|'.format(
-                    ('{BLANK}' if r == '' else r),
+                    '{BLANK}' if r == '' else r.replace('\u000b', ''),
                     self.scannedInRoom(school, r),
                     self.totalInRoom(school, r),
                     (0 if self.scannedInRoom(school, r) < 1 else str((self.scannedInRoom(school, r)/self.totalInRoom(school, r))*100)[:3])))
