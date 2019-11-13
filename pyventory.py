@@ -157,23 +157,56 @@ class Utilities:            # Utilities
     def pyventory_db_update(self, _filename):   # databnase update modual
         self.p_print(4, Directories._TC['_HEADING'], '******pyventory_db_update({})******'.format(_filename))
         Updated_pyventory_db = {}
-        if os.path.exists(pyventory_db):                # Check if file exists
-            data = self.jsonOpenSave('OPEN')
-            Updated_pyventory_db.update(data)
-        else:
-            data = {}
-          
-        updatefile_list = self.CSV2List(_filename)          # takes a .CSV file from inventory database and turn it to a list for proccessing.
-        self.p_print(4, Directories._TC['_INFO'], updatefile_list)
-        self.p_print(1, Directories._TC["_INFO"], "Updating Pyventory Database, Please Wait...")
-        
-        for row in updatefile_list:
-            self.p_print(4, Directories._TC['_INFO'], row)
-            if str(row[Directories._INV_ROW['Asset']]).lstrip('0') in data:      # check if asset tage is in Database.
-                for i in data[str(row[Directories._INV_ROW['Asset']]).lstrip('0')]:
-                    datecode = i["Scan Year"]           # pulled from existing data to be added to new database.
-                    Updated_pyventory_db[str(row[Directories._INV_ROW['Asset']]).lstrip('0')] = []   # create new record in json file
-                    Updated_pyventory_db[str(row[Directories._INV_ROW['Asset']]).lstrip('0')].append({   # add data to record
+        if type(_filename) == 'Nonetype':   
+            if os.path.exists(pyventory_db):                # Check if file exists
+                data = self.jsonOpenSave('OPEN')
+                Updated_pyventory_db.update(data)
+            else:
+                data = {}
+            
+            updatefile_list = self.CSV2List(_filename)          # takes a .CSV file from inventory database and turn it to a list for proccessing.
+            self.p_print(4, Directories._TC['_INFO'], updatefile_list)
+            self.p_print(1, Directories._TC["_INFO"], "Updating Pyventory Database, Please Wait...")
+            
+            for row in updatefile_list:
+                self.p_print(4, Directories._TC['_INFO'], row)
+                if str(row[Directories._INV_ROW['Asset']]).lstrip('0') in data:      # check if asset tage is in Database.
+                    for i in data[str(row[Directories._INV_ROW['Asset']]).lstrip('0')]:
+                        datecode = i["Scan Year"]           # pulled from existing data to be added to new database.
+                        Updated_pyventory_db[str(row[Directories._INV_ROW['Asset']]).lstrip('0')] = []   # create new record in json file
+                        Updated_pyventory_db[str(row[Directories._INV_ROW['Asset']]).lstrip('0')].append({   # add data to record
+                            "Asset": str(row[Directories._INV_ROW['Asset']]).lstrip('0'),
+                            "Serial #": row[Directories._INV_ROW["Serial #"]],
+                            "Class": row[Directories._INV_ROW["Class"]],       
+                            "Device Type": row[Directories._INV_ROW["Device Type"]],    
+                            "Make": row[Directories._INV_ROW["Make"]],
+                            "Model": row[Directories._INV_ROW["Model"]],
+                            "Cpu": row[Directories._INV_ROW["Cpu"]],
+                            "Product #": row[Directories._INV_ROW["Product #"]],
+                            "Ram": row[Directories._INV_ROW["Ram"]],
+                            "OS": row[Directories._INV_ROW["OS"]],
+                            "Hdd": row[Directories._INV_ROW["Hdd"]],
+                            "School #": row[Directories._INV_ROW["School #"]],
+                            "Room #": row[Directories._INV_ROW["Room #"]],
+                            "Username": row[Directories._INV_ROW["Username"]],
+                            "IP Addr": row[Directories._INV_ROW["IP Addr"]],
+                            "Name": row[Directories._INV_ROW["Name"]],        
+                            "Wired Mac Addr": row[Directories._INV_ROW["Wired Mac Addr"]],
+                            "Wireless Mac Addr": row[Directories._INV_ROW["Wireless Mac Addr"]],
+                            "Server Mac Addr": row[Directories._INV_ROW["Server Mac Addr"]],
+                            "InstallDate": row[Directories._INV_ROW["InstallDate"]],
+                            "Owner": row[Directories._INV_ROW["Owner"]],
+                            "UserType": row[Directories._INV_ROW["UserType"]],    
+                            "Status": row[Directories._INV_ROW["Status"]],      
+                            "Mfg Year": row[Directories._INV_ROW["Mfg Year"]],
+                            "Rotation Year": row[Directories._INV_ROW["Rotation Year"]],    
+                            "Rotation Eligible": row[Directories._INV_ROW["Rotation Eligible"]],        
+                            "School Name": row[Directories._INV_ROW["School Name"]],
+                            "Scan Year": datecode,
+                            })
+                else:
+                    Updated_pyventory_db[str(row[Directories._INV_ROW['Asset']]).lstrip('0')] = []
+                    Updated_pyventory_db[str(row[Directories._INV_ROW['Asset']]).lstrip('0')].append({
                         "Asset": str(row[Directories._INV_ROW['Asset']]).lstrip('0'),
                         "Serial #": row[Directories._INV_ROW["Serial #"]],
                         "Class": row[Directories._INV_ROW["Class"]],       
@@ -195,46 +228,16 @@ class Utilities:            # Utilities
                         "Server Mac Addr": row[Directories._INV_ROW["Server Mac Addr"]],
                         "InstallDate": row[Directories._INV_ROW["InstallDate"]],
                         "Owner": row[Directories._INV_ROW["Owner"]],
-                        "UserType": row[Directories._INV_ROW["UserType"]],    
+                        "UserType":  row[Directories._INV_ROW["UserType"]],    
                         "Status": row[Directories._INV_ROW["Status"]],      
                         "Mfg Year": row[Directories._INV_ROW["Mfg Year"]],
                         "Rotation Year": row[Directories._INV_ROW["Rotation Year"]],    
                         "Rotation Eligible": row[Directories._INV_ROW["Rotation Eligible"]],        
-                        "School Name": row[Directories._INV_ROW["School Name"]],
-                        "Scan Year": datecode,
+                        "School Name": row[Directories._INV_ROW["School Name"]],    
+                        "Scan Year": [],
                         })
-            else:
-                Updated_pyventory_db[str(row[Directories._INV_ROW['Asset']]).lstrip('0')] = []
-                Updated_pyventory_db[str(row[Directories._INV_ROW['Asset']]).lstrip('0')].append({
-                    "Asset": str(row[Directories._INV_ROW['Asset']]).lstrip('0'),
-                    "Serial #": row[Directories._INV_ROW["Serial #"]],
-                    "Class": row[Directories._INV_ROW["Class"]],       
-                    "Device Type": row[Directories._INV_ROW["Device Type"]],    
-                    "Make": row[Directories._INV_ROW["Make"]],
-                    "Model": row[Directories._INV_ROW["Model"]],
-                    "Cpu": row[Directories._INV_ROW["Cpu"]],
-                    "Product #": row[Directories._INV_ROW["Product #"]],
-                    "Ram": row[Directories._INV_ROW["Ram"]],
-                    "OS": row[Directories._INV_ROW["OS"]],
-                    "Hdd": row[Directories._INV_ROW["Hdd"]],
-                    "School #": row[Directories._INV_ROW["School #"]],
-                    "Room #": row[Directories._INV_ROW["Room #"]],
-                    "Username": row[Directories._INV_ROW["Username"]],
-                    "IP Addr": row[Directories._INV_ROW["IP Addr"]],
-                    "Name": row[Directories._INV_ROW["Name"]],        
-                    "Wired Mac Addr": row[Directories._INV_ROW["Wired Mac Addr"]],
-                    "Wireless Mac Addr": row[Directories._INV_ROW["Wireless Mac Addr"]],
-                    "Server Mac Addr": row[Directories._INV_ROW["Server Mac Addr"]],
-                    "InstallDate": row[Directories._INV_ROW["InstallDate"]],
-                    "Owner": row[Directories._INV_ROW["Owner"]],
-                    "UserType":  row[Directories._INV_ROW["UserType"]],    
-                    "Status": row[Directories._INV_ROW["Status"]],      
-                    "Mfg Year": row[Directories._INV_ROW["Mfg Year"]],
-                    "Rotation Year": row[Directories._INV_ROW["Rotation Year"]],    
-                    "Rotation Eligible": row[Directories._INV_ROW["Rotation Eligible"]],        
-                    "School Name": row[Directories._INV_ROW["School Name"]],    
-                    "Scan Year": [],
-                    })
+        else:
+            pass
                 
         self.jsonOpenSave('SAVE', Updated_pyventory_db) 
     def FileBrowser(self, _extention, _new):    # Used to Display and  select what file to load. basic text interface file browser
