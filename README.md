@@ -1,40 +1,81 @@
 # Pyventory🐍✅🐍
-Python based Inventory Assistant.
 
-You MUST have access to export a Comma Separated Value (CSV) file from the database you are using.
+## Summery
 
-SETUP:✔✔✔
-    
-    1.Download Master-Pyventry.zip and extract all files, pyventory only requiers that python 3.7+ is installed.
-    
-    2. Copy the export of inventory file into the pyventory folder (Must be a .CSV file).
-    
-    3. run pyventory.
+A Python (cross platform) based Inventory Asset Checker. Compatable with any Comma Seperated Value (CSV) file, This program will check if Asset or any other uniqe idetifier is listed in your database and mak it as checked off and show you basic details of the information. (indended to work with computer devices in inventory)
 
-Current Features:👍👍👍
-    
-    1. Enter/Scan barcodes and pyventory will use the inventory file provided to check if the barcode is in the database. 
-    
-    2. Items that were not found in the inventory list Will show in Red,
-    
-    3. Progress Menu allow you to see what you have and have not check off your inventory.
+**⚠You MUST have access to export a (CSV) file from the database you are using.⚠**
 
-Tested On:🧪🧪🧪
+## SETUP:✔✔✔
+### Windows
+ 
+ Downlaod and install python 3.7+ from [Python.org](https://python.org/).
+ 
+ Download [Pyventory-Master](https://github.com/wifilizerd/Pyventory/archive/master.zip).
+ 
+ **⚠During the Python install Make sure you Check the box to ADD PYTHON3.8 TO PATH⚠**
+ 
+ Copy CSV file into the Pyventory (pyventory_master) Directory.
+ 
+ **📝NOTE: Pyventory look in the Pyventory root directory for onlyfile ending with .csv.📝**
+ 
+ Double click Pyventory.py to run.
     
-    Windows 10 with python 3.7
+### macOS 10.12+
+
+ Downlaod and install python 3.7+ from [Python.org](https://python.org/).
     
-    macOS 10.12 with Python 3.8
+ Download [Pyventory-Master](https://github.com/wifilizerd/Pyventory/archive/master.zip).
     
-    macOS 10.13 with python 3.8
+ Copy CSV file into the Pyventory (pyventory_master) Directory.
+   
+ ** ⚠NOTE: Pyventory look in the Pyventory root directory for onlyfile ending with .csv. ⚠**
+ 
+ Run Python Launcher
+ 
+ Right Click (control Click) the Pyventory.py file and under Open With Select Other.
+ 
+ Select Python 3.8> Python Launcher
+ 
+ **⚠Check that the Always Open With Box is marked⚠**
+ 
+ ** macOS 10.12+ you will need to allow the script to run in the control panel. 
+ 
+ Set Interpreter **⚠(or Python Launcher will not run Python3.8 it will run python 2.7)⚠**
+```
+/usr/local/bin/python3.8
+```
+ 
+ Check Interactive Mode after Script
+ 
+ 
+ Double click Pyventory.py to run. and scale window to comfortable size.
+ 
+ #### macOS Tips
+
+**😃macOS 10.14+ Dark mode Looks Better😃**
+
+**😃Terminal Setting Homebrew Terminal Theme and Window setting set width to 130, height to 40.😃**
+    
+
+## Tested On:🧪🧪🧪
+    
+Windows 10 with python 3.7
+    
+macOS 10.12 with Python 3.8
+    
+macOS 10.13 with python 3.8
+    
+macOS 10.15 with python 3.8
 
 
-Warranty:
+## Warranty:⚠⚠⚠
 
-    THERE IS NONE, by using this probram you Understand that there is no warrenty and that this program is free to use at your own risk.
+THERE IS NONE, by using this probram you Understand that there is no warrenty and that this program is free to use at your own risk.
 
-Bug Fixes:'🐛🐜🐛🐜🐛🐜
+## Bug Fixes:'🐛🐜🐛🐜🐛🐜
 
-    This is all my personal time, so that means that any bug reports will take some time to get to.
+This is all my personal time, so that means that any bug reports will take some time to get to.
 
 
 Enjoy!
