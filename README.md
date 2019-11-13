@@ -20,8 +20,10 @@ Current Features:👍
     3. Progress Menu allow you to see what you have and have not check off your inventory.
 
 Tested On:
-Windows 10 with python 3.7,
-Macos X 10.13 with python 3.8
+Windows 10 with python 3.7
+macOS 10.12 with Python 3.8
+macOS 10.13 with python 3.8
+
 
 Warranty:
 THERE IS NONE, by using this probram you Understand that there is no warrenty and that this program is free to use at your own risk.
