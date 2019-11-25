@@ -1,7 +1,7 @@
 #!/Python27/pythonw.exe
 #1/bin/python
 #python 3.7
-#Pyventory - 0.6.5
+#Pyventory - 1.0
 # import all needed libraries
 import sys, os, csv, json, datetime 
 
@@ -116,10 +116,6 @@ class Utilities:            # Utilities
             return(
                 "ScanandCheck Help. \n"
                 "{ASSET TAG}    Enter the Asset tag to lookup\n"
-                # "add        enable taking notes if the recorde is not found in inventory file.\n"
-                # "notadd     disable taking notes if the recorde is not found in inventory file.\n"
-                # "ask        ask each time to take notes if the recorde is not found in inventory file.\n"
-                # "room       set room number to check.\n"
                 "x or exit      Save and Exit to Main Menu\n"
             )   
         elif _help.upper() == 'PROGRESS':   # Progress Page Help Menu
@@ -128,7 +124,6 @@ class Utilities:            # Utilities
                 "all            Show all Room and there current Progress.\n"
                 "{school #}     Enter School # to show a list of only rooms in the school\n"
                 "{room #}       (Must enter school # fist) Lists all devices assigned to room#.\n"
-                # "export     Saves all Not Scanned Asset info to a file. \n"
                 "x or exit      Exit to Main Menu\n"
             )
         elif _help.upper() == "UPDATE":     # in place for the current interface setup, used for allowing the menu to run update.
@@ -580,7 +575,6 @@ class Interface:
             mainUtil.p_print(2, Directories._TC["_YELLOW"], mainUtil.Help(self._logo))
             
             if self.interfaceResponce.upper() == "SCAN":
-                # pvDBAsset_list = mainUtil.GetSingleList(mainUtil.CSV2List(pyventory_db), 'Asset')
                 while self.interfaceResponce.upper() == "SCAN":
                     mainUtil.ClearScreen()
                     mainUtil.Logo(self._logo)
@@ -660,8 +654,6 @@ class Interface:
                                 break
                         mainUtil.jsonOpenSave('SAVE', data)
 
-
-
             if self.interfaceResponce == 'Main':
                 self.interfaceResponce = input(self._logo + " Menu-")
                 if mainUtil.Help(self.interfaceResponce) != 'null':         #is there is no help menu for the entry restart MENU()
@@ -672,7 +664,3 @@ class Interface:
 #start
 user1 = Interface()
 user1.Menu()
-
-# test = Utilities()
-# test.scannedInSchool("494")
-# test.totalInSchool("494")
