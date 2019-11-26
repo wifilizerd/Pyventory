@@ -15,6 +15,7 @@ pyventory_db = ".pv_db.json"
 autoSave_file = "~autosave.csv"
 # ScannedFile =  ""
 currentscanlist = []
+versionnumber = '2.0'
 
 class Directories:          # Directories
     # http://ozzmaker.com/add-colour-to-text-in-python/
@@ -719,12 +720,12 @@ Main.config(menu=menubar)
 
 spacer = LabelFrame(Main, height=20) # made as a space from the top of the window
 spacer.pack()
-
+logopic = PhotoImage(file="img/Logo.gif")
 logo = Canvas(Main,bg="black", height=200, width=500)
-
-
-
-
+logo.create_image(502,0, anchor=NE, image=logopic)
 logo.pack()
+
+pyventory_version = Label(Main, text=versionnumber)
+pyventory_version.pack()
 
 Main.mainloop()
