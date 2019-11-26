@@ -667,6 +667,12 @@ class Interface:
 # user1 = Interface()
 # user1.Menu()
 
+class Windows:
+    def IndevidualWindow(self):
+        self.IndevidualMainWindow = Toplevel(height=500, width=500)
+
+
+        self.IndevidualMainWindow.mainloop()
 #GUI Start
 
 # Main Windows
@@ -678,9 +684,10 @@ Main.title('Pyventory - 2.0')
 menubar = Menu(Main)
 
 # scan menu
+scanner = Windows()
 ScanMenu = Menu(menubar, tearoff=0)
 menubar.add_cascade(label="Scan", menu=ScanMenu) # added after ScanMenu so no error
-ScanMenu.add_command(label="Indevidual", command='')
+ScanMenu.add_command(label="Indevidual", command=scanner.IndevidualWindow)
 ScanMenu.add_command(label = "Bulk", command='')
 ScanMenu.add_separator()
 ScanMenu.add_command(label = "Close", command=Main.quit)
