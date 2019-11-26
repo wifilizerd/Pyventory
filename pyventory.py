@@ -1,9 +1,11 @@
 #!/Python27/pythonw.exe
 #1/bin/python
 #python 3.7
-#Pyventory - 1.0
+#Pyventory - 2.0
 # import all needed libraries
-import sys, os, csv, json, datetime 
+import sys, os, csv, json, datetime,tkinter 
+from tkinter import *
+from tkinter import filedialog
 
 # Gobal Variables
 _DEBUG = 2          # 0 = no output, 1 =  Standered Output, 2 = Detail output, 3 = Basic Debug, 4 = pause Debug , 5 = everything,
@@ -61,7 +63,7 @@ class Directories:          # Directories
         "Serial #":           29,
         "Unknown":            30,
         "MDM Purchased":      31,     # Yes/No
-        "Device Type":        32,     # Laptop, Chromebook, etc
+        "Device Type":        32,     # LapMain, Chromebook, etc
         "Username":           33,
         "UserType":           34,     # Student, Teacher, Admin, Etc
         "Rotation Year":      35,     # Year to be Rotated
@@ -660,7 +662,69 @@ class Interface:
                     self._logo = self.interfaceResponce
                     self._help = self.interfaceResponce
 
-
 #start
-user1 = Interface()
-user1.Menu()
+# user1 = Interface()
+# user1.Menu()
+
+#GUI Start
+
+# Main Windows
+Main = Tk()
+Main.geometry("600x300") #Width x Height
+Main.title('Pyventory - 2.0')
+
+# Manu Bar setup
+menubar = Menu(Main)
+
+# scan menu
+ScanMenu = Menu(menubar, tearoff=0)
+menubar.add_cascade(label="Scan", menu=ScanMenu) # added after ScanMenu so no error
+ScanMenu.add_command(label="Indevidual", command='')
+ScanMenu.add_command(label = "Bulk", command='')
+ScanMenu.add_separator()
+ScanMenu.add_command(label = "Close", command=Main.quit)
+
+# Progress MEnu
+ProgressMenu = Menu(menubar, tearoff=0)
+menubar.add_cascade(label="Progress", menu=ProgressMenu)
+ProgressMenu.add_command(label="All", command='')
+ProgressMenu.add_command(label = "By School", command='')
+ProgressMenu.add_command(label = "By Room", command='')
+
+# Database Menu
+DatabaseMenu = Menu(menubar, tearoff=0)
+menubar.add_cascade(label="Database", menu=DatabaseMenu)
+DatabaseMenu.add_command(label="Update", command='')
+DatabaseMenu.add_command(label = "Clean", command='')
+DatabaseMenu.add_command(label = "Delete", command='')
+
+# Automation Menu
+AutoMenu = Menu(menubar, tearoff=0)
+menubar.add_cascade(label="Automation", menu=AutoMenu)
+# AutoMenu.add_command(label="Update", command='')
+
+# Help Menu
+HelpMenu = Menu(menubar, tearoff=0)
+menubar.add_cascade(label="Help", menu=HelpMenu)
+HelpMenu.add_command(label = "About", command='')
+HelpMenu.add_command(label="View Help", command='')
+HelpMenu.add_command(label = "Configure", command='')
+HelpMenu.add_separator()
+HelpMenu.add_command(label = "Check for Update", command='')
+
+# Main Menu Loop
+Main.config(menu=menubar)
+
+# Code to add widgets will go here...
+
+spacer = LabelFrame(Main, height=20) # made as a space from the top of the window
+spacer.pack()
+
+logo = Canvas(Main,bg="black", height=200, width=500)
+
+
+
+
+logo.pack()
+
+Main.mainloop()
