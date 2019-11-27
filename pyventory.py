@@ -155,7 +155,7 @@ class Utilities:            # Utilities
     def pyventory_db_update(self, _filename):   # databnase update modual
         self.p_print(4, Directories._TC['_HEADING'], '******pyventory_db_update({})******'.format(_filename))
         Updated_pyventory_db = {}
-        if type(_filename) == 'Nonetype':   
+        if type(_filename) != 'Nonetype':   
             if os.path.exists(pyventory_db):                # Check if file exists
                 data = self.jsonOpenSave('OPEN')
                 Updated_pyventory_db.update(data)
@@ -664,75 +664,100 @@ class Interface:
                     self._help = self.interfaceResponce
 
 #start
-# user1 = Interface()
-# user1.Menu()
+user1 = Interface()
+user1.Menu()
 
 class Windows:
     def IndevidualWindow(self):
-        self.IndevidualMainWindow = Toplevel(height=500, width=500)
+        util = Utilities()
+        self.schoollist = util.prograssSchoolList()
+        self.IndevidualMainWindow = Toplevel()
+        self.IndevidualMainWindow.title('Indevidual Scanner')
+        self.IndevidualMainWindow.minsize(500, 500)
+        self.IndevidualMainWindow.columnconfigure(4, weight=1)
+        self.IndevidualMainWindow.rowconfigure(2, weight=1)        
+
+        self.cScanList = Listbox(self.IndevidualMainWindow, bg='black', height=25, width=80)
+        self.SchoolMenuButton = Menubutton(self.IndevidualMainWindow, text="School", relief=RAISED)
+        self.SchoolMenu = Menu(self.SchoolMenuButton, tearoff=0)
+        self.ScanLabel = Label(self.IndevidualMainWindow, text='Asset Tag:')
+        self.Scan = Entry(self.IndevidualMainWindow)
+
+        print(self.schoollist)
+        for i in self.schoollist:
+            print(i)
+            self.SchoolMenu.add_checkbutton(label=i, variable=i) 
+    
+        
+        self.cScanList.grid(column=0, row=0, columnspan=2, padx=10, pady=10)
+        self.ScanLabel.grid(column=0, row=2)
+        self.SchoolMenuButton.grid(column=0, row=1)
+        self.Scan.grid(column=1, row=2)
+        self.Scan.focus()
+
 
 
         self.IndevidualMainWindow.mainloop()
 #GUI Start
 
-# Main Windows
-Main = Tk()
-Main.geometry("600x300") #Width x Height
-Main.title('Pyventory - 2.0')
+# # Main Windows
+# Main = Tk()
+# Main.geometry("600x300") #Width x Height
+# Main.title('Pyventory - 2.0')
 
-# Manu Bar setup
-menubar = Menu(Main)
+# # Manu Bar setup
+# menubar = Menu(Main)
 
-# scan menu
-scanner = Windows()
-ScanMenu = Menu(menubar, tearoff=0)
-menubar.add_cascade(label="Scan", menu=ScanMenu) # added after ScanMenu so no error
-ScanMenu.add_command(label="Indevidual", command=scanner.IndevidualWindow)
-ScanMenu.add_command(label = "Bulk", command='')
-ScanMenu.add_separator()
-ScanMenu.add_command(label = "Close", command=Main.quit)
+# # scan menu
+# scanner = Windows()
+# ScanMenu = Menu(menubar, tearoff=0)
+# menubar.add_cascade(label="Scan", menu=ScanMenu) # added after ScanMenu so no error
+# ScanMenu.add_command(label="Indevidual", command=scanner.IndevidualWindow)
+# ScanMenu.add_command(label = "Bulk", command='')
+# ScanMenu.add_separator()
+# ScanMenu.add_command(label = "Close", command=Main.quit)
 
-# Progress MEnu
-ProgressMenu = Menu(menubar, tearoff=0)
-menubar.add_cascade(label="Progress", menu=ProgressMenu)
-ProgressMenu.add_command(label="All", command='')
-ProgressMenu.add_command(label = "By School", command='')
-ProgressMenu.add_command(label = "By Room", command='')
+# # Progress MEnu
+# ProgressMenu = Menu(menubar, tearoff=0)
+# menubar.add_cascade(label="Progress", menu=ProgressMenu)
+# ProgressMenu.add_command(label="All", command='')
+# ProgressMenu.add_command(label = "By School", command='')
+# ProgressMenu.add_command(label = "By Room", command='')
 
-# Database Menu
-DatabaseMenu = Menu(menubar, tearoff=0)
-menubar.add_cascade(label="Database", menu=DatabaseMenu)
-DatabaseMenu.add_command(label="Update", command='')
-DatabaseMenu.add_command(label = "Clean", command='')
-DatabaseMenu.add_command(label = "Delete", command='')
+# # Database Menu
+# DatabaseMenu = Menu(menubar, tearoff=0)
+# menubar.add_cascade(label="Database", menu=DatabaseMenu)
+# DatabaseMenu.add_command(label="Update", command='')
+# DatabaseMenu.add_command(label = "Clean", command='')
+# DatabaseMenu.add_command(label = "Delete", command='')
 
-# Automation Menu
-AutoMenu = Menu(menubar, tearoff=0)
-menubar.add_cascade(label="Automation", menu=AutoMenu)
-# AutoMenu.add_command(label="Update", command='')
+# # Automation Menu
+# AutoMenu = Menu(menubar, tearoff=0)
+# menubar.add_cascade(label="Automation", menu=AutoMenu)
+# # AutoMenu.add_command(label="Update", command='')
 
-# Help Menu
-HelpMenu = Menu(menubar, tearoff=0)
-menubar.add_cascade(label="Help", menu=HelpMenu)
-HelpMenu.add_command(label = "About", command='')
-HelpMenu.add_command(label="View Help", command='')
-HelpMenu.add_command(label = "Configure", command='')
-HelpMenu.add_separator()
-HelpMenu.add_command(label = "Check for Update", command='')
+# # Help Menu
+# HelpMenu = Menu(menubar, tearoff=0)
+# menubar.add_cascade(label="Help", menu=HelpMenu)
+# HelpMenu.add_command(label = "About", command='')
+# HelpMenu.add_command(label="View Help", command='')
+# HelpMenu.add_command(label = "Configure", command='')
+# HelpMenu.add_separator()
+# HelpMenu.add_command(label = "Check for Update", command='')
 
-# Main Menu Loop
-Main.config(menu=menubar)
+# # Main Menu Loop
+# Main.config(menu=menubar)
 
-# Code to add widgets will go here...
+# # Code to add widgets will go here...
 
-spacer = LabelFrame(Main, height=20) # made as a space from the top of the window
-spacer.pack()
-logopic = PhotoImage(file="img/Logo.gif")
-logo = Canvas(Main,bg="black", height=200, width=500)
-logo.create_image(502,0, anchor=NE, image=logopic)
-logo.pack()
+# spacer = LabelFrame(Main, height=20) # made as a space from the top of the window
+# spacer.pack()
+# logopic = PhotoImage(file="img/Logo.gif")
+# logo = Canvas(Main,bg="black", height=200, width=500)
+# logo.create_image(502,0, anchor=NE, image=logopic)
+# logo.pack()
 
-pyventory_version = Label(Main, text=versionnumber)
-pyventory_version.pack()
+# pyventory_version = Label(Main, text=versionnumber)
+# pyventory_version.pack()
 
-Main.mainloop()
+# Main.mainloop()
