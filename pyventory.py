@@ -6,6 +6,7 @@
 import sys, os, csv, json, datetime,tkinter 
 from tkinter import *
 from tkinter import filedialog
+from tkinter import messagebox
 
 # Gobal Variables
 _DEBUG = 2          # 0 = no output, 1 =  Standered Output, 2 = Detail output, 3 = Basic Debug, 4 = pause Debug , 5 = everything,
@@ -68,7 +69,7 @@ class Directories:          # Directories
         "Username":           33,
         "UserType":           34,     # Student, Teacher, Admin, Etc
         "Rotation Year":      35,     # Year to be Rotated
-        "School Name":        42,     # School Name, Scan File Format 
+        "School Name":        44,     # School Name, Scan File Format 
         }
 
 class Utilities:            # Utilities
@@ -234,8 +235,7 @@ class Utilities:            # Utilities
                         "Scan Year": [],
                         })
         else:
-            pass
-                
+            pass  
         self.jsonOpenSave('SAVE', Updated_pyventory_db) 
     def FileBrowser(self, _extention, _new):    # Used to Display and  select what file to load. basic text interface file browser
         self.p_print(4, Directories._TC['_HEADING'], '******FileBrowser({0:}, {1:})******'.format(_extention, _new))
@@ -318,7 +318,16 @@ class Utilities:            # Utilities
         self.p_print(4, Directories._TC['_HEADING'], '******AssetDisplay(_list(_list(see list _DEBUG = 5), {:})******'.format(_color))
         self.p_print(5, Directories._TC['_HEADING'], '******AssetDisplay({0:}, {1:})******'.format(_list, _color))
         if len(_list) > 2:
-            self.p_print(1, Directories._TC[_color], '{0:>10} : {1:16} : {2:17} : {3:12} : {4:19} : {5:19} : {6:3} - {7:}'.format(
+            # self.p_print(1, Directories._TC[_color], '{0:>10} : {1:16} : {2:17} : {3:12} : {4:19} : {5:19} : {6:3} - {7:}'.format(
+            #     _list[0], 
+            #     _list[1], 
+            #     _list[2], 
+            #     _list[3], 
+            #     _list[4], 
+            #     _list[5], 
+            #     _list[6], 
+            #     _list[7]))
+            return('{0:>12} : {1:16} : {2:17} : {3:12} : {4:18} : {5:32} : {6:3} - {7:}'.format(
                 _list[0], 
                 _list[1], 
                 _list[2], 
@@ -349,8 +358,28 @@ class Utilities:            # Utilities
                     self.AssetDisply(data_list, '_GREEN')
                 else:
                     self.AssetDisply(data_list, '_RED')
+    def DisplayScanned(self, _scan):
+        self.data = self.jsonOpenSave('OPEN', '')
+        self._scan = _scan
+        self.data_list = []
+
+        if self._scan in self.data:
+            for i in self.data[self._scan]:
+                self.data_list.append(i["Asset"])
+                self.data_list.append(i["Serial #"])
+                self.data_list.append(i["Name"])
+                self.data_list.append(i["Room #"])
+                self.data_list.append(i["Wired Mac Addr"])
+                self.data_list.append(i["Wireless Mac Addr"])
+                self.data_list.append(i["School #"])
+                self.data_list.append(i["School Name"])
+            self.p_print(5, Directories._TC['_INFO'], self.data_list)    
+            if i["Serial #"]:   # control point, based on serial # 
+                return(self.AssetDisply(self.data_list, '_GREEN'))
+            else:
+                return(self.AssetDisply(self.data_list, '_RED'))
     def CheckScan(self, _scan):      # Used to Check the asset tag that has been entered agesnt the inventory database.
-        self.p_print(4, Directories._TC['_HEADING'], '******CheckScan({0:},{1:})******'.format(_scan, _room))
+        self.p_print(4, Directories._TC['_HEADING'], '******CheckScan({0:})******'.format(_scan))
         global currentscanlist
         self._scan = _scan
         with open(pyventory_db) as pv_data:
@@ -441,7 +470,8 @@ class Utilities:            # Utilities
                 return(data)
         if _opensave.upper() == "SAVE":
             with open(pyventory_db, 'w') as outfile:    # open database file and write over it with new data
-                json.dump(_info, outfile, sort_keys=True, indent=4) # sort_key will sort the records and indent organizes the file to easy to read json.
+                # json.dump(_info, outfile, sort_keys=True, indent=4) # sort_key will sort the records and indent organizes the file to easy to read json.
+                json.dump(_info, outfile, sort_keys=True) # sort_key will sort the records and indent organizes the file to easy to read json.
     def prograssSchoolList(self):
         schoollist = []
         data = self.jsonOpenSave('OPEN') 
@@ -684,51 +714,72 @@ class Windows:
         if checkutil.numberChecker(self._scan) == False:
             pass
         else:
+            self._data = checkutil.jsonOpenSave('OPEN', '')
+            if self._scan not in self._data:
+                self.cScanList.configure(bg='red')
+            else:
+                self.cScanList.configure(bg='green')
             checkutil.CheckScan(self._scan)
         self.Scan.delete(first=0, last=100)
+        self.cScanList.insert(END, checkutil.DisplayScanned(self._scan)) 
+        
+    def Updater(self):
+        updateutil = Utilities()
+        filename =  filedialog.askopenfilename(initialdir = "./",title = "Select file",filetypes = (("CSV files","*.csv"),("all files","*.*")))
+        if filename:
+            updateutil.pyventory_db_update(filename)
+            messagebox.showinfo("Database Updater", "Database has been updated with: " + filename)
 
     def IndevidualWindow(self):
         util = Utilities()
         # self.schoolmenulist = {}
 
-        self.schoollist = util.prograssSchoolList()
+        if os.path.exists(pyventory_db):
+            self.schoollist = util.prograssSchoolList()
+            self.IndevidualMainWindow = Toplevel()
+            self.IndevidualMainWindow.title('Indevidual Scanner')
+            self.IndevidualMainWindow.minsize(800, 500)
+            self.IndevidualMainWindow.columnconfigure(4, weight=1)
+            self.IndevidualMainWindow.rowconfigure(2, weight=1)        
 
-        self.IndevidualMainWindow = Toplevel()
-        self.IndevidualMainWindow.title('Indevidual Scanner')
-        self.IndevidualMainWindow.minsize(500, 500)
-        self.IndevidualMainWindow.columnconfigure(4, weight=1)
-        self.IndevidualMainWindow.rowconfigure(2, weight=1)        
+            self.schoolvar = StringVar()
+            self.schoolvar.set('SCHOOL')
+            self.roomvar = StringVar()
+            self.roomvar.set('ROOM')
+            self.roomlist = util.progressRoomList(self.schoolvar.get()) 
 
-        self.schoolvar = StringVar()
-        self.schoolvar.set('SCHOOL')
-        self.roomvar = StringVar()
-        self.roomvar.set('ROOM')
-        self.roomlist = util.progressRoomList(self.schoolvar.get()) 
+            self.cScanList = Listbox(self.IndevidualMainWindow, bg='black', fg='white', height=30, width=130)
+            self.cScanList.insert(END, '{0:>10} : {1:24} : {2:21} : {3:8} : {4:22} : {5:19} : {6:3} - {7:}'.format(
+                            'Asset Tag', 
+                            'Serial #', 
+                            'Name', 
+                            'Room #', 
+                            'Wire MAC', 
+                            'Wireless MAC', 
+                            'School #', 
+                            'Name'))
+            
+            self.SchoolMenu = OptionMenu(self.IndevidualMainWindow, self.schoolvar, *self.schoollist)
+            self.RoomMenu = OptionMenu(self.IndevidualMainWindow, self.roomvar, *self.roomlist)
 
-        self.cScanList = Listbox(self.IndevidualMainWindow, bg='black', height=30, width=80)
-        
-        self.SchoolMenu = OptionMenu(self.IndevidualMainWindow, self.schoolvar, *self.schoollist)
-        self.RoomMenu = OptionMenu(self.IndevidualMainWindow, self.roomvar, *self.roomlist)
+            self.ScanLabel = Label(self.IndevidualMainWindow, text='Asset Tag:')
+            self.Scan = Entry(self.IndevidualMainWindow, width=30)
+            self.EnterButton = Button(self.IndevidualMainWindow, text='Enter', padx=10, command=self.Checker)
+            self.EnterFrame = Frame(self.IndevidualMainWindow, height=5)
+                
+            self.cScanList.grid(column=0, row=0, columnspan=5, padx=10, pady=10)
+            self.SchoolMenu.grid(column=0, row=1)
+            self.RoomMenu.grid(column=1, row=1)
+            self.ScanLabel.grid(column=2, row=1)
+            self.Scan.grid(column=3, row=1)
+            self.Scan.focus()
+            self.EnterButton.grid(column=4, row=1)
+            self.EnterFrame.grid(column=0, row=2)
+            self.Scan.bind("<Return>", lambda e:self.Checker())
 
-        self.ScanLabel = Label(self.IndevidualMainWindow, text='Asset Tag:')
-        self.Scan = Entry(self.IndevidualMainWindow, width=30)
-
-        self.EnterButton = Button(self.IndevidualMainWindow, text='Enter', padx=10, command=self.Checker)
-
-        self.EnterFrame = Frame(self.IndevidualMainWindow, height=5)
-              
-        self.cScanList.grid(column=0, row=0, columnspan=5, padx=10, pady=10)
-        self.SchoolMenu.grid(column=0, row=1)
-        self.RoomMenu.grid(column=1, row=1)
-        self.ScanLabel.grid(column=2, row=1)
-        self.Scan.grid(column=3, row=1)
-        self.Scan.focus()
-        self.EnterButton.grid(column=4, row=1)
-        self.EnterFrame.grid(column=0, row=2)
-        self.Scan.bind("<Return>", lambda e:self.Checker())
-
-
-        self.IndevidualMainWindow.mainloop()
+            self.IndevidualMainWindow.mainloop()
+        else:
+            messagebox.showinfo("Error", "No Database Found run Database>Update")
 #GUI Start
 
 # Main Windows
@@ -744,37 +795,38 @@ scanner = Windows()
 ScanMenu = Menu(menubar, tearoff=0)
 menubar.add_cascade(label="Scan", menu=ScanMenu) # added after ScanMenu so no error
 ScanMenu.add_command(label="Indevidual", command=scanner.IndevidualWindow)
-ScanMenu.add_command(label = "Bulk", command='')
+# ScanMenu.add_command(label = "Bulk", command='')
 ScanMenu.add_separator()
 ScanMenu.add_command(label = "Close", command=Main.quit)
 
-# Progress MEnu
-ProgressMenu = Menu(menubar, tearoff=0)
-menubar.add_cascade(label="Progress", menu=ProgressMenu)
-ProgressMenu.add_command(label="All", command='')
-ProgressMenu.add_command(label = "By School", command='')
-ProgressMenu.add_command(label = "By Room", command='')
+# # Progress MEnu
+# ProgressMenu = Menu(menubar, tearoff=0)
+# menubar.add_cascade(label="Progress", menu=ProgressMenu)
+# ProgressMenu.add_command(label="All", command='')
+# ProgressMenu.add_command(label = "By School", command='')
+# ProgressMenu.add_command(label = "By Room", command='')
 
 # Database Menu
+dbwin = Windows()
 DatabaseMenu = Menu(menubar, tearoff=0)
 menubar.add_cascade(label="Database", menu=DatabaseMenu)
-DatabaseMenu.add_command(label="Update", command='')
-DatabaseMenu.add_command(label = "Clean", command='')
-DatabaseMenu.add_command(label = "Delete", command='')
+DatabaseMenu.add_command(label="Update", command=dbwin.Updater)
+# DatabaseMenu.add_command(label = "Clean", command='')
+# DatabaseMenu.add_command(label = "Delete", command='')
 
 # Automation Menu
-AutoMenu = Menu(menubar, tearoff=0)
-menubar.add_cascade(label="Automation", menu=AutoMenu)
+# AutoMenu = Menu(menubar, tearoff=0)
+# menubar.add_cascade(label="Automation", menu=AutoMenu)
 # AutoMenu.add_command(label="Update", command='')
 
 # Help Menu
-HelpMenu = Menu(menubar, tearoff=0)
-menubar.add_cascade(label="Help", menu=HelpMenu)
-HelpMenu.add_command(label = "About", command='')
-HelpMenu.add_command(label="View Help", command='')
-HelpMenu.add_command(label = "Configure", command='')
-HelpMenu.add_separator()
-HelpMenu.add_command(label = "Check for Update", command='')
+# HelpMenu = Menu(menubar, tearoff=0)
+# menubar.add_cascade(label="Help", menu=HelpMenu)
+# HelpMenu.add_command(label = "About", command='')
+# HelpMenu.add_command(label="View Help", command='')
+# HelpMenu.add_command(label = "Configure", command='')
+# HelpMenu.add_separator()
+# HelpMenu.add_command(label = "Check for Update", command='')
 
 # Main Menu Loop
 Main.config(menu=menubar)
