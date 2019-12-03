@@ -145,7 +145,6 @@ class Utilities:            # Utilities
             )
         else:
             return('null')
-    
     def pyventory_db_check(self):               # Used to check if the pyventory_db has been created then prompts user to updated if no database file is found.
         self.p_print(4, Directories._TC['_HEADING'], '******pyventory_db_check()******')
         if os.path.exists(pyventory_db):
@@ -350,19 +349,59 @@ class Utilities:            # Utilities
                     self.AssetDisply(data_list, '_GREEN')
                 else:
                     self.AssetDisply(data_list, '_RED')
-    def CheckScan(self, _scan, _rm='ALL'):      # Used to Check the asset tag that has been entered agesnt the inventory database.
-        self.p_print(4, Directories._TC['_HEADING'], '******CheckScan({0:},{1:})******'.format(_scan, _rm))
+    def CheckScan(self, _scan, _school, _room='ROOM'):      # Used to Check the asset tag that has been entered agesnt the inventory database.
+        self.p_print(4, Directories._TC['_HEADING'], '******CheckScan({0:},{1:})******'.format(_scan, _room))
         global currentscanlist
-        if _rm.upper() == 'ALL':    #used when room was specified.
-            with open(pyventory_db) as pv_data:
-                data = json.load(pv_data)    
-            if _scan in data:
-                currentscanlist.append(_scan)
-                self.autoSave(_scan)
-            else:
-                currentscanlist.append(_scan)
-                self.autoSave(_scan)
-                self.newAssetRecord(_scan)
+        self._scan = _scan
+        # self._room = _room
+        # self._school = _school
+        with open(pyventory_db) as pv_data:
+            self.data = json.load(pv_data)
+        if self._scan in self.data:
+            currentscanlist.append(self._scan)
+            self.save2db(self._scan)
+            self.p_print(4, Directories._TC['_INFO'], 'ASSET TAG FOUND')
+            # if self._school != 'SCHOOL':
+            #     for i in self.data[self._scan]:
+            #         if i['School #'] == self._school:
+            #             self.p_print(2, Directories._TC['_INFO'], 'ASSET TAG School is Right')
+            #         else:
+            #             self.p_print(2, Directories._TC['_INFO'], 'ASSET TAG School is wrong')
+            # if self._room != 'ROOM':
+            #     for i in self.data[self._scan]:
+            #         if i['Room #'] == self._room:
+            #             self.p_print(2, Directories._TC['_INFO'], 'ASSET TAG Room is Right')
+            #         else:
+            #             self.p_print(2, Directories._TC['_INFO'], 'ASSET TAG Room is wrong')
+        else:
+            currentscanlist.append(self._scan)
+            self.newAssetRecord(self._scan)
+            self.p_print(2, Directories._TC['_INFO'], 'ASSET TAG NOT FOUND')   
+
+
+
+
+        # if _scan in self.data:
+        #     currentscanlist.append(_scan)
+        #     self.save2db(self._scan)
+            
+        # else:
+        #     currentscanlist.append(_scan)
+        #     self.newAssetRecord(self._scan)
+
+
+        # if _rm.upper() == 'ROOM':    #used when room was specified.
+        #     with open(pyventory_db) as pv_data:
+        #         data = json.load(pv_data)    
+        #     if _scan in data:
+        #         currentscanlist.append(_scan)
+        #         self.autoSave(_scan)
+        #         print('found')
+        #     else:
+        #         currentscanlist.append(_scan)
+        #         self.autoSave(_scan)
+        #         self.newAssetRecord(_scan)
+        #         print('not found')
     def numberChecker(self, _scan):             # checks the entered asset tag to enforce numbers only
         self.p_print(4, Directories._TC['_HEADING'], '******numberChecker({0:})******'.format(_scan))
         checklist = []
@@ -385,28 +424,22 @@ class Utilities:            # Utilities
     def autoSave(self, _scan):                  # writes scan to the autosave file.
         self.p_print(4, Directories._TC['_HEADING'], '******autoSave()******')
         self.CSVwriter(autoSave_file, _scan)
-    def save2db(self):                          # Save changes to database.
-        self.p_print(4, Directories._TC['_HEADING'], '******save2db()******')
-        if os.path.exists(autoSave_file):
-            aSaveList = self.GetSingleList(self.CleanBlankRows(self.Dupcheck(self.CSV2List(autoSave_file))), 'Asset')
-            data = self.jsonOpenSave('OPEN', '')
+    def save2db(self, _scan):                          # Save changes to database.
+        self.p_print(4, Directories._TC['_HEADING'], '******save2db({0:})******'.format(_scan))
+        data = self.jsonOpenSave('OPEN', '')
+        self._scan = _scan
 
-            for a in aSaveList:
-                self.p_print(4, Directories._TC["_INFO"], a)
-                for i in data[a]:
-                    if self.ScanYearGen() in i["Scan Year"]:    # check if Year code is already in the list.
-                        pass
-                    else:
-                        i["Scan Year"].append(self.ScanYearGen())
-                    self.p_print(4, Directories._TC["_INFO"], i["Scan Year"])
-                
-            self.jsonOpenSave('SAVE', data)
-            os.remove(autoSave_file)    # delete autosave file when done.
-        else:
-            pass
+        for i in data[self._scan]:
+            if self.ScanYearGen() in i["Scan Year"]:    # check if Year code is already in the list.
+                pass
+            else:
+                i["Scan Year"].append(self.ScanYearGen())
+            self.p_print(4, Directories._TC["_INFO"], i["Scan Year"])
+            
+        self.jsonOpenSave('SAVE', data)
+
     def newAssetRecord(self, _scan):            # create new blank record in pyventory_db
         self.p_print(4, Directories._TC['_HEADING'], '******newAssetRecord({0:})******'.format(_scan))
-        
         data = self.jsonOpenSave('OPEN', '')
         data[_scan] = []
         data[_scan].append({
@@ -458,15 +491,25 @@ class Utilities:            # Utilities
         self.p_print(4, Directories._TC['_INFO'], schoollist)
         schoollist.sort()
         return(schoollist)
-    def progressRoomList(self, school):
+    def progressRoomList(self, school='SCHOOL'):
+        win = Windows()
         roomlist = []
-        data = self.jsonOpenSave('OPEN') 
-        for i in data:
-            for s in data[i]:
-                if school in s['School #']:
-                    if s['Room #'].upper() not in roomlist:
-                        roomlist.append(s['Room #'].upper())
+        data = self.jsonOpenSave('OPEN')
+        
+        if school == 'SCHOOL':
+            for i in data:
+                for s in data[i]:
+                    if s['Room #']:
+                        if s['Room #'].upper() not in roomlist:
+                            roomlist.append(s['Room #'].upper())
+        else:
+            for i in data:
+                for s in data[i]:
+                    if school in s['School #']:
+                        if s['Room #'].upper() not in roomlist:
+                            roomlist.append(s['Room #'].upper())
         self.p_print(4, Directories._TC['_INFO'], roomlist)
+        
         roomlist.sort()
         return(roomlist)
     def progressDisplay(self, school='ALL'):
@@ -663,101 +706,126 @@ class Interface:
                     self._logo = self.interfaceResponce
                     self._help = self.interfaceResponce
 
-#start
-user1 = Interface()
-user1.Menu()
+# start
+# user1 = Interface()
+# user1.Menu()
 
 class Windows:
+    def Checker(self):
+        checkutil = Utilities()
+        self._school = self.schoolvar.get()
+        self._room = self.roomvar.get()
+        self._scan = self.Scan.get()
+
+        # print(self._school)
+        # print(self._room)
+        # print(self._scan)
+
+        checkutil.CheckScan(self._scan, self._school, self._room)
+        self.Scan.delete(first=0, last=100)
+
     def IndevidualWindow(self):
         util = Utilities()
+        # self.schoolmenulist = {}
+
         self.schoollist = util.prograssSchoolList()
+
         self.IndevidualMainWindow = Toplevel()
         self.IndevidualMainWindow.title('Indevidual Scanner')
         self.IndevidualMainWindow.minsize(500, 500)
         self.IndevidualMainWindow.columnconfigure(4, weight=1)
         self.IndevidualMainWindow.rowconfigure(2, weight=1)        
 
-        self.cScanList = Listbox(self.IndevidualMainWindow, bg='black', height=25, width=80)
-        self.SchoolMenuButton = Menubutton(self.IndevidualMainWindow, text="School", relief=RAISED)
-        self.SchoolMenu = Menu(self.SchoolMenuButton, tearoff=0)
-        self.ScanLabel = Label(self.IndevidualMainWindow, text='Asset Tag:')
-        self.Scan = Entry(self.IndevidualMainWindow)
+        self.schoolvar = StringVar()
+        self.schoolvar.set('SCHOOL')
+        self.roomvar = StringVar()
+        self.roomvar.set('ROOM')
+        self.roomlist = util.progressRoomList(self.schoolvar.get()) 
 
-        print(self.schoollist)
-        for i in self.schoollist:
-            print(i)
-            self.SchoolMenu.add_checkbutton(label=i, variable=i) 
-    
+        self.cScanList = Listbox(self.IndevidualMainWindow, bg='black', height=30, width=80)
         
-        self.cScanList.grid(column=0, row=0, columnspan=2, padx=10, pady=10)
-        self.ScanLabel.grid(column=0, row=2)
-        self.SchoolMenuButton.grid(column=0, row=1)
-        self.Scan.grid(column=1, row=2)
-        self.Scan.focus()
+        self.SchoolMenu = OptionMenu(self.IndevidualMainWindow, self.schoolvar, *self.schoollist)
+        self.RoomMenu = OptionMenu(self.IndevidualMainWindow, self.roomvar, *self.roomlist)
 
+        self.ScanLabel = Label(self.IndevidualMainWindow, text='Asset Tag:')
+        self.Scan = Entry(self.IndevidualMainWindow, width=30)
+
+        self.EnterButton = Button(self.IndevidualMainWindow, text='Enter', padx=10, command=self.Checker)
+
+        self.EnterFrame = Frame(self.IndevidualMainWindow, height=5)
+              
+        self.cScanList.grid(column=0, row=0, columnspan=5, padx=10, pady=10)
+        self.SchoolMenu.grid(column=0, row=1)
+        self.RoomMenu.grid(column=1, row=1)
+        self.ScanLabel.grid(column=2, row=1)
+        self.Scan.grid(column=3, row=1)
+        self.Scan.focus()
+        self.EnterButton.grid(column=4, row=1)
+        self.EnterFrame.grid(column=0, row=2)
+        self.Scan.bind("<Return>", lambda e:self.Checker())
 
 
         self.IndevidualMainWindow.mainloop()
 #GUI Start
 
-# # Main Windows
-# Main = Tk()
-# Main.geometry("600x300") #Width x Height
-# Main.title('Pyventory - 2.0')
+# Main Windows
+Main = Tk()
+Main.geometry("600x300") #Width x Height
+Main.title('Pyventory - 2.0')
 
-# # Manu Bar setup
-# menubar = Menu(Main)
+# Manu Bar setup
+menubar = Menu(Main)
 
-# # scan menu
-# scanner = Windows()
-# ScanMenu = Menu(menubar, tearoff=0)
-# menubar.add_cascade(label="Scan", menu=ScanMenu) # added after ScanMenu so no error
-# ScanMenu.add_command(label="Indevidual", command=scanner.IndevidualWindow)
-# ScanMenu.add_command(label = "Bulk", command='')
-# ScanMenu.add_separator()
-# ScanMenu.add_command(label = "Close", command=Main.quit)
+# scan menu
+scanner = Windows()
+ScanMenu = Menu(menubar, tearoff=0)
+menubar.add_cascade(label="Scan", menu=ScanMenu) # added after ScanMenu so no error
+ScanMenu.add_command(label="Indevidual", command=scanner.IndevidualWindow)
+ScanMenu.add_command(label = "Bulk", command='')
+ScanMenu.add_separator()
+ScanMenu.add_command(label = "Close", command=Main.quit)
 
-# # Progress MEnu
-# ProgressMenu = Menu(menubar, tearoff=0)
-# menubar.add_cascade(label="Progress", menu=ProgressMenu)
-# ProgressMenu.add_command(label="All", command='')
-# ProgressMenu.add_command(label = "By School", command='')
-# ProgressMenu.add_command(label = "By Room", command='')
+# Progress MEnu
+ProgressMenu = Menu(menubar, tearoff=0)
+menubar.add_cascade(label="Progress", menu=ProgressMenu)
+ProgressMenu.add_command(label="All", command='')
+ProgressMenu.add_command(label = "By School", command='')
+ProgressMenu.add_command(label = "By Room", command='')
 
-# # Database Menu
-# DatabaseMenu = Menu(menubar, tearoff=0)
-# menubar.add_cascade(label="Database", menu=DatabaseMenu)
-# DatabaseMenu.add_command(label="Update", command='')
-# DatabaseMenu.add_command(label = "Clean", command='')
-# DatabaseMenu.add_command(label = "Delete", command='')
+# Database Menu
+DatabaseMenu = Menu(menubar, tearoff=0)
+menubar.add_cascade(label="Database", menu=DatabaseMenu)
+DatabaseMenu.add_command(label="Update", command='')
+DatabaseMenu.add_command(label = "Clean", command='')
+DatabaseMenu.add_command(label = "Delete", command='')
 
-# # Automation Menu
-# AutoMenu = Menu(menubar, tearoff=0)
-# menubar.add_cascade(label="Automation", menu=AutoMenu)
-# # AutoMenu.add_command(label="Update", command='')
+# Automation Menu
+AutoMenu = Menu(menubar, tearoff=0)
+menubar.add_cascade(label="Automation", menu=AutoMenu)
+# AutoMenu.add_command(label="Update", command='')
 
-# # Help Menu
-# HelpMenu = Menu(menubar, tearoff=0)
-# menubar.add_cascade(label="Help", menu=HelpMenu)
-# HelpMenu.add_command(label = "About", command='')
-# HelpMenu.add_command(label="View Help", command='')
-# HelpMenu.add_command(label = "Configure", command='')
-# HelpMenu.add_separator()
-# HelpMenu.add_command(label = "Check for Update", command='')
+# Help Menu
+HelpMenu = Menu(menubar, tearoff=0)
+menubar.add_cascade(label="Help", menu=HelpMenu)
+HelpMenu.add_command(label = "About", command='')
+HelpMenu.add_command(label="View Help", command='')
+HelpMenu.add_command(label = "Configure", command='')
+HelpMenu.add_separator()
+HelpMenu.add_command(label = "Check for Update", command='')
 
-# # Main Menu Loop
-# Main.config(menu=menubar)
+# Main Menu Loop
+Main.config(menu=menubar)
 
-# # Code to add widgets will go here...
+# Code to add widgets will go here...
 
-# spacer = LabelFrame(Main, height=20) # made as a space from the top of the window
-# spacer.pack()
-# logopic = PhotoImage(file="img/Logo.gif")
-# logo = Canvas(Main,bg="black", height=200, width=500)
-# logo.create_image(502,0, anchor=NE, image=logopic)
-# logo.pack()
+spacer = LabelFrame(Main, height=20) # made as a space from the top of the window
+spacer.pack()
+logopic = PhotoImage(file="img/Logo.gif")
+logo = Canvas(Main,bg="black", height=200, width=500)
+logo.create_image(502,0, anchor=NE, image=logopic)
+logo.pack()
 
-# pyventory_version = Label(Main, text=versionnumber)
-# pyventory_version.pack()
+pyventory_version = Label(Main, text=versionnumber)
+pyventory_version.pack()
 
-# Main.mainloop()
+Main.mainloop()
