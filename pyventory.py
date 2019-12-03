@@ -349,59 +349,21 @@ class Utilities:            # Utilities
                     self.AssetDisply(data_list, '_GREEN')
                 else:
                     self.AssetDisply(data_list, '_RED')
-    def CheckScan(self, _scan, _school, _room='ROOM'):      # Used to Check the asset tag that has been entered agesnt the inventory database.
+    def CheckScan(self, _scan):      # Used to Check the asset tag that has been entered agesnt the inventory database.
         self.p_print(4, Directories._TC['_HEADING'], '******CheckScan({0:},{1:})******'.format(_scan, _room))
         global currentscanlist
         self._scan = _scan
-        # self._room = _room
-        # self._school = _school
         with open(pyventory_db) as pv_data:
             self.data = json.load(pv_data)
         if self._scan in self.data:
             currentscanlist.append(self._scan)
             self.save2db(self._scan)
-            self.p_print(4, Directories._TC['_INFO'], 'ASSET TAG FOUND')
-            # if self._school != 'SCHOOL':
-            #     for i in self.data[self._scan]:
-            #         if i['School #'] == self._school:
-            #             self.p_print(2, Directories._TC['_INFO'], 'ASSET TAG School is Right')
-            #         else:
-            #             self.p_print(2, Directories._TC['_INFO'], 'ASSET TAG School is wrong')
-            # if self._room != 'ROOM':
-            #     for i in self.data[self._scan]:
-            #         if i['Room #'] == self._room:
-            #             self.p_print(2, Directories._TC['_INFO'], 'ASSET TAG Room is Right')
-            #         else:
-            #             self.p_print(2, Directories._TC['_INFO'], 'ASSET TAG Room is wrong')
+            self.p_print(4, Directories._TC['_INFO'], 'ASSET TAG FOUND') 
         else:
             currentscanlist.append(self._scan)
             self.newAssetRecord(self._scan)
-            self.p_print(2, Directories._TC['_INFO'], 'ASSET TAG NOT FOUND')   
-
-
-
-
-        # if _scan in self.data:
-        #     currentscanlist.append(_scan)
-        #     self.save2db(self._scan)
-            
-        # else:
-        #     currentscanlist.append(_scan)
-        #     self.newAssetRecord(self._scan)
-
-
-        # if _rm.upper() == 'ROOM':    #used when room was specified.
-        #     with open(pyventory_db) as pv_data:
-        #         data = json.load(pv_data)    
-        #     if _scan in data:
-        #         currentscanlist.append(_scan)
-        #         self.autoSave(_scan)
-        #         print('found')
-        #     else:
-        #         currentscanlist.append(_scan)
-        #         self.autoSave(_scan)
-        #         self.newAssetRecord(_scan)
-        #         print('not found')
+            self.save2db(self._scan)
+            self.p_print(4, Directories._TC['_INFO'], 'ASSET TAG NOT FOUND')   
     def numberChecker(self, _scan):             # checks the entered asset tag to enforce numbers only
         self.p_print(4, Directories._TC['_HEADING'], '******numberChecker({0:})******'.format(_scan))
         checklist = []
@@ -437,7 +399,6 @@ class Utilities:            # Utilities
             self.p_print(4, Directories._TC["_INFO"], i["Scan Year"])
             
         self.jsonOpenSave('SAVE', data)
-
     def newAssetRecord(self, _scan):            # create new blank record in pyventory_db
         self.p_print(4, Directories._TC['_HEADING'], '******newAssetRecord({0:})******'.format(_scan))
         data = self.jsonOpenSave('OPEN', '')
@@ -713,15 +674,17 @@ class Interface:
 class Windows:
     def Checker(self):
         checkutil = Utilities()
-        self._school = self.schoolvar.get()
-        self._room = self.roomvar.get()
+        # self._school = self.schoolvar.get()
+        # self._room = self.roomvar.get()
         self._scan = self.Scan.get()
 
         # print(self._school)
         # print(self._room)
         # print(self._scan)
-
-        checkutil.CheckScan(self._scan, self._school, self._room)
+        if checkutil.numberChecker(self._scan) == False:
+            pass
+        else:
+            checkutil.CheckScan(self._scan)
         self.Scan.delete(first=0, last=100)
 
     def IndevidualWindow(self):
