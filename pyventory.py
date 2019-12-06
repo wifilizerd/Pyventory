@@ -7,6 +7,7 @@ import sys, os, csv, json, datetime,tkinter
 from tkinter import *
 from tkinter import filedialog
 from tkinter import messagebox
+from tkinter import ttk
 
 # Gobal Variables
 _DEBUG = 2          # 0 = no output, 1 =  Standered Output, 2 = Detail output, 3 = Basic Debug, 4 = pause Debug , 5 = everything,
@@ -382,9 +383,8 @@ class Utilities:            # Utilities
         self.p_print(4, Directories._TC['_HEADING'], '******CheckScan({0:})******'.format(_scan))
         global currentscanlist
         self._scan = _scan
-        with open(pyventory_db) as pv_data:
-            self.data = json.load(pv_data)
-        if self._scan in self.data:
+        self.data = self.jsonOpenSave('OPEN', '')
+        if self._scan in self.data or self._scan.lstrip('0') in self.data:
             currentscanlist.append(self._scan)
             self.save2db(self._scan)
             self.p_print(4, Directories._TC['_INFO'], 'ASSET TAG FOUND') 
@@ -589,6 +589,24 @@ class Utilities:            # Utilities
                 self.AssetDisply(data_list, '_GREEN')
             else:
                 self.AssetDisply(data_list, '_RED')
+    def assetsinroom(self, _school, _room):
+        self.data = self.jsonOpenSave('OPEN')
+        self.assetslist = []
+        for asset in self.data:
+            for info in self.data[asset]:
+                if info['School #'] == _school and info['Room #'].upper() == _room.upper():
+                    self.assetslist.append(info['Asset'])
+        self.assetslist.sort()
+        return(self.assetslist)
+    def assetstatus(self, _asset):
+        self.data = self.jsonOpenSave('OPEN')
+        self.asset = _asset
+        for info in self.data[self.asset]:
+            if self.ScanYearGen() in info['Scan Year']:
+                return('CHECKED')
+            else:
+                return('UNCHECKED')
+ 
 
 
 class Interface:
@@ -715,20 +733,272 @@ class Windows:
             pass
         else:
             self._data = checkutil.jsonOpenSave('OPEN', '')
-            if self._scan not in self._data:
+            if self._scan.lstrip('0') not in self._data:
                 self.cScanList.configure(bg='red')
             else:
                 self.cScanList.configure(bg='green')
-            checkutil.CheckScan(self._scan)
+            checkutil.CheckScan(self._scan.lstrip('0'))
         self.Scan.delete(first=0, last=100)
-        self.cScanList.insert(END, checkutil.DisplayScanned(self._scan)) 
-        
+        self.cScanList.insert(END, checkutil.DisplayScanned(self._scan.lstrip('0'))) 
     def Updater(self):
         updateutil = Utilities()
         filename =  filedialog.askopenfilename(initialdir = "./",title = "Select file",filetypes = (("CSV files","*.csv"),("all files","*.*")))
         if filename:
             updateutil.pyventory_db_update(filename)
             messagebox.showinfo("Database Updater", "Database has been updated with: " + filename)
+    def bulkchecker(self):
+        bulkutil = Utilities()
+        self.filename =  filedialog.askopenfilename(initialdir = "./",title = "Select file",filetypes = (("CSV files","*.csv"),("all files","*.*")))
+        self.data = bulkutil.jsonOpenSave('OPEN', '')
+        messagebox.showinfo("Bulk Checker", 'afer press ok, plases wait until the complete message apperes to continue.')
+        for i in bulkutil.CSV2List(self.filename):
+            bulkutil.p_print(4, Directories._TC['_INFO'], i[0])
+            bulkutil.CheckScan(i[0])
+        messagebox.showinfo('bulk checker', 'bulk check complete')
+    def assetreport(self, _asset):
+        assetreportutil = Utilities()
+        self.data = assetreportutil.jsonOpenSave('OPEN')
+        
+        if 'asset' in self.progresstreeview.selection()[0]:
+            self._asset = self.progresstreeview.selection()[0].split('-')[2][5:]
+        
+            self.assetreportwindow = Toplevel()
+            self.assetreportwindow.geometry("800x600") #Width x Height
+            self.assetreportwindow.title('Asset Report')
+
+            #tech idetification
+            self.techIDframe = LabelFrame(self.assetreportwindow, pady=10, padx=10)
+            self.techIDLabel = Label(self.techIDframe, text='Technology Identification', padx=7, bg='black', fg='white')
+
+            self.seriallabel = Label(self.techIDframe, text='Serial #', padx=7)
+            self.serialentry = Entry(self.techIDframe, width=25, bg='light gray')
+            
+            self.tagelabel = Label(self.techIDframe, text='ASD #', padx=7)
+            self.tageentry = Entry(self.techIDframe, width=15, bg='light gray')
+
+            self.typelabel = Label(self.techIDframe, text='Type',padx=7)
+            self.typeentry = Entry(self.techIDframe, bg='light gray')
+
+            self.statuslabel = Label(self.techIDframe, text='STATUS',padx=7)
+            self.statusentry = Entry(self.techIDframe, width=21, bg='light gray')
+
+            # Computer Information
+            self.compinfoframe = LabelFrame(self.assetreportwindow, pady=10, padx=10)
+            self.compinfoLabel = Label(self.compinfoframe, text='Computer Information', padx=7, bg='black', fg='white')
+
+            self.makeLabel = Label(self.compinfoframe, text='Make', padx=7)
+            self.makeentry = Entry(self.compinfoframe, width=40, bg='light gray')
+
+            self.modellabel = Label(self.compinfoframe, text='Model', padx=7)
+            self.modelentry = Entry(self.compinfoframe, width=25, bg='light gray')
+
+            self.CPUSpeedlabel = Label(self.compinfoframe, text='CPU Speed', padx=7)
+            self.CPUSpeedentry = Entry(self.compinfoframe, width=40, bg='light gray')
+
+            self.Productlabel = Label(self.compinfoframe, text='Product #',padx=7)
+            self.Productentry = Entry(self.compinfoframe, width=25, bg='light gray')
+
+            self.ramlabel = Label(self.compinfoframe, text='RAM',padx=7)
+            self.ramentry = Entry(self.compinfoframe, width=14, bg='light gray')
+
+            self.oslabel = Label(self.compinfoframe, text='OS',padx=7)
+            self.osentry = Entry(self.compinfoframe, width=52, bg='light gray')
+
+            self.harddrivelabel = Label(self.compinfoframe, text='Hard Drive',padx=7)
+            self.harddriveentry = Entry(self.compinfoframe, width=14, bg='light gray')
+
+            #Details 
+            self.detailframe = LabelFrame(self.assetreportwindow, pady=10, padx=10)
+            self.detailLabel = Label(self.detailframe, text='Details', padx=7, bg='black', fg='white')
+            #school #
+            self.schoolnumberlabel = Label(self.detailframe, text='School #', padx=7)
+            self.schoolnumberentry = Entry(self.detailframe, width=20, bg='light gray')
+            #Room
+            self.roomlabel = Label(self.detailframe, text='Room', padx=7)
+            self.roomentry = Entry(self.detailframe, width=15, bg='light gray')
+            #User
+            self.userlabel = Label(self.detailframe, text='User', padx=7)
+            self.userentry = Entry(self.detailframe, width=25, bg='light gray')
+            #School Name
+            self.schoolnameentry = Entry(self.detailframe, width=25, bg='light gray')
+            
+            #IP Sddress
+            self.ipaddresslabel = Label(self.detailframe, text='IP Address', padx=7)
+            self.ipaddressentry = Entry(self.detailframe, width=25, bg='light gray')
+            # Installed
+            self.installdatelabel = Label(self.detailframe, text='Installed', padx=7)
+            self.installdateentry = Entry(self.detailframe, width=21, bg='light gray')
+            # Computer Name
+            self.computernamelabel = Label(self.detailframe, text='Computer Name', padx=7)
+            self.computernameentry = Entry(self.detailframe, width=25, bg='light gray')
+            # Owner
+            self.ownerlabel = Label(self.detailframe, text='Owner', padx=7)
+            self.ownerentry = Entry(self.detailframe, width=21, bg='light gray')
+            # Wired MAC
+            self.wiredmaclabel = Label(self.detailframe, text='wired MAC', padx=7)
+            self.wiredmacentry = Entry(self.detailframe, width=25, bg='light gray')
+            # User type
+            self.usertypelabel = Label(self.detailframe, text='User Type', padx=7)
+            self.usertypeentry = Entry(self.detailframe, width=21, bg='light gray')
+            # Wireless MAC
+            self.wirelessmaclabel = Label(self.detailframe, text='Wireless Mac', padx=7)
+            self.wirelessmacentry = Entry(self.detailframe, width=25, bg='light gray')
+            # status
+            self.computerstatuslabel = Label(self.detailframe, text='Status', padx=7)
+            self.computerstatusentry = Entry(self.detailframe, width=21, bg='light gray')
+            # MAC3
+            self.mac3label = Label(self.detailframe, text='MAC3', padx=7)
+            self.mac3entry = Entry(self.detailframe, width=25, bg='light gray')
+            # Mfg year
+            self.mfgyearlabel = Label(self.detailframe, text='Mfg Year', padx=7)
+            self.mfgyearentry = Entry(self.detailframe, width=21, bg='light gray')
+            # Net Used
+            self.netusedlabel = Label(self.detailframe, text='Net Use', padx=7)
+            self.netusedentry = Entry(self.detailframe, width=25, bg='light gray')
+            # Year to be Rotated
+            self.rotationyearlabel = Label(self.detailframe, text='Year to be Rotated', padx=7)
+            self.rotationyearentry = Entry(self.detailframe, width=21, bg='light gray')
+            # eligible for rotation
+            self.rotationeligiblelabel = Label(self.detailframe, text='eligible for Rotation', padx=7)
+            self.rotationeligibleentry = Entry(self.detailframe, width=21, bg='light gray')
+
+            # grid 
+            # tech id
+            self.techIDframe.grid(column=0, row=0)
+            self.techIDLabel.grid(column=0, row=0, columnspan=2, sticky='w')
+
+            self.seriallabel.grid(column=0, row=1, sticky='e')
+            self.serialentry.grid(column=1, row=1, sticky='w')
+
+            self.tagelabel.grid(column=2, row=1, sticky='e')
+            self.tageentry.grid(column=3, row=1, sticky='w')
+
+            self.typelabel.grid(column=4, row=1, sticky='e')
+            self.typeentry.grid(column=5, row=1, sticky='w')
+
+            self.statuslabel.grid(column=6, row=1, sticky='e')
+            self.statusentry.grid(column=7, row=1, sticky='w')
+
+            # computer info
+            self.compinfoframe.grid(column=0, row=1)
+            self.compinfoLabel.grid(column=0, row=0, columnspan=2, sticky='w')
+
+            self.makeLabel.grid(column=0, row=1, sticky='e')
+            self.makeentry.grid(column=1, row=1, sticky='w')
+
+            self.modellabel.grid(column=2, row=1, sticky='e')
+            self.modelentry.grid(column=3, row=1, sticky='w')
+
+            self.CPUSpeedlabel.grid(column=0, row=2, sticky='e')
+            self.CPUSpeedentry.grid(column=1, row=2, sticky='w')
+
+            self.Productlabel.grid(column=2, row=2, sticky='e')
+            self.Productentry.grid(column=3, row=2, sticky='w')
+
+            self.ramlabel.grid(column=4, row=2, sticky='e')
+            self.ramentry.grid(column=5, row=2, sticky='w')
+
+            self.oslabel.grid(column=0, row=3, sticky='e')
+            self.osentry.grid(column=1, row=3, sticky='w', columnspan=2)
+
+            self.harddrivelabel.grid(column=4, row=3, sticky='e')
+            self.harddriveentry.grid(column=5, row=3, sticky='w')
+
+            #details
+            self.detailframe.grid(column=0, row=2)
+            self.detailLabel.grid(column=0, row=0, columnspan=2, sticky='w')
+
+            self.schoolnumberlabel.grid(column=0, row=1, sticky='e')
+            self.schoolnumberentry.grid(column=1, row=1, sticky='w')
+            
+            self.roomlabel.grid(column=2, row=1, sticky='e')
+            self.roomentry.grid(column=3, row=1, sticky='w')
+            
+            self.userlabel.grid(column=4, row=1, sticky='e')
+            self.userentry.grid(column=5, row=1, sticky='w')
+            
+            self.schoolnameentry.grid(column=0, row=2, sticky='e')
+            
+
+            self.ipaddresslabel.grid(column=0, row=3, sticky='e')
+            self.ipaddressentry.grid(column=1, row=3, sticky='w')
+
+            self.installdatelabel.grid(column=2, row=3, sticky='e')
+            self.installdateentry.grid(column=3, row=3, sticky='w')
+
+            self.computernamelabel.grid(column=0, row=4, sticky='e')
+            self.computernameentry.grid(column=1, row=4, sticky='w')
+
+            self.ownerlabel.grid(column=2, row=4, sticky='e')
+            self.ownerentry.grid(column=3, row=4, sticky='w')
+
+            self.wiredmaclabel.grid(column=0, row=5, sticky='e')
+            self.wiredmacentry.grid(column=1, row=5, sticky='w')
+
+            self.usertypelabel.grid(column=2, row=5, sticky='e')
+            self.usertypeentry.grid(column=3, row=5, sticky='w')
+
+            self.wirelessmaclabel.grid(column=0, row=6, sticky='e')
+            self.wirelessmacentry.grid(column=1, row=6, sticky='w')
+
+            self.computerstatuslabel.grid(column=2, row=6, sticky='e')
+            self.computerstatusentry.grid(column=3, row=6, sticky='w')
+
+            self.mac3label.grid(column=0, row=7, sticky='e')
+            self.mac3entry.grid(column=1, row=7, sticky='w')
+
+            self.mfgyearlabel.grid(column=2, row=7, sticky='e')
+            self.mfgyearentry.grid(column=3, row=7, sticky='w')
+
+            self.netusedlabel.grid(column=0, row=8, sticky='e')
+            self.netusedentry.grid(column=1, row=8, sticky='w')
+            
+            self.rotationyearlabel.grid(column=2, row=8, sticky='e')
+            self.rotationyearentry.grid(column=3, row=8, sticky='w')
+
+            self.rotationeligiblelabel.grid(column=2, row=9, sticky='e')
+            self.rotationeligibleentry.grid(column=3, row=9, sticky='w')
+
+            # add text to entries
+
+            self.check = assetreportutil.assetstatus(self._asset)
+            for tag in self.data[self._asset]:
+                self.tageentry.insert(0, tag['Asset'])
+                self.serialentry.insert(0, tag['Serial #'])
+                self.schoolnameentry.insert(0, tag['School Name'])
+                self.typeentry.insert(0, tag['Device Type'])
+                self.statusentry.insert(0, self.check)
+                self.makeentry.insert(0, tag['Make'])
+                self.modelentry.insert(0, tag['Model'])
+                self.CPUSpeedentry.insert(0, tag['Cpu'])
+                self.Productentry.insert(0, tag['Product #'])
+                self.ramentry.insert(0, tag['Ram'])
+                self.osentry.insert(0, tag['OS'])
+                self.harddriveentry.insert(0, tag['Hdd'])
+                self.schoolnumberentry.insert(0, tag['School #'])
+                self.roomentry.insert(0, tag['Room #'])
+                self.userentry.insert(0, tag['Username'])
+                self.ipaddressentry.insert(0, tag['IP Addr'])
+                self.installdateentry.insert(0, tag['InstallDate'])
+                self.computernameentry.insert(0, tag['Name'])
+                self.ownerentry.insert(0, tag['Owner'])
+                self.wiredmacentry.insert(0, tag['Wired Mac Addr'])
+                self.usertypeentry.insert(0, tag['UserType'])
+                self.wirelessmacentry.insert(0, tag['Wireless Mac Addr'])
+                self.computerstatusentry.insert(0, tag['Status'])
+                self.mac3entry.insert(0, tag['Server Mac Addr'])
+                self.mfgyearentry.insert(0, tag['Mfg Year'])
+                # self.netusedentry.insert(0, tag[''])
+                self.rotationyearentry.insert(0, tag['Rotation Year'])
+                self.rotationeligibleentry.insert(0, tag['Rotation Eligible'])
+
+            
+
+
+            self.assetreportwindow.mainloop()
+            
+
+            
 
     def IndevidualWindow(self):
         util = Utilities()
@@ -737,7 +1007,7 @@ class Windows:
         if os.path.exists(pyventory_db):
             self.schoollist = util.prograssSchoolList()
             self.IndevidualMainWindow = Toplevel()
-            self.IndevidualMainWindow.title('Indevidual Scanner')
+            self.IndevidualMainWindow.title('Indevidual scanner')
             self.IndevidualMainWindow.minsize(800, 500)
             self.IndevidualMainWindow.columnconfigure(4, weight=1)
             self.IndevidualMainWindow.rowconfigure(2, weight=1)        
@@ -780,6 +1050,53 @@ class Windows:
             self.IndevidualMainWindow.mainloop()
         else:
             messagebox.showinfo("Error", "No Database Found run Database>Update")
+    def ProgressWindow(self):
+        ProgressWindowutil = Utilities()
+        if os.path.exists(pyventory_db):
+            self.schoollist = ProgressWindowutil.prograssSchoolList()
+            self.schoollist.sort()
+            self.ProgressMainWindow = Toplevel()
+            self.progresstreeview = ttk.Treeview(self.ProgressMainWindow)       #treeview setup
+            self.progresstreeview.config(selectmode='browse')
+
+            self.ProgressMainWindow.title('Progress')
+            self.ProgressMainWindow.minsize(1100, 750)
+            self.ProgressMainWindow.columnconfigure(4, weight=1)
+            self.ProgressMainWindow.rowconfigure(2, weight=1)
+            
+            self.progresstreeview.config(height=35, columns=('Status', 'Percent'))
+            self.progresstreeview.column('#0', width=800)
+            self.progresstreeview.column('Status', width=75)
+            self.progresstreeview.column('Percent', width=150)
+            self.progresstreeview.heading('Status', text='Status')
+            self.progresstreeview.heading('Percent', text='Percent complete')
+
+            for schoolnumber in self.schoollist:
+                self.schoolID = 'school' + schoolnumber +'-'
+                self.progresstreeview.insert('', 'end', self.schoolID, text=('(BLANK)' if schoolnumber == '' else schoolnumber))
+                self.roomlist = ProgressWindowutil.progressRoomList(schoolnumber)
+                self.progresstreeview.set(self.schoolID, 'Percent', (str(ProgressWindowutil.scannedInSchool(schoolnumber)) + "/" + str(ProgressWindowutil.totalInSchool(schoolnumber))))
+                
+                self.roomlist.sort()
+                for room in self.roomlist:
+                    self.devicelist = ProgressWindowutil.assetsinroom(schoolnumber, room)
+                    self.roomID = (self.schoolID + 'room' +'(blank)' + '-' if room == '' else self.schoolID + 'room' + room + '-')
+                    self.progresstreeview.insert(self.schoolID, 'end', self.roomID, text=('(BLANK)' if room == '' else room))
+                    self.progresstreeview.set(self.roomID, 'Percent', (str(ProgressWindowutil.scannedInRoom(schoolnumber, room)) + "/" + str(ProgressWindowutil.totalInRoom(schoolnumber, room))))
+                
+                    
+                    for asset in self.devicelist:
+                        self.assetID = self.roomID + 'asset' + asset
+                        self.progresstreeview.insert(self.roomID, 'end', self.assetID, text=('(BLANK)' if asset == '' else asset))
+                        self.progresstreeview.set(self.assetID, 'Status', ProgressWindowutil.assetstatus(asset))
+
+            self.progresstreeview.bind('<<TreeviewSelect>>', self.assetreport)
+
+            self.progresstreeview.pack()
+            self.ProgressMainWindow.mainloop()
+        else:
+            messagebox.showinfo("Error", "No Database Found run Database>Update")
+
 #GUI Start
 
 # Main Windows
@@ -791,20 +1108,20 @@ Main.title('Pyventory - 2.0')
 menubar = Menu(Main)
 
 # scan menu
-scanner = Windows()
+scannerwin = Windows()
+
+
 ScanMenu = Menu(menubar, tearoff=0)
 menubar.add_cascade(label="Scan", menu=ScanMenu) # added after ScanMenu so no error
-ScanMenu.add_command(label="Indevidual", command=scanner.IndevidualWindow)
-# ScanMenu.add_command(label = "Bulk", command='')
+ScanMenu.add_command(label="Indevidual", command=scannerwin.IndevidualWindow)
+ScanMenu.add_command(label = "Bulk", command=scannerwin.bulkchecker)
 ScanMenu.add_separator()
 ScanMenu.add_command(label = "Close", command=Main.quit)
 
-# # Progress MEnu
-# ProgressMenu = Menu(menubar, tearoff=0)
-# menubar.add_cascade(label="Progress", menu=ProgressMenu)
-# ProgressMenu.add_command(label="All", command='')
-# ProgressMenu.add_command(label = "By School", command='')
-# ProgressMenu.add_command(label = "By Room", command='')
+# Progress MEnu
+progresswin = Windows()
+menubar.add_command(label="Progress", command=progresswin.ProgressWindow)
+
 
 # Database Menu
 dbwin = Windows()
