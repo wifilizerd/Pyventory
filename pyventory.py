@@ -1118,9 +1118,6 @@ ScanMenu.add_command(label = "Bulk", command=scannerwin.bulkchecker)
 ScanMenu.add_separator()
 ScanMenu.add_command(label = "Close", command=Main.quit)
 
-# Progress MEnu
-progresswin = Windows()
-menubar.add_command(label="Progress", command=progresswin.ProgressWindow)
 
 
 # Database Menu
@@ -1128,6 +1125,7 @@ dbwin = Windows()
 DatabaseMenu = Menu(menubar, tearoff=0)
 menubar.add_cascade(label="Database", menu=DatabaseMenu)
 DatabaseMenu.add_command(label="Update", command=dbwin.Updater)
+DatabaseMenu.add_command(label="Progress", command=dbwin.ProgressWindow)
 # DatabaseMenu.add_command(label = "Clean", command='')
 # DatabaseMenu.add_command(label = "Delete", command='')
 
