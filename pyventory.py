@@ -10,7 +10,7 @@ from tkinter import messagebox
 from tkinter import ttk
 
 # Gobal Variables
-_DEBUG = 0          # 0 = no output, 1 =  Standered Output, 2 = Detail output, 3 = Basic Debug, 4 = pause Debug , 5 = everything,
+_DEBUG = 2          # 0 = no output, 1 =  Standered Output, 2 = Detail output, 3 = Basic Debug, 4 = pause Debug , 5 = everything,
 # InventoryFile = ""
 
 pyventory_db = ".pv_db.json"
@@ -460,7 +460,7 @@ class Utilities:            # Utilities
             if self.ScanYearGen() in i["Scan Year"]:    # check if Year code is already in the list.
                 pass
             else:
-                print(i["Scan Year"])
+                # print(i["Scan Year"])
                 i["Scan Year"].append(self.ScanYearGen())
             self.p_print(4, Directories._TC["_INFO"], i["Scan Year"])
             self.p_print(4, Directories._TC["_INFO"], i)
@@ -649,7 +649,7 @@ class Utilities:            # Utilities
         for record in self.data:
             for i in self.data[record]:
                 if i["New Room"] != i["Room #"] and i["New School"] != i["School #"]:
-                    print(i)
+                    # print(i)
                     self.CSVwriter('Wronginfo.csv', [i["Asset"], i["New School"], i["New Room"]])
 
 
@@ -797,10 +797,10 @@ class Windows:
                     for i in self._data[self._scan.lstrip('0')]:
                         if i["School #"] == self._school:
                             if i["Room #"] == self._room:
-                                self.cScanList.configure(bg='green')
+                                # self.cScanList.configure(bg='green')
                                 i["New School"] = self._school
                                 i["New Room"] = self._room
-                                self.cScanList.insert(END, checkutil.DisplayScanned(self._scan.lstrip('0')))
+                                self.cScanList.insert(END, checkutil.DisplayScanned(self._scan.lstrip('0'),_school=self._school,_room=self._room))
                             else:
                                 # self.cScanList.configure(bg='yellow')
                                 i["New School"] = self._school
