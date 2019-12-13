@@ -1,7 +1,7 @@
 #!/Python27/pythonw.exe
 #1/bin/python
 #python 3.7
-#Pyventory - 2.0
+#Pyventory - 2.1
 # import all needed libraries
 import sys, os, csv, json, datetime,tkinter 
 from tkinter import *
@@ -10,14 +10,14 @@ from tkinter import messagebox
 from tkinter import ttk
 
 # Gobal Variables
-_DEBUG = 2          # 0 = no output, 1 =  Standered Output, 2 = Detail output, 3 = Basic Debug, 4 = pause Debug , 5 = everything,
+_DEBUG = 0          # 0 = no output, 1 =  Standered Output, 2 = Detail output, 3 = Basic Debug, 4 = pause Debug , 5 = everything,
 # InventoryFile = ""
 
 pyventory_db = ".pv_db.json"
 autoSave_file = "~autosave.csv"
 # ScannedFile =  ""
 currentscanlist = []
-versionnumber = '2.0'
+versionnumber = '2.1 (beta)'
 
 class Directories:          # Directories
     # http://ozzmaker.com/add-colour-to-text-in-python/
@@ -172,6 +172,8 @@ class Utilities:            # Utilities
                 if str(row[Directories._INV_ROW['Asset']]).lstrip('0') in data:      # check if asset tage is in Database.
                     for i in data[str(row[Directories._INV_ROW['Asset']]).lstrip('0')]:
                         datecode = i["Scan Year"]           # pulled from existing data to be added to new database.
+                        newroom = i["New Room"]
+                        newschool = i["New School"]
                         Updated_pyventory_db[str(row[Directories._INV_ROW['Asset']]).lstrip('0')] = []   # create new record in json file
                         Updated_pyventory_db[str(row[Directories._INV_ROW['Asset']]).lstrip('0')].append({   # add data to record
                             "Asset": str(row[Directories._INV_ROW['Asset']]).lstrip('0'),
@@ -202,6 +204,8 @@ class Utilities:            # Utilities
                             "Rotation Eligible": row[Directories._INV_ROW["Rotation Eligible"]],        
                             "School Name": row[Directories._INV_ROW["School Name"]],
                             "Scan Year": datecode,
+                            "New Room": newroom,
+                            "New School": newschool
                             })
                 else:
                     Updated_pyventory_db[str(row[Directories._INV_ROW['Asset']]).lstrip('0')] = []
@@ -234,6 +238,8 @@ class Utilities:            # Utilities
                         "Rotation Eligible": row[Directories._INV_ROW["Rotation Eligible"]],        
                         "School Name": row[Directories._INV_ROW["School Name"]],    
                         "Scan Year": [],
+                        "New Room": row[Directories._INV_ROW["Room #"]],
+                        "New School": row[Directories._INV_ROW["School #"]]
                         })
         else:
             pass  
@@ -359,10 +365,40 @@ class Utilities:            # Utilities
                     self.AssetDisply(data_list, '_GREEN')
                 else:
                     self.AssetDisply(data_list, '_RED')
-    def DisplayScanned(self, _scan):
+    def DisplayScanned(self, _scan, _school='ALL', _room='ALL'):
         self.data = self.jsonOpenSave('OPEN', '')
         self._scan = _scan
         self.data_list = []
+
+        if self._scan in self.data:
+            if _school != 'All' or _room != 'ALL':      # need to fix printing all for room and school instead of the info from database
+                for i in self.data[self._scan]:
+                    self.data_list.append(i["Asset"])
+                    self.data_list.append(i["Serial #"])
+                    self.data_list.append(i["Name"])
+                    self.data_list.append(_room)
+                    self.data_list.append(i["Wired Mac Addr"])
+                    self.data_list.append(i["Wireless Mac Addr"])
+                    self.data_list.append(_school)
+                    self.data_list.append(i["School Name"])
+                self.p_print(5, Directories._TC['_INFO'], self.data_list) 
+            else:    
+                for i in self.data[self._scan]:
+                    self.data_list.append(i["Asset"])
+                    self.data_list.append(i["Serial #"])
+                    self.data_list.append(i["Name"])
+                    self.data_list.append(i["Room #"])
+                    self.data_list.append(i["Wired Mac Addr"])
+                    self.data_list.append(i["Wireless Mac Addr"])
+                    self.data_list.append(i["School #"])
+                    self.data_list.append(i["School Name"])
+                self.p_print(5, Directories._TC['_INFO'], self.data_list)    
+            
+            if i["Serial #"]:   # control point, based on serial # 
+                return(self.AssetDisply(self.data_list, '_GREEN'))
+            else:
+                return(self.AssetDisply(self.data_list, '_RED'))
+
 
         if self._scan in self.data:
             for i in self.data[self._scan]:
@@ -417,17 +453,19 @@ class Utilities:            # Utilities
         self.CSVwriter(autoSave_file, _scan)
     def save2db(self, _scan):                          # Save changes to database.
         self.p_print(4, Directories._TC['_HEADING'], '******save2db({0:})******'.format(_scan))
-        data = self.jsonOpenSave('OPEN', '')
+        self.data = self.jsonOpenSave('OPEN', '')
         self._scan = _scan
 
-        for i in data[self._scan]:
+        for i in self.data[self._scan]:
             if self.ScanYearGen() in i["Scan Year"]:    # check if Year code is already in the list.
                 pass
             else:
+                print(i["Scan Year"])
                 i["Scan Year"].append(self.ScanYearGen())
             self.p_print(4, Directories._TC["_INFO"], i["Scan Year"])
-            
-        self.jsonOpenSave('SAVE', data)
+            self.p_print(4, Directories._TC["_INFO"], i)
+         
+        self.jsonOpenSave('SAVE', self.data)
     def newAssetRecord(self, _scan):            # create new blank record in pyventory_db
         self.p_print(4, Directories._TC['_HEADING'], '******newAssetRecord({0:})******'.format(_scan))
         data = self.jsonOpenSave('OPEN', '')
@@ -471,7 +509,7 @@ class Utilities:            # Utilities
         if _opensave.upper() == "SAVE":
             with open(pyventory_db, 'w') as outfile:    # open database file and write over it with new data
                 # json.dump(_info, outfile, sort_keys=True, indent=4) # sort_key will sort the records and indent organizes the file to easy to read json.
-                json.dump(_info, outfile, sort_keys=True) # sort_key will sort the records and indent organizes the file to easy to read json.
+                json.dump(_info, outfile, sort_keys=True, indent=4) # sort_key will sort the records and indent organizes the file to easy to read json.
     def prograssSchoolList(self):
         schoollist = []
         data = self.jsonOpenSave('OPEN') 
@@ -606,6 +644,15 @@ class Utilities:            # Utilities
                 return('CHECKED')
             else:
                 return('UNCHECKED')
+    def wronginfoWrite(self):
+        self.data = self.jsonOpenSave('OPEN')
+        for record in self.data:
+            for i in self.data[record]:
+                if i["New Room"] != i["Room #"] and i["New School"] != i["School #"]:
+                    print(i)
+                    self.CSVwriter('Wronginfo.csv', [i["Asset"], i["New School"], i["New Room"]])
+
+
  
 
 
@@ -722,24 +769,56 @@ class Interface:
 class Windows:
     def Checker(self):
         checkutil = Utilities()
-        # self._school = self.schoolvar.get()
-        # self._room = self.roomvar.get()
+        self._school = self.schoolvar.get()
+        self._room = self.roomvar.get()
         self._scan = self.Scan.get()
 
         # print(self._school)
         # print(self._room)
         # print(self._scan)
-        if checkutil.numberChecker(self._scan) == False:
-            pass
-        else:
-            self._data = checkutil.jsonOpenSave('OPEN', '')
-            if self._scan.lstrip('0') not in self._data:
-                self.cScanList.configure(bg='red')
+
+        if self._school == 'SCHOOL' and self._room == 'ROOM':
+            if checkutil.numberChecker(self._scan) == False:
+                pass
             else:
-                self.cScanList.configure(bg='green')
-            checkutil.CheckScan(self._scan.lstrip('0'))
+                self._data = checkutil.jsonOpenSave('OPEN', '')
+                if self._scan.lstrip('0') in self._data:
+                    self.cScanList.configure(bg='green')
+                else:
+                    self.cScanList.configure(bg='red')
+                checkutil.CheckScan(self._scan.lstrip('0'))
+            self.cScanList.insert(END, checkutil.DisplayScanned(self._scan.lstrip('0'))) 
+        else:
+            if checkutil.numberChecker(self._scan) == False:
+                pass
+            else:
+                self._data = checkutil.jsonOpenSave('OPEN', '')
+                if self._scan.lstrip('0') in self._data:    
+                    for i in self._data[self._scan.lstrip('0')]:
+                        if i["School #"] == self._school:
+                            if i["Room #"] == self._room:
+                                self.cScanList.configure(bg='green')
+                                i["New School"] = self._school
+                                i["New Room"] = self._room
+                                self.cScanList.insert(END, checkutil.DisplayScanned(self._scan.lstrip('0')))
+                            else:
+                                # self.cScanList.configure(bg='yellow')
+                                i["New School"] = self._school
+                                i["New Room"] = self._room
+                                self.cScanList.insert(END, checkutil.DisplayScanned(self._scan.lstrip('0'),_school=self._school,_room=self._room))
+                        else:
+                            # self.cScanList.configure(bg='yellow')
+                            i["New School"] = self._school
+                            i["New Room"] = self._room    
+                            self.cScanList.insert(END, checkutil.DisplayScanned(self._scan.lstrip('0'),_school=self._school,_room=self._room))
+                else:
+                    pass
+                    # self.cScanList.configure(bg='red')
+                checkutil.CheckScan(self._scan.lstrip('0'))
+
+            # self.cScanList.insert(END, checkutil.DisplayScanned(self._scan.lstrip('0'),_school=self._school,_room=self._room))
+        # checkutil.jsonOpenSave('SAVE', self._data) 
         self.Scan.delete(first=0, last=100)
-        self.cScanList.insert(END, checkutil.DisplayScanned(self._scan.lstrip('0'))) 
     def Updater(self):
         updateutil = Utilities()
         filename =  filedialog.askopenfilename(initialdir = "./",title = "Select file",filetypes = (("CSV files","*.csv"),("all files","*.*")))
@@ -991,15 +1070,7 @@ class Windows:
                 # self.netusedentry.insert(0, tag[''])
                 self.rotationyearentry.insert(0, tag['Rotation Year'])
                 self.rotationeligibleentry.insert(0, tag['Rotation Eligible'])
-
-            
-
-
             self.assetreportwindow.mainloop()
-            
-
-            
-
     def IndevidualWindow(self):
         util = Utilities()
         # self.schoolmenulist = {}
@@ -1122,10 +1193,12 @@ ScanMenu.add_command(label = "Close", command=Main.quit)
 
 # Database Menu
 dbwin = Windows()
+dbutil = Utilities()
 DatabaseMenu = Menu(menubar, tearoff=0)
 menubar.add_cascade(label="Database", menu=DatabaseMenu)
 DatabaseMenu.add_command(label="Update", command=dbwin.Updater)
 DatabaseMenu.add_command(label="Progress", command=dbwin.ProgressWindow)
+DatabaseMenu.add_command(label = "List wrong", command=dbutil.wronginfoWrite)
 # DatabaseMenu.add_command(label = "Clean", command='')
 # DatabaseMenu.add_command(label = "Delete", command='')
 
