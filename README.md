@@ -9,11 +9,8 @@ A Python (cross platform) based Inventory Asset Checker. Compatable with any Com
 ## SETUP:✔✔✔
 ### Windows
  
- Downlaod and install python 3.7+ from [Python.org](https://python.org/).
- 
- Download [Pyventory-Master](https://github.com/wifilizerd/Pyventory/archive/master.zip).
- 
- **⚠During the Python install Make sure you Check the box to ADD PYTHON3.8 TO PATH⚠**
+ Goto the [release page](https://github.com/wifilizerd/Pyventory/releases) and download the latest release.  
+ this release does not require python to be installed and will run on its own. (still need csv files)
  
  Copy CSV file into the Pyventory (pyventory_master) Directory.
  
