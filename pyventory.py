@@ -1071,17 +1071,17 @@ class Windows:
                 self.rotationyearentry.insert(0, tag['Rotation Year'])
                 self.rotationeligibleentry.insert(0, tag['Rotation Eligible'])
             self.assetreportwindow.mainloop()
-    def IndevidualWindow(self):
+    def IndividualWindow(self):
         util = Utilities()
         # self.schoolmenulist = {}
 
         if os.path.exists(pyventory_db):
             self.schoollist = util.prograssSchoolList()
-            self.IndevidualMainWindow = Toplevel()
-            self.IndevidualMainWindow.title('Indevidual scanner')
-            self.IndevidualMainWindow.minsize(800, 500)
-            self.IndevidualMainWindow.columnconfigure(4, weight=1)
-            self.IndevidualMainWindow.rowconfigure(2, weight=1)        
+            self.IndividualMainWindow = Toplevel()
+            self.IndividualMainWindow.title('Individual scanner')
+            self.IndividualMainWindow.minsize(800, 500)
+            self.IndividualMainWindow.columnconfigure(4, weight=1)
+            self.IndividualMainWindow.rowconfigure(2, weight=1)        
 
             self.schoolvar = StringVar()
             self.schoolvar.set('SCHOOL')
@@ -1089,7 +1089,7 @@ class Windows:
             self.roomvar.set('ROOM')
             self.roomlist = util.progressRoomList(self.schoolvar.get()) 
 
-            self.cScanList = Listbox(self.IndevidualMainWindow, bg='black', fg='white', height=30, width=130)
+            self.cScanList = Listbox(self.IndividualMainWindow, bg='black', fg='white', height=30, width=130)
             self.cScanList.insert(END, '{0:>10} : {1:24} : {2:21} : {3:8} : {4:22} : {5:19} : {6:3} - {7:}'.format(
                             'Asset Tag', 
                             'Serial #', 
@@ -1100,13 +1100,13 @@ class Windows:
                             'School #', 
                             'Name'))
             
-            self.SchoolMenu = OptionMenu(self.IndevidualMainWindow, self.schoolvar, *self.schoollist)
-            self.RoomMenu = OptionMenu(self.IndevidualMainWindow, self.roomvar, *self.roomlist)
+            self.SchoolMenu = OptionMenu(self.IndividualMainWindow, self.schoolvar, *self.schoollist)
+            self.RoomMenu = OptionMenu(self.IndividualMainWindow, self.roomvar, *self.roomlist)
 
-            self.ScanLabel = Label(self.IndevidualMainWindow, text='Asset Tag:')
-            self.Scan = Entry(self.IndevidualMainWindow, width=30)
-            self.EnterButton = Button(self.IndevidualMainWindow, text='Enter', padx=10, command=self.Checker)
-            self.EnterFrame = Frame(self.IndevidualMainWindow, height=5)
+            self.ScanLabel = Label(self.IndividualMainWindow, text='Asset Tag:')
+            self.Scan = Entry(self.IndividualMainWindow, width=30)
+            self.EnterButton = Button(self.IndividualMainWindow, text='Enter', padx=10, command=self.Checker)
+            self.EnterFrame = Frame(self.IndividualMainWindow, height=5)
                 
             self.cScanList.grid(column=0, row=0, columnspan=5, padx=10, pady=10)
             self.SchoolMenu.grid(column=0, row=1)
@@ -1118,7 +1118,7 @@ class Windows:
             self.EnterFrame.grid(column=0, row=2)
             self.Scan.bind("<Return>", lambda e:self.Checker())
 
-            self.IndevidualMainWindow.mainloop()
+            self.IndividualMainWindow.mainloop()
         else:
             messagebox.showinfo("Error", "No Database Found run Database>Update")
     def ProgressWindow(self):
@@ -1184,7 +1184,7 @@ scannerwin = Windows()
 
 ScanMenu = Menu(menubar, tearoff=0)
 menubar.add_cascade(label="Scan", menu=ScanMenu) # added after ScanMenu so no error
-ScanMenu.add_command(label="Indevidual", command=scannerwin.IndevidualWindow)
+ScanMenu.add_command(label="Individual", command=scannerwin.IndividualWindow)
 ScanMenu.add_command(label = "Bulk", command=scannerwin.bulkchecker)
 ScanMenu.add_separator()
 ScanMenu.add_command(label = "Close", command=Main.quit)
