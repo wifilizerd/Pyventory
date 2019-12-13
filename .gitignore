@@ -109,7 +109,7 @@ Zip Archive/
 
 *.csv
 
-.pv_db.json
+*.json
 
 \.DS_Store
 
