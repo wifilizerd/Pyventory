@@ -10,7 +10,7 @@ from tkinter import messagebox
 from tkinter import ttk
 
 # Gobal Variables
-_DEBUG = 2          # 0 = no output, 1 =  Standered Output, 2 = Detail output, 3 = Basic Debug, 4 = pause Debug , 5 = everything,
+_DEBUG = 1         # 0 = no output, 1 =  Standered Output, 2 = Detail output, 3 = Basic Debug, 4 = pause Debug , 5 = everything,
 # InventoryFile = ""
 
 pyventory_db = ".pv_db.json"
@@ -165,7 +165,7 @@ class Utilities:            # Utilities
             
             updatefile_list = self.CSV2List(_filename)          # takes a .CSV file from inventory database and turn it to a list for proccessing.
             self.p_print(4, Directories._TC['_INFO'], updatefile_list)
-            self.p_print(1, Directories._TC["_INFO"], "Updating Pyventory Database, Please Wait...")
+            self.p_print(2, Directories._TC["_INFO"], "Updating Pyventory Database, Please Wait...")
             
             for row in updatefile_list:
                 self.p_print(4, Directories._TC['_INFO'], row)
@@ -457,6 +457,10 @@ class Utilities:            # Utilities
         self._scan = _scan
 
         for i in self.data[self._scan]:
+            self.p_print(4, Directories._TC["_INFO"], i)
+            self.p_print(4, Directories._TC["_INFO"], self.ScanYearGen())
+            self.p_print(4, Directories._TC["_INFO"], i["Scan Year"])
+
             if self.ScanYearGen() in i["Scan Year"]:    # check if Year code is already in the list.
                 pass
             else:
@@ -464,8 +468,10 @@ class Utilities:            # Utilities
                 i["Scan Year"].append(self.ScanYearGen())
             self.p_print(4, Directories._TC["_INFO"], i["Scan Year"])
             self.p_print(4, Directories._TC["_INFO"], i)
+            
          
         self.jsonOpenSave('SAVE', self.data)
+        self.p_print(4, Directories._TC["_INFO"], self.data[self._scan])
     def newAssetRecord(self, _scan):            # create new blank record in pyventory_db
         self.p_print(4, Directories._TC['_HEADING'], '******newAssetRecord({0:})******'.format(_scan))
         data = self.jsonOpenSave('OPEN', '')
@@ -508,8 +514,9 @@ class Utilities:            # Utilities
                 return(data)
         if _opensave.upper() == "SAVE":
             with open(pyventory_db, 'w') as outfile:    # open database file and write over it with new data
-                # json.dump(_info, outfile, sort_keys=True, indent=4) # sort_key will sort the records and indent organizes the file to easy to read json.
                 json.dump(_info, outfile, sort_keys=True, indent=4) # sort_key will sort the records and indent organizes the file to easy to read json.
+                # json.dump(_info, outfile) # sort_key will sort the records and indent organizes the file to easy to read json.
+                
     def prograssSchoolList(self):
         schoollist = []
         data = self.jsonOpenSave('OPEN') 
@@ -648,9 +655,10 @@ class Utilities:            # Utilities
         self.data = self.jsonOpenSave('OPEN')
         for record in self.data:
             for i in self.data[record]:
-                if i["New Room"] != i["Room #"] and i["New School"] != i["School #"]:
-                    # print(i)
-                    self.CSVwriter('Wronginfo.csv', [i["Asset"], i["New School"], i["New Room"]])
+                # print(i["New Room"])
+                if i["Scan Year"]:
+                    if i["New Room"] != i["Room #"] or i["New School"] != i["School #"]:
+                        self.CSVwriter('Wronginfo.csv', [i["Asset"], i["New School"], i["New Room"]])
 
 
  
@@ -781,7 +789,7 @@ class Windows:
             if checkutil.numberChecker(self._scan) == False:
                 pass
             else:
-                self._data = checkutil.jsonOpenSave('OPEN', '')
+                self._data = checkutil.jsonOpenSave('OPEN')
                 if self._scan.lstrip('0') in self._data:
                     self.cScanList.configure(bg='green')
                 else:
@@ -795,7 +803,9 @@ class Windows:
                 self._data = checkutil.jsonOpenSave('OPEN', '')
                 if self._scan.lstrip('0') in self._data:    
                     for i in self._data[self._scan.lstrip('0')]:
+                        # print(i["School #"])
                         if i["School #"] == self._school:
+                            # print(i["Room #"])
                             if i["Room #"] == self._room:
                                 # self.cScanList.configure(bg='green')
                                 i["New School"] = self._school
@@ -817,7 +827,7 @@ class Windows:
                 checkutil.CheckScan(self._scan.lstrip('0'))
 
             # self.cScanList.insert(END, checkutil.DisplayScanned(self._scan.lstrip('0'),_school=self._school,_room=self._room))
-        # checkutil.jsonOpenSave('SAVE', self._data) 
+        
         self.Scan.delete(first=0, last=100)
     def Updater(self):
         updateutil = Utilities()
