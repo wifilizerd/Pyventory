@@ -659,6 +659,17 @@ class Utilities:            # Utilities
                 if i["Scan Year"]:
                     if i["New Room"] != i["Room #"] or i["New School"] != i["School #"]:
                         self.CSVwriter('Wronginfo.csv', [i["Asset"], i["New School"], i["New Room"]])
+    def RecordeRemover(self, _asset):
+        self.data = self.jsonOpenSave('OPEN')
+        if _asset in self.data:
+            print(self.data[_asset])
+            # self.data[_asset].clear()
+            del self.data[_asset]
+        if _asset in self.data:
+            print(self.data[_asset])
+        self.jsonOpenSave("SAVE", self.data)
+
+
 
 
  
@@ -1081,6 +1092,10 @@ class Windows:
                 self.rotationyearentry.insert(0, tag['Rotation Year'])
                 self.rotationeligibleentry.insert(0, tag['Rotation Eligible'])
             self.assetreportwindow.mainloop()
+    def Remover(self):
+        removeutil = Utilities()
+        self._asset = self.RecordEntry.get()
+        removeutil.RecordeRemover(self._asset)
     def IndividualWindow(self):
         util = Utilities()
         # self.schoolmenulist = {}
@@ -1177,6 +1192,26 @@ class Windows:
             self.ProgressMainWindow.mainloop()
         else:
             messagebox.showinfo("Error", "No Database Found run Database>Update")
+    def RemoveRecord(self):
+        RemoveWindowutil = Utilities()
+        if os.path.exists(pyventory_db):
+            self.RemoveRecordWindow = Toplevel()
+
+            self.RemoveRecordWindow.title('Remove Record')
+            self.RemoveRecordWindow.minsize(600, 100)
+            
+            # Warning Label
+            self.WarningLabel = Label(self.RemoveRecordWindow, text="WARNING! Click the submit button will remove the entered recored, This action cannot be undone.")
+            self.WarningLabel.pack()
+
+            self.RecordEntry = Entry(self.RemoveRecordWindow, width=50)
+            self.RecordEntry.pack()
+            self.RecordEntry.focus()
+
+            self.SubmitButtion = Button(self.RemoveRecordWindow, text="Submit", padx=10, command=self.Remover)
+            self.SubmitButtion.pack()
+
+            
 
 #GUI Start
 
@@ -1209,7 +1244,7 @@ menubar.add_cascade(label="Database", menu=DatabaseMenu)
 DatabaseMenu.add_command(label="Update", command=dbwin.Updater)
 DatabaseMenu.add_command(label="Progress", command=dbwin.ProgressWindow)
 DatabaseMenu.add_command(label = "List wrong", command=dbutil.wronginfoWrite)
-# DatabaseMenu.add_command(label = "Clean", command='')
+DatabaseMenu.add_command(label = "Remove Record", command=dbwin.RemoveRecord)
 # DatabaseMenu.add_command(label = "Delete", command='')
 
 # Automation Menu
