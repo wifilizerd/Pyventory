@@ -8,6 +8,8 @@ A Python (cross platform) based Inventory Asset Checker. Compatable with any Com
 
 ## SETUP:✔✔✔
 ### Windows
+
+🎈 Updated windows setup in [wiki](https://github.com/wifilizerd/Pyventory/wiki/Getting-Started#PyVentory-on-Windows)
  
  Downlaod and install python 3.7+ from [Python.org](https://python.org/).
  
