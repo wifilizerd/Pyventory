@@ -39,41 +39,48 @@ class Directories:          # Directories
         "Class":              2,            # Inventory, Infrastructure, Printers
         "Name":               3,            # Device Name
         "Cpu":                4,            # CPU
-        "Modified by":        5,            # Last Modified Username
-        "Modified Date":      6,            # Last Modified Date
+        "Modified by":        20,            # Last Modified Username
+        "Modified Date":      21,            # Last Modified Date
         "Rotation Eligible":  7,            # Yes/No, Eligible for Rotation
         "Status":             8,            # Active, Condemned, Surplus
         "Wired Mac Addr":     9,
         "Wireless Mac Addr":  10,
         "Server Mac Addr":    11,
-        "Hdd":                12,
-        "Tag":                13,
-        "IP Addr":            14,
-        "MDM Date":           15,
-        "Mfg Year":           16,
-        "Model":              17,
-        "Creator":            18,
-        "Create Date":        19,
-        "VLAN":               20,
-        "Notes":              21,
-        "OS":                 22,
-        "Owner":              23,
-        "Product #":          24,
-        "InstallDate":        25,
-        "Ram":                26,
-        "Room #":             27,
-        "School #":           28,
-        "Serial #":           29,
-        "Unknown":            30,
-        "MDM Purchased":      31,     # Yes/No
-        "Device Type":        32,     # LapMain, Chromebook, etc
-        "Username":           33,
-        "UserType":           34,     # Student, Teacher, Admin, Etc
-        "Rotation Year":      35,     # Year to be Rotated
-        "School Name":        44,     # School Name, Scan File Format 
+        "Hdd":                14,
+        "Tag":                15,
+        "IP Addr":            16,
+        "MDM Date":           17,
+        "Mfg Year":           18,
+        "Model":              19,
+        "Creator":            5,
+        "Create Date":        6,
+        "VLAN":               22,
+        "Notes":              23,
+        "OS":                 24,
+        "Owner":              25,
+        "Product #":          26,
+        "InstallDate":        27,
+        "Ram":                28,
+        "Room #":             29,
+        "School #":           30,
+        "Serial #":           31,
+        "Unknown":            100,     # 100 = unknow column from
+        "MDM Purchased":      101,     # Yes/No
+        "Device Type":        34,     # LapMain, Chromebook, etc
+        "Username":           35,
+        "UserType":           36,     # Student, Teacher, Admin, Etc
+        "Rotation Year":      37,     # Year to be Rotated
+        "School Name":        46,     # School Name, Scan File Format 
         }
-
 class Utilities:            # Utilities
+    def BulkChecker(self):
+        self.filename =  filedialog.askopenfilename(initialdir = "./",title = "Select file",filetypes = (("CSV files","*.csv")))
+        self.data = self.jsonOpenSave('OPEN')
+        messagebox.showinfo("Bulk Checker", 'press ok and wait until the Complete Message apperes.')
+        for i in self.CSV2List(self.filename):
+            self.p_print(4, Directories._TC['_INFO'], i[0])
+            self.CheckScan(i[0])
+        messagebox.showinfo('Bulk Checker', 'Bulk Check Complete')
     def Logo(self, _head):      # Used to call the logo and headings for the UI.
         if _head.upper() == 'MAIN':         # PYVENTORY
             self.p_print(1, Directories._TC['_GREEN'], 
@@ -155,61 +162,69 @@ class Utilities:            # Utilities
             return('Please Run Update before Continuing.')
     def pyventory_db_update(self, _filename):   # databnase update modual
         self.p_print(4, Directories._TC['_HEADING'], '******pyventory_db_update({})******'.format(_filename))
-        Updated_pyventory_db = {}
-        if type(_filename) != 'Nonetype':   
-            if os.path.exists(pyventory_db):                # Check if file exists
-                data = self.jsonOpenSave('OPEN')
-                Updated_pyventory_db.update(data)
+        if type(_filename) != 'Nonetype':  
+            Updated_pyventory_db = {}
+            UpdateFile_school_list = [] 
+            updatefile_list = self.CSV2List(_filename)          # takes a .CSV file from inventory database and turn it to a list for proccessing.
+
+            if os.path.exists(pyventory_db):                    # Check if file
+                data = self.jsonOpenSave('OPEN')                # set DB to data
+                self.DbBackup(data, ('db'+ self.TimeStamp() + '.json'))
+                os.remove(pyventory_db)                         # remove old database file
             else:
                 data = {}
-            
-            updatefile_list = self.CSV2List(_filename)          # takes a .CSV file from inventory database and turn it to a list for proccessing.
+
             self.p_print(4, Directories._TC['_INFO'], updatefile_list)
             self.p_print(2, Directories._TC["_INFO"], "Updating Pyventory Database, Please Wait...")
-            
+
+            for row in updatefile_list:                         # Create Llist of locations ids from CSV(update list)
+                if row[Directories._INV_ROW['School #']] not in UpdateFile_school_list:
+                    UpdateFile_school_list.append(row[Directories._INV_ROW['School #']])
+
+                    # Need to make a check during the update if the asset record is in the school list.
+
+
+
             for row in updatefile_list:
                 self.p_print(4, Directories._TC['_INFO'], row)
+                
                 if str(row[Directories._INV_ROW['Asset']]).lstrip('0') in data:      # check if asset tage is in Database.
-                    for i in data[str(row[Directories._INV_ROW['Asset']]).lstrip('0')]:
-                        datecode = i["Scan Year"]           # pulled from existing data to be added to new database.
-                        newroom = i["New Room"]
-                        newschool = i["New School"]
-                        Updated_pyventory_db[str(row[Directories._INV_ROW['Asset']]).lstrip('0')] = []   # create new record in json file
-                        Updated_pyventory_db[str(row[Directories._INV_ROW['Asset']]).lstrip('0')].append({   # add data to record
-                            "Asset": str(row[Directories._INV_ROW['Asset']]).lstrip('0'),
-                            "Serial #": row[Directories._INV_ROW["Serial #"]],
-                            "Class": row[Directories._INV_ROW["Class"]],       
-                            "Device Type": row[Directories._INV_ROW["Device Type"]],    
-                            "Make": row[Directories._INV_ROW["Make"]],
-                            "Model": row[Directories._INV_ROW["Model"]],
-                            "Cpu": row[Directories._INV_ROW["Cpu"]],
-                            "Product #": row[Directories._INV_ROW["Product #"]],
-                            "Ram": row[Directories._INV_ROW["Ram"]],
-                            "OS": row[Directories._INV_ROW["OS"]],
-                            "Hdd": row[Directories._INV_ROW["Hdd"]],
-                            "School #": row[Directories._INV_ROW["School #"]],
-                            "Room #": row[Directories._INV_ROW["Room #"]],
-                            "Username": row[Directories._INV_ROW["Username"]],
-                            "IP Addr": row[Directories._INV_ROW["IP Addr"]],
-                            "Name": row[Directories._INV_ROW["Name"]],        
-                            "Wired Mac Addr": row[Directories._INV_ROW["Wired Mac Addr"]],
-                            "Wireless Mac Addr": row[Directories._INV_ROW["Wireless Mac Addr"]],
-                            "Server Mac Addr": row[Directories._INV_ROW["Server Mac Addr"]],
-                            "InstallDate": row[Directories._INV_ROW["InstallDate"]],
-                            "Owner": row[Directories._INV_ROW["Owner"]],
-                            "UserType": row[Directories._INV_ROW["UserType"]],    
-                            "Status": row[Directories._INV_ROW["Status"]],      
-                            "Mfg Year": row[Directories._INV_ROW["Mfg Year"]],
-                            "Rotation Year": row[Directories._INV_ROW["Rotation Year"]],    
-                            "Rotation Eligible": row[Directories._INV_ROW["Rotation Eligible"]],        
-                            "School Name": row[Directories._INV_ROW["School Name"]],
-                            "Scan Year": datecode,
-                            "New Room": newroom,
-                            "New School": newschool
-                            })
+                    datecode = data[str(row[Directories._INV_ROW['Asset']]).lstrip('0')]["Scan Year"]           # pulled from existing data to be added to new database.
+
+                    Updated_pyventory_db[str(row[Directories._INV_ROW['Asset']]).lstrip('0')] = {}   # create new record in json file
+                    Updated_pyventory_db[str(row[Directories._INV_ROW['Asset']]).lstrip('0')].update({   # add data to record
+                        "Asset": str(row[Directories._INV_ROW['Asset']]).lstrip('0'),
+                        "Serial #": row[Directories._INV_ROW["Serial #"]],
+                        "Class": row[Directories._INV_ROW["Class"]],       
+                        "Device Type": row[Directories._INV_ROW["Device Type"]],    
+                        "Make": row[Directories._INV_ROW["Make"]],
+                        "Model": row[Directories._INV_ROW["Model"]],
+                        "Cpu": row[Directories._INV_ROW["Cpu"]],
+                        "Product #": row[Directories._INV_ROW["Product #"]],
+                        "Ram": row[Directories._INV_ROW["Ram"]],
+                        "OS": row[Directories._INV_ROW["OS"]],
+                        "Hdd": row[Directories._INV_ROW["Hdd"]],
+                        "School #": row[Directories._INV_ROW["School #"]],
+                        "Room #": row[Directories._INV_ROW["Room #"]],
+                        "Username": row[Directories._INV_ROW["Username"]],
+                        "IP Addr": row[Directories._INV_ROW["IP Addr"]],
+                        "Name": row[Directories._INV_ROW["Name"]],        
+                        "Wired Mac Addr": row[Directories._INV_ROW["Wired Mac Addr"]],
+                        "Wireless Mac Addr": row[Directories._INV_ROW["Wireless Mac Addr"]],
+                        "Server Mac Addr": row[Directories._INV_ROW["Server Mac Addr"]],
+                        "InstallDate": row[Directories._INV_ROW["InstallDate"]],
+                        "Owner": row[Directories._INV_ROW["Owner"]],
+                        "UserType": row[Directories._INV_ROW["UserType"]],    
+                        "Status": row[Directories._INV_ROW["Status"]],      
+                        "Mfg Year": row[Directories._INV_ROW["Mfg Year"]],
+                        "Rotation Year": row[Directories._INV_ROW["Rotation Year"]],    
+                        "Rotation Eligible": row[Directories._INV_ROW["Rotation Eligible"]],        
+                        "School Name": row[Directories._INV_ROW["School Name"]],
+                        "Scan Year": datecode,
+                        })
                 else:
-                    Updated_pyventory_db[str(row[Directories._INV_ROW['Asset']]).lstrip('0')] = []
-                    Updated_pyventory_db[str(row[Directories._INV_ROW['Asset']]).lstrip('0')].append({
+                    Updated_pyventory_db[str(row[Directories._INV_ROW['Asset']]).lstrip('0')] = {}
+                    Updated_pyventory_db[str(row[Directories._INV_ROW['Asset']]).lstrip('0')].update({
                         "Asset": str(row[Directories._INV_ROW['Asset']]).lstrip('0'),
                         "Serial #": row[Directories._INV_ROW["Serial #"]],
                         "Class": row[Directories._INV_ROW["Class"]],       
@@ -238,12 +253,48 @@ class Utilities:            # Utilities
                         "Rotation Eligible": row[Directories._INV_ROW["Rotation Eligible"]],        
                         "School Name": row[Directories._INV_ROW["School Name"]],    
                         "Scan Year": [],
-                        "New Room": row[Directories._INV_ROW["Room #"]],
-                        "New School": row[Directories._INV_ROW["School #"]]
                         })
-        else:
-            pass  
+            for recordid in data:
+                if data[str(recordid)]["School #"] not in UpdateFile_school_list and len(data[str(recordid)]["School #"]) > 2 :
+                    datecode = data[str(recordid)]["Scan Year"]           # pulled from existing data to be added to new database.
+                    Updated_pyventory_db[str(data[str(recordid)]['Asset']).lstrip('0')] = {}   # create new record in json file
+                    Updated_pyventory_db[str(data[str(recordid)]['Asset']).lstrip('0')].update({   # add data to record
+                        "Asset": str(data[str(recordid)]['Asset']).lstrip('0'),
+                        "Serial #": data[str(recordid)]["Serial #"],
+                        "Class": data[str(recordid)]["Class"],       
+                        "Device Type": data[str(recordid)]["Device Type"],    
+                        "Make": data[str(recordid)]["Make"],
+                        "Model": data[str(recordid)]["Model"],
+                        "Cpu": data[str(recordid)]["Cpu"],
+                        "Product #": data[str(recordid)]["Product #"],
+                        "Ram": data[str(recordid)]["Ram"],
+                        "OS": data[str(recordid)]["OS"],
+                        "Hdd": data[str(recordid)]["Hdd"],
+                        "School #": data[str(recordid)]["School #"],
+                        "Room #": data[str(recordid)]["Room #"],
+                        "Username": data[str(recordid)]["Username"],
+                        "IP Addr": data[str(recordid)]["IP Addr"],
+                        "Name": data[str(recordid)]["Name"],        
+                        "Wired Mac Addr": data[str(recordid)]["Wired Mac Addr"],
+                        "Wireless Mac Addr": data[str(recordid)]["Wireless Mac Addr"],
+                        "Server Mac Addr": data[str(recordid)]["Server Mac Addr"],
+                        "InstallDate": data[str(recordid)]["InstallDate"],
+                        "Owner": data[str(recordid)]["Owner"],
+                        "UserType": data[str(recordid)]["UserType"],    
+                        "Status": data[str(recordid)]["Status"],      
+                        "Mfg Year": data[str(recordid)]["Mfg Year"],
+                        "Rotation Year": data[str(recordid)]["Rotation Year"],    
+                        "Rotation Eligible": data[str(recordid)]["Rotation Eligible"],        
+                        "School Name": data[str(recordid)]["School Name"],
+                        "Scan Year": datecode,
+                        })
         self.jsonOpenSave('SAVE', Updated_pyventory_db) 
+    def DbBackup(self, _data, _filename=''):
+        if _filename == '':
+            pass
+        else:
+            with open(_filename, 'w') as backupfile:
+                json.dump(_data, backupfile)
     def FileBrowser(self, _extention, _new):    # Used to Display and  select what file to load. basic text interface file browser
         self.p_print(4, Directories._TC['_HEADING'], '******FileBrowser({0:}, {1:})******'.format(_extention, _new))
         _filelist = os.listdir(".") # list directory to a list
@@ -270,7 +321,7 @@ class Utilities:            # Utilities
     def CSVwriter(self, _filename, _info):      # Writes(appends) data to CSV files one line at a time.
         with open(_filename, 'a') as _file:
             _writer = csv.writer(_file)
-            _writer.writerow([_info]) 
+            _writer.writerows([_info]) 
     def CSV2List(self, _filename, _column=Directories._INV_ROW['Asset']):    # Used to read data from a CSV file and add it to a list if the _column has data.
         self.p_print(4, Directories._TC['_HEADING'], '******CSV2List({0:}, {1:})******'.format(_filename, _column))
         _filelist = []  # set blank list to recive data
@@ -321,20 +372,11 @@ class Utilities:            # Utilities
                     _Slist.append(_row[int(Directories._INV_ROW[_column])].upper().lstrip())
         self.p_print(4, Directories._TC['_YELLOW'], _Slist)        
         return(_Slist)
-    def AssetDisply(self, _list, _color):       # Used to Print Asset info to UI
-        self.p_print(4, Directories._TC['_HEADING'], '******AssetDisplay(_list(_list(see list _DEBUG = 5), {:})******'.format(_color))
-        self.p_print(5, Directories._TC['_HEADING'], '******AssetDisplay({0:}, {1:})******'.format(_list, _color))
+    def AssetDisply(self, _list):       # Used to Print Asset info to UI
+        self.p_print(4, Directories._TC['_HEADING'], '******AssetDisplay(_list(_list(see list _DEBUG = 5))******')
+        self.p_print(5, Directories._TC['_HEADING'], '******AssetDisplay({0:})******'.format(_list))
         if len(_list) > 2:
-            # self.p_print(1, Directories._TC[_color], '{0:>10} : {1:16} : {2:17} : {3:12} : {4:19} : {5:19} : {6:3} - {7:}'.format(
-            #     _list[0], 
-            #     _list[1], 
-            #     _list[2], 
-            #     _list[3], 
-            #     _list[4], 
-            #     _list[5], 
-            #     _list[6], 
-            #     _list[7]))
-            return('{0:>12} : {1:16} : {2:17} : {3:12} : {4:18} : {5:32} : {6:3} - {7:}'.format(
+            return('{0:>18} : {1:19} : {2:26} : {3:10} : {4:20} : {5:20} : {6:3} - {7:}'.format(
                 _list[0], 
                 _list[1], 
                 _list[2], 
@@ -362,59 +404,34 @@ class Utilities:            # Utilities
                     data_list.append(i["School Name"])
                 self.p_print(5, Directories._TC['_INFO'], data_list)    
                 if i["Serial #"]:   # control point, based on serial # 
-                    self.AssetDisply(data_list, '_GREEN')
+                    self.AssetDisply(data_list)
                 else:
-                    self.AssetDisply(data_list, '_RED')
-    def DisplayScanned(self, _scan, _school='ALL', _room='ALL'):
+                    self.AssetDisply(data_list)
+    def DisplayScanned(self, _scan,):
         self.data = self.jsonOpenSave('OPEN', '')
         self._scan = _scan
         self.data_list = []
 
         if self._scan in self.data:
-            if _school != 'All' or _room != 'ALL':      # need to fix printing all for room and school instead of the info from database
-                for i in self.data[self._scan]:
-                    self.data_list.append(i["Asset"])
-                    self.data_list.append(i["Serial #"])
-                    self.data_list.append(i["Name"])
-                    self.data_list.append(_room)
-                    self.data_list.append(i["Wired Mac Addr"])
-                    self.data_list.append(i["Wireless Mac Addr"])
-                    self.data_list.append(_school)
-                    self.data_list.append(i["School Name"])
-                self.p_print(5, Directories._TC['_INFO'], self.data_list) 
-            else:    
-                for i in self.data[self._scan]:
-                    self.data_list.append(i["Asset"])
-                    self.data_list.append(i["Serial #"])
-                    self.data_list.append(i["Name"])
-                    self.data_list.append(i["Room #"])
-                    self.data_list.append(i["Wired Mac Addr"])
-                    self.data_list.append(i["Wireless Mac Addr"])
-                    self.data_list.append(i["School #"])
-                    self.data_list.append(i["School Name"])
-                self.p_print(5, Directories._TC['_INFO'], self.data_list)    
-            
-            if i["Serial #"]:   # control point, based on serial # 
-                return(self.AssetDisply(self.data_list, '_GREEN'))
-            else:
-                return(self.AssetDisply(self.data_list, '_RED'))
-
-
-        if self._scan in self.data:
-            for i in self.data[self._scan]:
-                self.data_list.append(i["Asset"])
-                self.data_list.append(i["Serial #"])
-                self.data_list.append(i["Name"])
-                self.data_list.append(i["Room #"])
-                self.data_list.append(i["Wired Mac Addr"])
-                self.data_list.append(i["Wireless Mac Addr"])
-                self.data_list.append(i["School #"])
-                self.data_list.append(i["School Name"])
+            self.data_list.append(self.data[self._scan]["Asset"])
+            self.data_list.append(self.data[self._scan]["Serial #"])
+            self.data_list.append(self.data[self._scan]["Name"])
+            self.data_list.append(self.data[self._scan]["Room #"])
+            self.data_list.append(self.data[self._scan]["Wired Mac Addr"])
+            self.data_list.append(self.data[self._scan]["Wireless Mac Addr"])
+            self.data_list.append(self.data[self._scan]["School #"])
+            self.data_list.append(self.data[self._scan]["School Name"])
             self.p_print(5, Directories._TC['_INFO'], self.data_list)    
-            if i["Serial #"]:   # control point, based on serial # 
-                return(self.AssetDisply(self.data_list, '_GREEN'))
-            else:
-                return(self.AssetDisply(self.data_list, '_RED'))
+        else:
+            self.data_list.append(_scan)
+            self.data_list.append('')
+            self.data_list.append('')
+            self.data_list.append('')
+            self.data_list.append('')
+            self.data_list.append('')
+            self.data_list.append('')
+            self.data_list.append('')
+        return(self.AssetDisply(self.data_list))
     def CheckScan(self, _scan):      # Used to Check the asset tag that has been entered agesnt the inventory database.
         self.p_print(4, Directories._TC['_HEADING'], '******CheckScan({0:})******'.format(_scan))
         global currentscanlist
@@ -448,6 +465,10 @@ class Utilities:            # Utilities
         tyear = now.year
         tmonth = now.month
         return("{0:}-{1:}".format(str(tyear)[2:], str(tyear+1)[2:]) if tmonth > 6 else "{0:}-{1:}".format(str(tyear-1)[2:], str(tyear)[2:]))
+    def TimeStamp(self):
+        self.p_print(4, Directories._TC['_HEADING'], '******ScanYearGen()******')
+        now = datetime.datetime.now()
+        return(str(now.strftime("%Y")) + str(now.strftime("%m")) + str(now.strftime("%d")) + str(now.strftime("%H")) + str(now.strftime("%M")))
     def autoSave(self, _scan):                  # writes scan to the autosave file.
         self.p_print(4, Directories._TC['_HEADING'], '******autoSave()******')
         self.CSVwriter(autoSave_file, _scan)
@@ -456,18 +477,17 @@ class Utilities:            # Utilities
         self.data = self.jsonOpenSave('OPEN', '')
         self._scan = _scan
 
-        for i in self.data[self._scan]:
-            self.p_print(4, Directories._TC["_INFO"], i)
-            self.p_print(4, Directories._TC["_INFO"], self.ScanYearGen())
-            self.p_print(4, Directories._TC["_INFO"], i["Scan Year"])
+        self.p_print(4, Directories._TC["_INFO"], self.data[self._scan])
+        self.p_print(4, Directories._TC["_INFO"], self.ScanYearGen())
+        self.p_print(4, Directories._TC["_INFO"], self.data[self._scan]["Scan Year"])
 
-            if self.ScanYearGen() in i["Scan Year"]:    # check if Year code is already in the list.
-                pass
-            else:
-                # print(i["Scan Year"])
-                i["Scan Year"].append(self.ScanYearGen())
-            self.p_print(4, Directories._TC["_INFO"], i["Scan Year"])
-            self.p_print(4, Directories._TC["_INFO"], i)
+        if self.ScanYearGen() in self.data[self._scan]["Scan Year"]:    # check if Year code is already in the list.
+            pass
+        else:
+            # print(i["Scan Year"])
+            self.data[self._scan]["Scan Year"].append(self.ScanYearGen())
+        self.p_print(4, Directories._TC["_INFO"], self.data[self._scan]["Scan Year"])
+        self.p_print(4, Directories._TC["_INFO"], self.data[self._scan])
             
          
         self.jsonOpenSave('SAVE', self.data)
@@ -475,8 +495,8 @@ class Utilities:            # Utilities
     def newAssetRecord(self, _scan):            # create new blank record in pyventory_db
         self.p_print(4, Directories._TC['_HEADING'], '******newAssetRecord({0:})******'.format(_scan))
         data = self.jsonOpenSave('OPEN', '')
-        data[_scan] = []
-        data[_scan].append({
+        data[_scan] = {}
+        data[_scan].update({
             "Asset": _scan,
             "Serial #": "",
             "Class": "",       
@@ -516,14 +536,12 @@ class Utilities:            # Utilities
             with open(pyventory_db, 'w') as outfile:    # open database file and write over it with new data
                 json.dump(_info, outfile, sort_keys=True, indent=4) # sort_key will sort the records and indent organizes the file to easy to read json.
                 # json.dump(_info, outfile) # sort_key will sort the records and indent organizes the file to easy to read json.
-                
     def prograssSchoolList(self):
         schoollist = []
         data = self.jsonOpenSave('OPEN') 
         for i in data:
-            for s in data[i]:
-                if s['School #'] not in schoollist and len(s['School #']) == 3:
-                    schoollist.append(s['School #'])
+            if str(data[i]['School #']) not in schoollist and len(data[i]['School #']) == 3:
+                schoollist.append(data[i]['School #'])
         self.p_print(4, Directories._TC['_INFO'], schoollist)
         schoollist.sort()
         return(schoollist)
@@ -534,16 +552,14 @@ class Utilities:            # Utilities
         
         if school == 'SCHOOL':
             for i in data:
-                for s in data[i]:
-                    if s['Room #']:
-                        if s['Room #'].upper() not in roomlist:
-                            roomlist.append(s['Room #'].upper())
+                if data[i]['Room #']:
+                    if data[i]['Room #'].upper() not in roomlist:
+                        roomlist.append(data[i]['Room #'].upper())
         else:
             for i in data:
-                for s in data[i]:
-                    if school in s['School #']:
-                        if s['Room #'].upper() not in roomlist:
-                            roomlist.append(s['Room #'].upper())
+                if school in data[i]['School #']:
+                    if data[i]['Room #'].upper() not in roomlist:
+                        roomlist.append(data[i]['Room #'].upper())
         self.p_print(4, Directories._TC['_INFO'], roomlist)
         
         roomlist.sort()
@@ -580,33 +596,29 @@ class Utilities:            # Utilities
         count = 0
         data = self.jsonOpenSave('OPEN')
         for i in data:
-            for r in data[i]:
-                if r['School #'] == school and r['Room #'].upper() == room and self.ScanYearGen() in r['Scan Year']:
-                    count += 1
+            if data[i]['School #'] == school and data[i]['Room #'].upper() == room and self.ScanYearGen() in data[i]['Scan Year']:
+                count += 1
         return(count)
     def scannedInSchool(self, school):
         count = 0
         data = self.jsonOpenSave('OPEN')
         for i in data:
-            for r in data[i]:
-                if r['School #'] == school and self.ScanYearGen() in r['Scan Year']:
-                    count += 1
+            if data[i]['School #'] == school and self.ScanYearGen() in data[i]['Scan Year']:
+                count += 1
         return(count)
     def totalInRoom(self, school, room):
         count = 0
         data = self.jsonOpenSave('OPEN')
         for i in data:
-            for r in data[i]:
-                if r['School #'] == school and r['Room #'].upper() == room:
-                    count += 1
+            if data[i]['School #'] == school and data[i]['Room #'].upper() == room:
+                count += 1
         return(count)
     def totalInSchool(self, school):
         count = 0
         data = self.jsonOpenSave('OPEN')
         for i in data:
-            for r in data[i]:
-                if r['School #'] == school:
-                    count += 1
+            if data[i]['School #'] == school:
+                count += 1
         return(count)
     def progressRoomDisplay(self, school, room):
         data = self.jsonOpenSave('OPEN', '')
@@ -631,34 +643,24 @@ class Utilities:            # Utilities
             self.p_print(5, Directories._TC['_INFO'], data_list)    
             
             if self.ScanYearGen() in i["Scan Year"]:   # control point, based on serial # 
-                self.AssetDisply(data_list, '_GREEN')
+                self.AssetDisply(data_list)
             else:
-                self.AssetDisply(data_list, '_RED')
+                self.AssetDisply(data_list)
     def assetsinroom(self, _school, _room):
         self.data = self.jsonOpenSave('OPEN')
         self.assetslist = []
         for asset in self.data:
-            for info in self.data[asset]:
-                if info['School #'] == _school and info['Room #'].upper() == _room.upper():
-                    self.assetslist.append(info['Asset'])
+                if self.data[asset]['School #'] == _school and self.data[asset]['Room #'].upper() == _room.upper():
+                    self.assetslist.append(self.data[asset]['Asset'])
         self.assetslist.sort()
         return(self.assetslist)
     def assetstatus(self, _asset):
         self.data = self.jsonOpenSave('OPEN')
         self.asset = _asset
-        for info in self.data[self.asset]:
-            if self.ScanYearGen() in info['Scan Year']:
-                return('CHECKED')
-            else:
-                return('UNCHECKED')
-    def wronginfoWrite(self):
-        self.data = self.jsonOpenSave('OPEN')
-        for record in self.data:
-            for i in self.data[record]:
-                # print(i["New Room"])
-                if i["Scan Year"]:
-                    if i["New Room"] != i["Room #"] or i["New School"] != i["School #"]:
-                        self.CSVwriter('Wronginfo.csv', [i["Asset"], i["New School"], i["New Room"]])
+        if self.ScanYearGen() in self.data[self.asset]['Scan Year']:
+            return('CHECKED')
+        else:
+            return('UNCHECKED')
     def RecordeRemover(self, _asset):
         self.data = self.jsonOpenSave('OPEN')
         if _asset in self.data:
@@ -668,13 +670,6 @@ class Utilities:            # Utilities
         if _asset in self.data:
             print(self.data[_asset])
         self.jsonOpenSave("SAVE", self.data)
-
-
-
-
- 
-
-
 class Interface:
     def __init__(self):
         pass
@@ -780,94 +775,20 @@ class Interface:
                 if mainUtil.Help(self.interfaceResponce) != 'null':         #is there is no help menu for the entry restart MENU()
                     self._logo = self.interfaceResponce
                     self._help = self.interfaceResponce
-
-# start
-# user1 = Interface()
-# user1.Menu()
-
 class Windows:
-    def Checker(self):
-        checkutil = Utilities()
-        self._school = self.schoolvar.get()
-        self._room = self.roomvar.get()
-        self._scan = self.Scan.get()
-
-        # print(self._school)
-        # print(self._room)
-        # print(self._scan)
-
-        if self._school == 'SCHOOL' and self._room == 'ROOM':
-            if checkutil.numberChecker(self._scan) == False:
-                pass
-            else:
-                self._data = checkutil.jsonOpenSave('OPEN')
-                if self._scan.lstrip('0') in self._data:
-                    self.cScanList.configure(bg='green')
-                else:
-                    self.cScanList.configure(bg='red')
-                checkutil.CheckScan(self._scan.lstrip('0'))
-            self.cScanList.insert(END, checkutil.DisplayScanned(self._scan.lstrip('0'))) 
-        else:
-            if checkutil.numberChecker(self._scan) == False:
-                pass
-            else:
-                self._data = checkutil.jsonOpenSave('OPEN', '')
-                if self._scan.lstrip('0') in self._data:    
-                    for i in self._data[self._scan.lstrip('0')]:
-                        # print(i["School #"])
-                        if i["School #"] == self._school:
-                            # print(i["Room #"])
-                            if i["Room #"] == self._room:
-                                # self.cScanList.configure(bg='green')
-                                i["New School"] = self._school
-                                i["New Room"] = self._room
-                                self.cScanList.insert(END, checkutil.DisplayScanned(self._scan.lstrip('0'),_school=self._school,_room=self._room))
-                            else:
-                                # self.cScanList.configure(bg='yellow')
-                                i["New School"] = self._school
-                                i["New Room"] = self._room
-                                self.cScanList.insert(END, checkutil.DisplayScanned(self._scan.lstrip('0'),_school=self._school,_room=self._room))
-                        else:
-                            # self.cScanList.configure(bg='yellow')
-                            i["New School"] = self._school
-                            i["New Room"] = self._room    
-                            self.cScanList.insert(END, checkutil.DisplayScanned(self._scan.lstrip('0'),_school=self._school,_room=self._room))
-                else:
-                    pass
-                    # self.cScanList.configure(bg='red')
-                checkutil.CheckScan(self._scan.lstrip('0'))
-
-            # self.cScanList.insert(END, checkutil.DisplayScanned(self._scan.lstrip('0'),_school=self._school,_room=self._room))
-        
-        self.Scan.delete(first=0, last=100)
-    def Updater(self):
-        updateutil = Utilities()
-        filename =  filedialog.askopenfilename(initialdir = "./",title = "Select file",filetypes = (("CSV files","*.csv"),("all files","*.*")))
-        if filename:
-            updateutil.pyventory_db_update(filename)
-            messagebox.showinfo("Database Updater", "Database has been updated with: " + filename)
-    def bulkchecker(self):
-        bulkutil = Utilities()
-        self.filename =  filedialog.askopenfilename(initialdir = "./",title = "Select file",filetypes = (("CSV files","*.csv"),("all files","*.*")))
-        self.data = bulkutil.jsonOpenSave('OPEN', '')
-        messagebox.showinfo("Bulk Checker", 'afer press ok, plases wait until the complete message apperes to continue.')
-        for i in bulkutil.CSV2List(self.filename):
-            bulkutil.p_print(4, Directories._TC['_INFO'], i[0])
-            bulkutil.CheckScan(i[0])
-        messagebox.showinfo('bulk checker', 'bulk check complete')
-    def assetreport(self, _asset):
-        assetreportutil = Utilities()
-        self.data = assetreportutil.jsonOpenSave('OPEN')
+    def AssetReport(self, _asset):
+        AssetReportutil = Utilities()
+        self.data = AssetReportutil.jsonOpenSave('OPEN')
         
         if 'asset' in self.progresstreeview.selection()[0]:
             self._asset = self.progresstreeview.selection()[0].split('-')[2][5:]
         
-            self.assetreportwindow = Toplevel()
-            self.assetreportwindow.geometry("800x600") #Width x Height
-            self.assetreportwindow.title('Asset Report')
+            self.AssetReportwindow = Toplevel()
+            self.AssetReportwindow.geometry("800x600") #Width x Height
+            self.AssetReportwindow.title('Asset Report')
 
             #tech idetification
-            self.techIDframe = LabelFrame(self.assetreportwindow, pady=10, padx=10)
+            self.techIDframe = LabelFrame(self.AssetReportwindow, pady=10, padx=10)
             self.techIDLabel = Label(self.techIDframe, text='Technology Identification', padx=7, bg='black', fg='white')
 
             self.seriallabel = Label(self.techIDframe, text='Serial #', padx=7)
@@ -883,7 +804,7 @@ class Windows:
             self.statusentry = Entry(self.techIDframe, width=21, bg='light gray')
 
             # Computer Information
-            self.compinfoframe = LabelFrame(self.assetreportwindow, pady=10, padx=10)
+            self.compinfoframe = LabelFrame(self.AssetReportwindow, pady=10, padx=10)
             self.compinfoLabel = Label(self.compinfoframe, text='Computer Information', padx=7, bg='black', fg='white')
 
             self.makeLabel = Label(self.compinfoframe, text='Make', padx=7)
@@ -908,7 +829,7 @@ class Windows:
             self.harddriveentry = Entry(self.compinfoframe, width=14, bg='light gray')
 
             #Details 
-            self.detailframe = LabelFrame(self.assetreportwindow, pady=10, padx=10)
+            self.detailframe = LabelFrame(self.AssetReportwindow, pady=10, padx=10)
             self.detailLabel = Label(self.detailframe, text='Details', padx=7, bg='black', fg='white')
             #school #
             self.schoolnumberlabel = Label(self.detailframe, text='School #', padx=7)
@@ -1061,41 +982,60 @@ class Windows:
 
             # add text to entries
 
-            self.check = assetreportutil.assetstatus(self._asset)
-            for tag in self.data[self._asset]:
-                self.tageentry.insert(0, tag['Asset'])
-                self.serialentry.insert(0, tag['Serial #'])
-                self.schoolnameentry.insert(0, tag['School Name'])
-                self.typeentry.insert(0, tag['Device Type'])
-                self.statusentry.insert(0, self.check)
-                self.makeentry.insert(0, tag['Make'])
-                self.modelentry.insert(0, tag['Model'])
-                self.CPUSpeedentry.insert(0, tag['Cpu'])
-                self.Productentry.insert(0, tag['Product #'])
-                self.ramentry.insert(0, tag['Ram'])
-                self.osentry.insert(0, tag['OS'])
-                self.harddriveentry.insert(0, tag['Hdd'])
-                self.schoolnumberentry.insert(0, tag['School #'])
-                self.roomentry.insert(0, tag['Room #'])
-                self.userentry.insert(0, tag['Username'])
-                self.ipaddressentry.insert(0, tag['IP Addr'])
-                self.installdateentry.insert(0, tag['InstallDate'])
-                self.computernameentry.insert(0, tag['Name'])
-                self.ownerentry.insert(0, tag['Owner'])
-                self.wiredmacentry.insert(0, tag['Wired Mac Addr'])
-                self.usertypeentry.insert(0, tag['UserType'])
-                self.wirelessmacentry.insert(0, tag['Wireless Mac Addr'])
-                self.computerstatusentry.insert(0, tag['Status'])
-                self.mac3entry.insert(0, tag['Server Mac Addr'])
-                self.mfgyearentry.insert(0, tag['Mfg Year'])
-                # self.netusedentry.insert(0, tag[''])
-                self.rotationyearentry.insert(0, tag['Rotation Year'])
-                self.rotationeligibleentry.insert(0, tag['Rotation Eligible'])
-            self.assetreportwindow.mainloop()
-    def Remover(self):
-        removeutil = Utilities()
-        self._asset = self.RecordEntry.get()
-        removeutil.RecordeRemover(self._asset)
+            self.check = AssetReportutil.assetstatus(self._asset)
+            self.tageentry.insert(0, self.data[self._asset]['Asset'])
+            self.serialentry.insert(0, self.data[self._asset]['Serial #'])
+            self.schoolnameentry.insert(0, self.data[self._asset]['School Name'])
+            self.typeentry.insert(0, self.data[self._asset]['Device Type'])
+            self.statusentry.insert(0, self.check)
+            self.makeentry.insert(0, self.data[self._asset]['Make'])
+            self.modelentry.insert(0, self.data[self._asset]['Model'])
+            self.CPUSpeedentry.insert(0, self.data[self._asset]['Cpu'])
+            self.Productentry.insert(0, self.data[self._asset]['Product #'])
+            self.ramentry.insert(0, self.data[self._asset]['Ram'])
+            self.osentry.insert(0, self.data[self._asset]['OS'])
+            self.harddriveentry.insert(0, self.data[self._asset]['Hdd'])
+            self.schoolnumberentry.insert(0, self.data[self._asset]['School #'])
+            self.roomentry.insert(0, self.data[self._asset]['Room #'])
+            self.userentry.insert(0, self.data[self._asset]['Username'])
+            self.ipaddressentry.insert(0, self.data[self._asset]['IP Addr'])
+            self.installdateentry.insert(0, self.data[self._asset]['InstallDate'])
+            self.computernameentry.insert(0, self.data[self._asset]['Name'])
+            self.ownerentry.insert(0, self.data[self._asset]['Owner'])
+            self.wiredmacentry.insert(0, self.data[self._asset]['Wired Mac Addr'])
+            self.usertypeentry.insert(0, self.data[self._asset]['UserType'])
+            self.wirelessmacentry.insert(0, self.data[self._asset]['Wireless Mac Addr'])
+            self.computerstatusentry.insert(0, self.data[self._asset]['Status'])
+            self.mac3entry.insert(0, self.data[self._asset]['Server Mac Addr'])
+            self.mfgyearentry.insert(0, self.data[self._asset]['Mfg Year'])
+            # self.netusedentry.insert(0, self.data[self._asset][''])
+            self.rotationyearentry.insert(0, self.data[self._asset]['Rotation Year'])
+            self.rotationeligibleentry.insert(0, self.data[self._asset]['Rotation Eligible'])
+            self.AssetReportwindow.mainloop()
+    def bulkchecker(self):
+        bulkutil = Utilities()
+        self.filename =  filedialog.askopenfilename(initialdir = "./",title = "Select file",filetypes = (("CSV files","*.csv"),("all files","*.*")))
+        self.data = bulkutil.jsonOpenSave('OPEN', '')
+        messagebox.showinfo("Bulk Checker", 'press ok and wait until the Complete Message apperes.')
+        for i in bulkutil.CSV2List(self.filename):
+            bulkutil.p_print(4, Directories._TC['_INFO'], i[0])
+            bulkutil.CheckScan(i[0])
+        messagebox.showinfo('bulk checker', 'bulk check complete')
+    def Checker(self):
+        checkutil = Utilities()
+        self._scan = self.Scan.get()
+        
+        if checkutil.numberChecker(self._scan) == False:
+            pass
+        else:
+            self._data = checkutil.jsonOpenSave('OPEN', '')
+            if self._scan.lstrip('0') in self._data:    
+                self.cScanList.insert(END, checkutil.DisplayScanned(self._scan.lstrip('0')))
+            else:
+                self.cScanList.insert(END, checkutil.DisplayScanned(self._scan.lstrip('0')))
+                # self.cScanList.configure(bg='red')
+            checkutil.CheckScan(self._scan.lstrip('0'))
+        self.Scan.delete(first=0, last=100)
     def IndividualWindow(self):
         util = Utilities()
         # self.schoolmenulist = {}
@@ -1104,18 +1044,12 @@ class Windows:
             self.schoollist = util.prograssSchoolList()
             self.IndividualMainWindow = Toplevel()
             self.IndividualMainWindow.title('Individual scanner')
-            self.IndividualMainWindow.minsize(800, 500)
+            self.IndividualMainWindow.minsize(900, 500) #Width x Height
             self.IndividualMainWindow.columnconfigure(4, weight=1)
             self.IndividualMainWindow.rowconfigure(2, weight=1)        
 
-            self.schoolvar = StringVar()
-            self.schoolvar.set('SCHOOL')
-            self.roomvar = StringVar()
-            self.roomvar.set('ROOM')
-            self.roomlist = util.progressRoomList(self.schoolvar.get()) 
-
-            self.cScanList = Listbox(self.IndividualMainWindow, bg='black', fg='white', height=30, width=130)
-            self.cScanList.insert(END, '{0:>10} : {1:24} : {2:21} : {3:8} : {4:22} : {5:19} : {6:3} - {7:}'.format(
+            self.cScanList = Listbox(self.IndividualMainWindow, bg='black', fg='white', height=30, width=150)
+            self.cScanList.insert(END, '{0:>15} : {1:30} : {2:30} : {3:10} : {4:20} : {5:20} : {6:3} - {7:}'.format(
                             'Asset Tag', 
                             'Serial #', 
                             'Name', 
@@ -1125,17 +1059,12 @@ class Windows:
                             'School #', 
                             'Name'))
             
-            self.SchoolMenu = OptionMenu(self.IndividualMainWindow, self.schoolvar, *self.schoollist)
-            self.RoomMenu = OptionMenu(self.IndividualMainWindow, self.roomvar, *self.roomlist)
-
             self.ScanLabel = Label(self.IndividualMainWindow, text='Asset Tag:')
             self.Scan = Entry(self.IndividualMainWindow, width=30)
             self.EnterButton = Button(self.IndividualMainWindow, text='Enter', padx=10, command=self.Checker)
             self.EnterFrame = Frame(self.IndividualMainWindow, height=5)
                 
             self.cScanList.grid(column=0, row=0, columnspan=5, padx=10, pady=10)
-            self.SchoolMenu.grid(column=0, row=1)
-            self.RoomMenu.grid(column=1, row=1)
             self.ScanLabel.grid(column=2, row=1)
             self.Scan.grid(column=3, row=1)
             self.Scan.focus()
@@ -1145,7 +1074,7 @@ class Windows:
 
             self.IndividualMainWindow.mainloop()
         else:
-            messagebox.showinfo("Error", "No Database Found run Database>Update")
+            messagebox.showinfo("Error", "No Database Found run Database>Update")  
     def ProgressWindow(self):
         ProgressWindowutil = Utilities()
         if os.path.exists(pyventory_db):
@@ -1186,35 +1115,24 @@ class Windows:
                         self.progresstreeview.insert(self.roomID, 'end', self.assetID, text=('(BLANK)' if asset == '' else asset))
                         self.progresstreeview.set(self.assetID, 'Status', ProgressWindowutil.assetstatus(asset))
 
-            self.progresstreeview.bind('<<TreeviewSelect>>', self.assetreport)
+            self.progresstreeview.bind('<<TreeviewSelect>>', self.AssetReport)
 
             self.progresstreeview.pack()
             self.ProgressMainWindow.mainloop()
         else:
-            messagebox.showinfo("Error", "No Database Found run Database>Update")
-    def RemoveRecord(self):
-        RemoveWindowutil = Utilities()
-        if os.path.exists(pyventory_db):
-            self.RemoveRecordWindow = Toplevel()
-
-            self.RemoveRecordWindow.title('Remove Record')
-            self.RemoveRecordWindow.minsize(600, 100)
-            
-            # Warning Label
-            self.WarningLabel = Label(self.RemoveRecordWindow, text="WARNING! Click the submit button will remove the entered recored, This action cannot be undone.")
-            self.WarningLabel.pack()
-
-            self.RecordEntry = Entry(self.RemoveRecordWindow, width=50)
-            self.RecordEntry.pack()
-            self.RecordEntry.focus()
-
-            self.SubmitButtion = Button(self.RemoveRecordWindow, text="Submit", padx=10, command=self.Remover)
-            self.SubmitButtion.pack()
-
-            
+            messagebox.showinfo("Error", "No Database Found run Database>Update")  
+    def Updater(self):
+        updateutil = Utilities()
+        filename =  filedialog.askopenfilename(initialdir = "./",title = "Select file",filetypes = (("CSV files","*.csv"),("all files","*.*")))
+        if filename:
+            updateutil.pyventory_db_update(filename)
+            messagebox.showinfo("Database Updater", "Database has been updated with: " + filename)
+    
+    
+    
+    
 
 #GUI Start
-
 # Main Windows
 Main = Tk()
 Main.geometry("600x300") #Width x Height
@@ -1225,16 +1143,12 @@ menubar = Menu(Main)
 
 # scan menu
 scannerwin = Windows()
-
-
 ScanMenu = Menu(menubar, tearoff=0)
 menubar.add_cascade(label="Scan", menu=ScanMenu) # added after ScanMenu so no error
 ScanMenu.add_command(label="Individual", command=scannerwin.IndividualWindow)
 ScanMenu.add_command(label = "Bulk", command=scannerwin.bulkchecker)
 ScanMenu.add_separator()
 ScanMenu.add_command(label = "Close", command=Main.quit)
-
-
 
 # Database Menu
 dbwin = Windows()
@@ -1243,8 +1157,6 @@ DatabaseMenu = Menu(menubar, tearoff=0)
 menubar.add_cascade(label="Database", menu=DatabaseMenu)
 DatabaseMenu.add_command(label="Update", command=dbwin.Updater)
 DatabaseMenu.add_command(label="Progress", command=dbwin.ProgressWindow)
-DatabaseMenu.add_command(label = "List wrong", command=dbutil.wronginfoWrite)
-DatabaseMenu.add_command(label = "Remove Record", command=dbwin.RemoveRecord)
 # DatabaseMenu.add_command(label = "Delete", command='')
 
 # Automation Menu
