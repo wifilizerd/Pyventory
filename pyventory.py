@@ -3,16 +3,15 @@
 #python 3.7
 #Pyventory - 2.1
 # import all needed libraries
-import sys, os, csv, json, datetime,tkinter 
+import sys, os, csv, json, datetime
 from tkinter import *
-from tkinter import filedialog
-from tkinter import messagebox
-from tkinter import ttk
-
+from tkinter import filedialog, messagebox, ttk
+from datetime import datetime, date
 # Gobal Variables
 _DEBUG = 1         # 0 = no output, 1 =  Standered Output, 2 = Detail output, 3 = Basic Debug, 4 = pause Debug , 5 = everything,
-# InventoryFile = ""
 
+
+# InventoryFile = ""
 pyventory_db = ".pv_db.json"
 autoSave_file = "~autosave.csv"
 # ScannedFile =  ""
@@ -39,8 +38,8 @@ class Directories:          # Directories
         "Class":              2,            # Inventory, Infrastructure, Printers
         "Name":               3,            # Device Name
         "Cpu":                4,            # CPU
-        "Modified by":        20,            # Last Modified Username
-        "Modified Date":      21,            # Last Modified Date
+        "Modified by":        21,            # Last Modified Username
+        "Modified Date":      22,            # Last Modified Date
         "Rotation Eligible":  7,            # Yes/No, Eligible for Rotation
         "Status":             8,            # Active, Condemned, Surplus
         "Wired Mac Addr":     9,
@@ -49,29 +48,34 @@ class Directories:          # Directories
         "Hdd":                14,
         "Tag":                15,
         "IP Addr":            16,
-        "MDM Date":           17,
-        "Mfg Year":           18,
-        "Model":              19,
+        "Last Inv date":      17,
+        "MDM Date":           18,
+        "Mfg Year":           19,
+        "Model":              20,
         "Creator":            5,
         "Create Date":        6,
-        "VLAN":               22,
-        "Notes":              23,
-        "OS":                 24,
-        "Owner":              25,
-        "Product #":          26,
-        "InstallDate":        27,
-        "Ram":                28,
-        "Room #":             29,
-        "School #":           30,
-        "Serial #":           31,
+        "VLAN":               23,
+        "Notes":              24,
+        "OS":                 25,
+        "Owner":              26,
+        "Product #":          27,
+        "InstallDate":        28,
+        "Ram":                29,
+        "Room #":             30,
+        "School #":           31,
+        "Serial #":           32,
         "Unknown":            100,     # 100 = unknow column from
         "MDM Purchased":      101,     # Yes/No
-        "Device Type":        34,     # LapMain, Chromebook, etc
-        "Username":           35,
-        "UserType":           36,     # Student, Teacher, Admin, Etc
-        "Rotation Year":      37,     # Year to be Rotated
-        "School Name":        46,     # School Name, Scan File Format 
+        "Device Type":        35,     # LapMain, Chromebook, etc
+        "Username":           36,
+        "UserType":           37,     # Student, Teacher, Admin, Etc
+        "Rotation Year":      38,     # Year to be Rotated
+        "School Name":        47,     # School Name, Scan File Format 
         }
+    _WS1_Col = {
+        "Last Seen Date":        0,
+        "Serial #":              17,
+    }
 class Utilities:            # Utilities
     def BulkChecker(self):
         self.filename =  filedialog.askopenfilename(initialdir = "./",title = "Select file",filetypes = (("CSV files","*.csv")))
@@ -341,6 +345,10 @@ class Utilities:            # Utilities
             if row: # check if there is data on tha row.
                 _cleanlist.append(row)  # append data to list in UPPER case
         return(_cleanlist)
+    def is_good_char (self, _char):
+        return(ord(_char) <= 127)
+    def clean_str (self, _str):
+        return(''.join(filter(self.is_good_char,_str)))
     def Dupcheck(self, _list):                  # Used to checks for duplicates data in a list.
         self.p_print(4, Directories._TC['_HEADING'], '******Dupcheck(_list(see list _DEBUG = 5))******')
         self.p_print(5, Directories._TC['_HEADING'], '******Dupcheck({0:})******'.format(_list))
@@ -461,7 +469,7 @@ class Utilities:            # Utilities
             return(_scan)   # Green across the board!
     def ScanYearGen(self):                      # generats the year code, based on what month it is. (i.e. 19-29)
         self.p_print(4, Directories._TC['_HEADING'], '******ScanYearGen()******')
-        now = datetime.datetime.now()
+        now =  date.today()
         tyear = now.year
         tmonth = now.month
         return("{0:}-{1:}".format(str(tyear)[2:], str(tyear+1)[2:]) if tmonth > 6 else "{0:}-{1:}".format(str(tyear-1)[2:], str(tyear)[2:]))
@@ -489,9 +497,16 @@ class Utilities:            # Utilities
         self.p_print(4, Directories._TC["_INFO"], self.data[self._scan]["Scan Year"])
         self.p_print(4, Directories._TC["_INFO"], self.data[self._scan])
             
-         
         self.jsonOpenSave('SAVE', self.data)
         self.p_print(4, Directories._TC["_INFO"], self.data[self._scan])
+    def Serial2Asset(self, _serial):
+        self.p_print(4, Directories._TC['_HEADING'], '******Serial2Asset({0:})******'.format(_serial))
+        self.data = self.jsonOpenSave('OPEN', '')
+        self._serial = _serial
+
+        for asset in self.data:
+            if self.data[asset]["Serial #"] == self._serial:
+                return(self.data[asset]["Asset"])
     def newAssetRecord(self, _scan):            # create new blank record in pyventory_db
         self.p_print(4, Directories._TC['_HEADING'], '******newAssetRecord({0:})******'.format(_scan))
         data = self.jsonOpenSave('OPEN', '')
@@ -1127,10 +1142,28 @@ class Windows:
         if filename:
             updateutil.pyventory_db_update(filename)
             messagebox.showinfo("Database Updater", "Database has been updated with: " + filename)
-    
-    
-    
-    
+    def Auto_WS1(self):
+        Auto_WS1util = Utilities()
+        self._WS1List = Auto_WS1util.CSV2List(filedialog.askopenfilename(initialdir = "./",title = "Select file",filetypes = (("CSV files","*.csv"),("all files","*.*"))))
+        self._LastSeenCutoff = 2
+        self._CurrentDate = date.today()
+        self._count = 0
+
+        for row in self._WS1List:
+            self._Last_seen_date = datetime.strptime(Auto_WS1util.clean_str(row[Directories._WS1_Col['Last Seen Date']]).replace('"', ""), '%m/%d/%Y %I:%M:%S %p')
+            if int(self._Last_seen_date.strftime('%Y')) == int(self._CurrentDate.strftime('%Y')):
+                if int(self._Last_seen_date.strftime('%m')) > (int(self._CurrentDate.strftime('%m')) - self._LastSeenCutoff):
+                    Asset = Auto_WS1util.Serial2Asset(row[Directories._WS1_Col['Serial #']])
+                    print(row[Directories._WS1_Col['Serial #']])
+                    print(type(Asset))
+                    if Asset is None:
+                        pass
+                    else:
+                        Auto_WS1util.save2db(Asset)
+
+
+
+
 
 #GUI Start
 # Main Windows
@@ -1160,9 +1193,11 @@ DatabaseMenu.add_command(label="Progress", command=dbwin.ProgressWindow)
 # DatabaseMenu.add_command(label = "Delete", command='')
 
 # Automation Menu
-# AutoMenu = Menu(menubar, tearoff=0)
-# menubar.add_cascade(label="Automation", menu=AutoMenu)
-# AutoMenu.add_command(label="Update", command='')
+autowin = Windows()
+AutoMenu = Menu(menubar, tearoff=0)
+menubar.add_cascade(label="Automation", menu=AutoMenu)
+AutoMenu.add_command(label="WorkSpace One", command=autowin.Auto_WS1)
+# AutoMenu.add_command(label="", command='')
 
 # Help Menu
 # HelpMenu = Menu(menubar, tearoff=0)
