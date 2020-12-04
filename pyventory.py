@@ -1154,16 +1154,12 @@ class Windows:
             if int(self._Last_seen_date.strftime('%Y')) == int(self._CurrentDate.strftime('%Y')):
                 if int(self._Last_seen_date.strftime('%m')) > (int(self._CurrentDate.strftime('%m')) - self._LastSeenCutoff):
                     Asset = Auto_WS1util.Serial2Asset(row[Directories._WS1_Col['Serial #']])
-                    print(row[Directories._WS1_Col['Serial #']])
-                    print(type(Asset))
+                    # print(row[Directories._WS1_Col['Serial #']])
+                    # print(type(Asset))
                     if Asset is None:
                         pass
                     else:
                         Auto_WS1util.save2db(Asset)
-
-
-
-
 
 #GUI Start
 # Main Windows
