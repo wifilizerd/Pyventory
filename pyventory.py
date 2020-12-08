@@ -1193,6 +1193,8 @@ autowin = Windows()
 AutoMenu = Menu(menubar, tearoff=0)
 menubar.add_cascade(label="Automation", menu=AutoMenu)
 AutoMenu.add_command(label="WorkSpace One", command=autowin.Auto_WS1)
+AutoMenu.add_command(label="Google Managment", command='')
+AutoMenu.add_command(label="SCCM", command='')
 # AutoMenu.add_command(label="", command='')
 
 # Help Menu
