@@ -1,7 +1,7 @@
 #!/Python27/pythonw.exe
 #1/bin/python
 #python 3.7
-#Pyventory - 2.1
+#Pyventory - 2.0
 # import all needed libraries
 import sys, os, csv, json, datetime
 from tkinter import *
