@@ -1173,7 +1173,17 @@ class Windows:
             if Auto_WS1util.AutoChecker(datetime.strptime(Auto_WS1util.clean_str(row[Directories._WS1_Col['Last Seen Date']]).replace('"', ""), '%m/%d/%Y %I:%M:%S %p')) is True and Asset is not None:
                 Auto_WS1util.save2db(Asset)
             
-    # def Auto_CM(self):
+    def Auto_CM(self):
+        Auto_CMutil = Utilities()
+        self._CMList = Auto_CMutil.CSV2List(filedialog.askopenfilename(initialdir = "./",title = "Select file",filetypes = (("CSV files","*.csv"),("all files","*.*"))))
+        self._LastSeenCutoff = 2
+        self._CurrentDate = date.today()
+        self._count = 0
+
+        for row in self._CMList:
+            Asset = Auto_CMutil.Serial2Asset(row[Directories._CM_Col['Serial #']])
+            if Auto_CMutil.AutoChecker(datetime.strptime(Auto_CMutil.clean_str(row[Directories._CM_Col['Last Sync Date']]).replace('"', ""), '%Y-%m-%d %I:%M %p')) is True and Asset is not None:
+                Auto_CMutil.save2db(Asset)
 
 #GUI Start
 # Main Windows
@@ -1207,7 +1217,7 @@ autowin = Windows()
 AutoMenu = Menu(menubar, tearoff=0)
 menubar.add_cascade(label="Automation", menu=AutoMenu)
 AutoMenu.add_command(label="WorkSpace One", command=autowin.Auto_WS1)
-# AutoMenu.add_command(label="Google Managment", command=autowin.Auto_CM)
+AutoMenu.add_command(label="Google Managment", command=autowin.Auto_CM)
 # AutoMenu.add_command(label="SCCM", command='')
 # AutoMenu.add_command(label="", command='')
 
