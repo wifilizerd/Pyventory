@@ -1164,6 +1164,7 @@ class Windows:
                         pass
                     else:
                         Auto_WS1util.save2db(Asset)
+<<<<<<< Auto_ChromeManagment
     def Auto_CM(self):
         Auto_CMutil = Utilities()
         self._CMList = Auto_CMutil.CSV2List(filedialog.askopenfilename(initialdir = "./",title = "Select file",filetypes = (("CSV files","*.csv"),("all files","*.*"))))
@@ -1182,6 +1183,18 @@ class Windows:
                         pass
                     else:
                         Auto_WS1util.save2db(Asset)
+=======
+            else:
+                if int(self._CurrentDate.strftime('%m')) <= self._LastSeenCutoff:
+                    if self._Last_seen_date.strftime('%m')) >= (12 - (self._LastSeenCutoff - int(self._CurrentDate.strftime('%m')))):
+                        Asset = Auto_WS1util.Serial2Asset(row[Directories._WS1_Col['Serial #']])
+                        # print(row[Directories._WS1_Col['Serial #']])
+                        # print(type(Asset))
+                        if Asset is None:
+                            pass
+                        else:
+                            Auto_WS1util.save2db(Asset)
+>>>>>>> Finished Auto_WS1
 
 #GUI Start
 # Main Windows
