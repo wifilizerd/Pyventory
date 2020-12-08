@@ -1,7 +1,7 @@
 #!/Python27/pythonw.exe
 #1/bin/python
 #python 3.7
-#Pyventory - 2.0
+#Pyventory - 2.1
 # import all needed libraries
 import sys, os, csv, json, datetime
 from tkinter import *
@@ -689,6 +689,19 @@ class Utilities:            # Utilities
         if _asset in self.data:
             print(self.data[_asset])
         self.jsonOpenSave("SAVE", self.data)
+    def AutoChecker(self, _LSdate):
+        AutoCutil = Utilities()
+        self.CutOff = 2
+        self._CurrentDate = date.today()
+        self._LSdate = _LSdate
+
+        if int(self._LSdate.strftime('%Y')) == int(self._CurrentDate.strftime('%Y')) and int(self._LSdate.strftime('%m')) > (int(self._CurrentDate.strftime('%m')) - self.CutOff):
+            return(True)
+
+        elif int(self._CurrentDate.strftime('%m')) <= self.CutOff and self._LSdate.strftime('%m') >= (12 - (self.CutOff - int(self._CurrentDate.strftime('%m')))):
+            return(True)
+        else:
+            return(False)
 class Interface:
     def __init__(self):
         pass
@@ -794,6 +807,7 @@ class Interface:
                 if mainUtil.Help(self.interfaceResponce) != 'null':         #is there is no help menu for the entry restart MENU()
                     self._logo = self.interfaceResponce
                     self._help = self.interfaceResponce
+    
 class Windows:
     def AssetReport(self, _asset):
         AssetReportutil = Utilities()
@@ -1146,6 +1160,7 @@ class Windows:
         if filename:
             updateutil.pyventory_db_update(filename)
             messagebox.showinfo("Database Updater", "Database has been updated with: " + filename)
+    
     def Auto_WS1(self):
         Auto_WS1util = Utilities()
         self._WS1List = Auto_WS1util.CSV2List(filedialog.askopenfilename(initialdir = "./",title = "Select file",filetypes = (("CSV files","*.csv"),("all files","*.*"))))
@@ -1154,47 +1169,11 @@ class Windows:
         self._count = 0
 
         for row in self._WS1List:
-            self._Last_seen_date = datetime.strptime(Auto_WS1util.clean_str(row[Directories._WS1_Col['Last Seen Date']]).replace('"', ""), '%m/%d/%Y %I:%M:%S %p')
-            if int(self._Last_seen_date.strftime('%Y')) == int(self._CurrentDate.strftime('%Y')):
-                if int(self._Last_seen_date.strftime('%m')) > (int(self._CurrentDate.strftime('%m')) - self._LastSeenCutoff):
-                    Asset = Auto_WS1util.Serial2Asset(row[Directories._WS1_Col['Serial #']])
-                    # print(row[Directories._WS1_Col['Serial #']])
-                    # print(type(Asset))
-                    if Asset is None:
-                        pass
-                    else:
-                        Auto_WS1util.save2db(Asset)
-<<<<<<< Auto_ChromeManagment
-    def Auto_CM(self):
-        Auto_CMutil = Utilities()
-        self._CMList = Auto_CMutil.CSV2List(filedialog.askopenfilename(initialdir = "./",title = "Select file",filetypes = (("CSV files","*.csv"),("all files","*.*"))))
-        self._LastSyncCutoff = 2
-        self._CurrentDate = date.today()
-        self._count = 0
-
-        for row in self._CMList:
-            self._Last_sync_date = datetime.strptime(Auto_WS1util.clean_str(row[Directories._WS1_Col['Last Seen Date']]).replace('"', ""), '%m/%d/%Y %H:%M')
-            if int(self._Last_seen_date.strftime('%Y')) == int(self._CurrentDate.strftime('%Y')):
-                if int(self._Last_seen_date.strftime('%m')) > (int(self._CurrentDate.strftime('%m')) - self._LastSeenCutoff):
-                    Asset = Auto_WS1util.Serial2Asset(row[Directories._WS1_Col['Serial #']])
-                    # print(row[Directories._WS1_Col['Serial #']])
-                    # print(type(Asset))
-                    if Asset is None:
-                        pass
-                    else:
-                        Auto_WS1util.save2db(Asset)
-=======
-            else:
-                if int(self._CurrentDate.strftime('%m')) <= self._LastSeenCutoff:
-                    if self._Last_seen_date.strftime('%m')) >= (12 - (self._LastSeenCutoff - int(self._CurrentDate.strftime('%m')))):
-                        Asset = Auto_WS1util.Serial2Asset(row[Directories._WS1_Col['Serial #']])
-                        # print(row[Directories._WS1_Col['Serial #']])
-                        # print(type(Asset))
-                        if Asset is None:
-                            pass
-                        else:
-                            Auto_WS1util.save2db(Asset)
->>>>>>> Finished Auto_WS1
+            Asset = Auto_WS1util.Serial2Asset(row[Directories._WS1_Col['Serial #']])
+            if Auto_WS1util.AutoChecker(datetime.strptime(Auto_WS1util.clean_str(row[Directories._WS1_Col['Last Seen Date']]).replace('"', ""), '%m/%d/%Y %I:%M:%S %p')) is True and Asset is not None:
+                Auto_WS1util.save2db(Asset)
+            
+    # def Auto_CM(self):
 
 #GUI Start
 # Main Windows
@@ -1228,7 +1207,7 @@ autowin = Windows()
 AutoMenu = Menu(menubar, tearoff=0)
 menubar.add_cascade(label="Automation", menu=AutoMenu)
 AutoMenu.add_command(label="WorkSpace One", command=autowin.Auto_WS1)
-AutoMenu.add_command(label="Google Managment", command=autowin.Auto_CM)
+# AutoMenu.add_command(label="Google Managment", command=autowin.Auto_CM)
 # AutoMenu.add_command(label="SCCM", command='')
 # AutoMenu.add_command(label="", command='')
 
