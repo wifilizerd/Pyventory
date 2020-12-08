@@ -36,6 +36,9 @@ Please Visit the [Release](https://github.com/wifilizerd/Pyventory/releases) Pag
 **😃macOS 10.14+ Dark mode Looks Better😃**
 
 **😃Terminal Setting Homebrew Terminal Theme and Window setting set width to 130, height to 40.😃**
+
+## Builing for Windows
+[link](https://www.youtube.com/watch?v=UZX5kH72Yx4)
     
 
 ## Tested On:🧪🧪🧪
