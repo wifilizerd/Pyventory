@@ -809,8 +809,7 @@ class Interface:
                 self.interfaceResponce = input(self._logo + " Menu-")
                 if mainUtil.Help(self.interfaceResponce) != 'null':         #is there is no help menu for the entry restart MENU()
                     self._logo = self.interfaceResponce
-                    self._help = self.interfaceResponce
-    
+                    self._help = self.interfaceResponce   
 class Windows:
     def AssetReport(self, _asset):
         AssetReportutil = Utilities()
@@ -1193,8 +1192,6 @@ class Windows:
             Asset = Auto_SCCMutil.Serial2Asset(row[Directories._SCCM_Col['Serial #']])
             if Auto_SCCMutil.AutoChecker(datetime.strptime(Auto_SCCMutil.clean_str(row[Directories._SCCM_Col['Last Sync Date']]).replace('"', ""), '%Y-%m-%d %I:%M %p')) is True and Asset is not None:
                 Auto_SCCMutil.save2db(Asset)
-
-
 
 #GUI Start
 # Main Windows
