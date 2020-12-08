@@ -80,6 +80,9 @@ class Directories:          # Directories
         "Last Sync Date":      3,
         "Serial #":            1,
     }
+    _SCCM_Col = {
+        "Serial #":            3,
+    }
 class Utilities:            # Utilities
     def BulkChecker(self):
         self.filename =  filedialog.askopenfilename(initialdir = "./",title = "Select file",filetypes = (("CSV files","*.csv")))
@@ -1159,31 +1162,39 @@ class Windows:
         filename =  filedialog.askopenfilename(initialdir = "./",title = "Select file",filetypes = (("CSV files","*.csv"),("all files","*.*")))
         if filename:
             updateutil.pyventory_db_update(filename)
-            messagebox.showinfo("Database Updater", "Database has been updated with: " + filename)
-    
+            messagebox.showinfo("Database Updater", "Database has been updated with: " + filename)    
     def Auto_WS1(self):
         Auto_WS1util = Utilities()
         self._WS1List = Auto_WS1util.CSV2List(filedialog.askopenfilename(initialdir = "./",title = "Select file",filetypes = (("CSV files","*.csv"),("all files","*.*"))))
         self._LastSeenCutoff = 2
         self._CurrentDate = date.today()
-        self._count = 0
 
         for row in self._WS1List:
             Asset = Auto_WS1util.Serial2Asset(row[Directories._WS1_Col['Serial #']])
             if Auto_WS1util.AutoChecker(datetime.strptime(Auto_WS1util.clean_str(row[Directories._WS1_Col['Last Seen Date']]).replace('"', ""), '%m/%d/%Y %I:%M:%S %p')) is True and Asset is not None:
-                Auto_WS1util.save2db(Asset)
-            
+                Auto_WS1util.save2db(Asset)            
     def Auto_CM(self):
         Auto_CMutil = Utilities()
         self._CMList = Auto_CMutil.CSV2List(filedialog.askopenfilename(initialdir = "./",title = "Select file",filetypes = (("CSV files","*.csv"),("all files","*.*"))))
         self._LastSeenCutoff = 2
         self._CurrentDate = date.today()
-        self._count = 0
 
         for row in self._CMList:
             Asset = Auto_CMutil.Serial2Asset(row[Directories._CM_Col['Serial #']])
             if Auto_CMutil.AutoChecker(datetime.strptime(Auto_CMutil.clean_str(row[Directories._CM_Col['Last Sync Date']]).replace('"', ""), '%Y-%m-%d %I:%M %p')) is True and Asset is not None:
                 Auto_CMutil.save2db(Asset)
+    def Auto_SCCM(self):
+        Auto_SCCMutil = Utilities()
+        self._SCCMList = Auto_SCCMutil.CSV2List(filedialog.askopenfilename(initialdir = "./",title = "Select file",filetypes = (("CSV files","*.csv"),("all files","*.*"))))
+        self._LastSeenCutoff = 2
+        self._CurrentDate = date.today()
+
+        for row in self._SCCMList:
+            Asset = Auto_SCCMutil.Serial2Asset(row[Directories._SCCM_Col['Serial #']])
+            if Auto_SCCMutil.AutoChecker(datetime.strptime(Auto_SCCMutil.clean_str(row[Directories._SCCM_Col['Last Sync Date']]).replace('"', ""), '%Y-%m-%d %I:%M %p')) is True and Asset is not None:
+                Auto_SCCMutil.save2db(Asset)
+
+
 
 #GUI Start
 # Main Windows
