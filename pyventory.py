@@ -73,8 +73,12 @@ class Directories:          # Directories
         "School Name":        47,     # School Name, Scan File Format 
         }
     _WS1_Col = {
-        "Last Seen Date":        0,
-        "Serial #":              17,
+        "Last Seen Date":      0,
+        "Serial #":           17,
+    }
+    _CM_Col = {
+        "Last Sync Date":      3,
+        "Serial #":            1,
     }
 class Utilities:            # Utilities
     def BulkChecker(self):
@@ -1160,6 +1164,24 @@ class Windows:
                         pass
                     else:
                         Auto_WS1util.save2db(Asset)
+    def Auto_CM(self):
+        Auto_CMutil = Utilities()
+        self._CMList = Auto_CMutil.CSV2List(filedialog.askopenfilename(initialdir = "./",title = "Select file",filetypes = (("CSV files","*.csv"),("all files","*.*"))))
+        self._LastSyncCutoff = 2
+        self._CurrentDate = date.today()
+        self._count = 0
+
+        for row in self._CMList:
+            self._Last_sync_date = datetime.strptime(Auto_WS1util.clean_str(row[Directories._WS1_Col['Last Seen Date']]).replace('"', ""), '%m/%d/%Y %H:%M')
+            if int(self._Last_seen_date.strftime('%Y')) == int(self._CurrentDate.strftime('%Y')):
+                if int(self._Last_seen_date.strftime('%m')) > (int(self._CurrentDate.strftime('%m')) - self._LastSeenCutoff):
+                    Asset = Auto_WS1util.Serial2Asset(row[Directories._WS1_Col['Serial #']])
+                    # print(row[Directories._WS1_Col['Serial #']])
+                    # print(type(Asset))
+                    if Asset is None:
+                        pass
+                    else:
+                        Auto_WS1util.save2db(Asset)
 
 #GUI Start
 # Main Windows
@@ -1193,8 +1215,8 @@ autowin = Windows()
 AutoMenu = Menu(menubar, tearoff=0)
 menubar.add_cascade(label="Automation", menu=AutoMenu)
 AutoMenu.add_command(label="WorkSpace One", command=autowin.Auto_WS1)
-AutoMenu.add_command(label="Google Managment", command='')
-AutoMenu.add_command(label="SCCM", command='')
+AutoMenu.add_command(label="Google Managment", command=autowin.Auto_CM)
+# AutoMenu.add_command(label="SCCM", command='')
 # AutoMenu.add_command(label="", command='')
 
 # Help Menu
