@@ -16,7 +16,7 @@ pyventory_db = ".pv_db.json"
 autoSave_file = "~autosave.csv"
 # ScannedFile =  ""
 currentscanlist = []
-versionnumber = '2.0'
+versionnumber = '2.1'
 
 class Directories:          # Directories
     # http://ozzmaker.com/add-colour-to-text-in-python/
@@ -1221,11 +1221,11 @@ DatabaseMenu.add_command(label="Progress", command=dbwin.ProgressWindow)
 # DatabaseMenu.add_command(label = "Delete", command='')
 
 # Automation Menu
-# autowin = Windows()
-# AutoMenu = Menu(menubar, tearoff=0)
-# menubar.add_cascade(label="Automation", menu=AutoMenu)
-# AutoMenu.add_command(label="WorkSpace One", command=autowin.Auto_WS1)
-# AutoMenu.add_command(label="Google Managment", command=autowin.Auto_CM)
+autowin = Windows()
+AutoMenu = Menu(menubar, tearoff=0)
+menubar.add_cascade(label="Automation", menu=AutoMenu)
+AutoMenu.add_command(label="WorkSpace One", command=autowin.Auto_WS1)
+AutoMenu.add_command(label="Google Managment", command=autowin.Auto_CM)
 # AutoMenu.add_command(label="SCCM", command='')
 # AutoMenu.add_command(label="", command='')
 
