@@ -2,12 +2,28 @@
 
 ## Summery
 
-A Python (cross platform) based Inventory Asset Checker. Compatable with any Comma Seperated Value (CSV) file, This program will check if Asset or any other uniqe idetifier is listed in your database and mak it as checked off and show you basic details of the information. (indended to work with computer devices in inventory)
+A Python (cross platform) based Inventory Assistant, Compatable with any Comma Seperated Value (CSV) file, This program will check if Asset # or any other uniqe idetifier is listed in your database and mark it as checked off and show you basic details of the information. (indended to work with computer devices in inventory)
 
 **⚠You MUST have access to export a (CSV) file from the database you are using.⚠**
 
+## FEATURES
+ 1. Quick Check - the abbility to quickly enter in a serial number or Asset Tag and confrim the number exits and check off that the number has been seen.
+ 2. Bulk Check - Read from a list of Asset tags and check off each number found.
+ 3. Automations from Managment sytems - any system that can be exported to a CSV file can be pulled in and checked based of of the serial or mac address of devices.(Mac address comeing soon)
+       * Workspace One - 12/07/20
+       * SCCM - In progress
+       * Google Managment - Pending
+       
+ 4. Interactive Progress Page - a simple tree layout of each deivce in each room of the Pynventory database, this lets you view any detail of the database entry by **clickong on the asset number in the Progress View**. 
+ 
+## Releases
+Please Visit the [Release](https://github.com/wifilizerd/Pyventory/releases) Page to get the latest **Built** Version, 
+⚠Currently Only Avalable On Windows⚠
+⌚Mac OS Coming Shortly - but avalable from the source files [Check mac os Setup](https://github.com/wifilizerd/Pyventory/wiki/Getting-Started)⌚
+
 ## SETUP:✔✔✔
 ### Windows
+<<<<<<< HEAD
  
  Goto the [release page](https://github.com/wifilizerd/Pyventory/releases) and download the latest release.  
  this release does not require python to be installed and will run on its own. (still need csv files)
@@ -17,53 +33,34 @@ A Python (cross platform) based Inventory Asset Checker. Compatable with any Com
  **📝NOTE: Pyventory look in the Pyventory root directory for onlyfile ending with .csv.📝**
  
  Double click Pyventory.py to run.
+=======
+
+🎈 Updated windows setup in [wiki](https://github.com/wifilizerd/Pyventory/wiki/Getting-Started)
+>>>>>>> Pyventory_2.0
     
 ### macOS 10.12+
 
- Downlaod and install python 3.7+ from [Python.org](https://python.org/).
+ 🎈 Updated macOS setup in [wiki](https://github.com/wifilizerd/Pyventory/wiki/Getting-Started)
     
- Download [Pyventory-Master](https://github.com/wifilizerd/Pyventory/archive/master.zip).
-    
- Copy CSV file into the Pyventory (pyventory_master) Directory.
-   
- ** ⚠NOTE: Pyventory look in the Pyventory root directory for onlyfile ending with .csv. ⚠**
- 
- Run Python Launcher
- 
- Right Click (control Click) the Pyventory.py file and under Open With Select Other.
- 
- Select Python 3.8> Python Launcher
- 
- **⚠Check that the Always Open With Box is marked⚠**
- 
- ** macOS 10.12+ you will need to allow the script to run in the control panel. 
- 
- Set Interpreter **⚠(or Python Launcher will not run Python3.8 it will run python 2.7)⚠**
-```
-/usr/local/bin/python3.8
-```
- 
- Check Interactive Mode after Script
- 
- 
- Double click Pyventory.py to run. and scale window to comfortable size.
  
  #### macOS Tips
 
 **😃macOS 10.14+ Dark mode Looks Better😃**
 
 **😃Terminal Setting Homebrew Terminal Theme and Window setting set width to 130, height to 40.😃**
+
+## Builing for Windows
+[link](https://www.youtube.com/watch?v=UZX5kH72Yx4)
     
 
 ## Tested On:🧪🧪🧪
     
-Windows 10 with python 3.7
-    
-macOS 10.12 with Python 3.8
-    
-macOS 10.13 with python 3.8
-    
-macOS 10.15 with python 3.8
+* Windows 10 with python 3.7
+* Windows 10 with python 3.8
+   
+* macOS 10.12 with Python 3.8
+* macOS 10.13 with python 3.8    
+* macOS 10.15 with python 3.8
 
 
 ## Warranty:⚠⚠⚠
@@ -71,6 +68,8 @@ macOS 10.15 with python 3.8
 THERE IS NONE, by using this probram you Understand that there is no warrenty and that this program is free to use at your own risk.
 
 ## Bug Fixes:'🐛🐜🐛🐜🐛🐜
+
+to Report Issues Please submit the issues [HERE](https://github.com/wifilizerd/Pyventory/issues)
 
 This is all my personal time, so that means that any bug reports will take some time to get to.
 

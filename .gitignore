@@ -109,8 +109,12 @@ Zip Archive/
 
 *.csv
 
-.pv_db.json
+*.json
 
 \.DS_Store
 
 Python Archive/
+
+temp.py
+
+exes/
