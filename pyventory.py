@@ -81,7 +81,8 @@ class Directories:          # Directories
         "Serial #":            1,
         }
     _SCCM_Col = {
-        "Serial #":            3,
+        "Last Active Date":    2,
+        "Serial #":            1,
         }
 class Utilities:            # Utilities
     def BulkChecker(self):
@@ -1185,8 +1186,12 @@ class Windows:
 
         for row in self._WS1List:
             Asset = Auto_WS1util.Serial2Asset(row[Directories._WS1_Col['Serial #']])
-            if Auto_WS1util.AutoChecker(datetime.strptime(Auto_WS1util.clean_str(row[Directories._WS1_Col['Last Seen Date']]).replace('"', ""), '%m/%d/%Y %I:%M:%S %p')) is True and Asset is not None:
-                Auto_WS1util.save2db(Asset)            
+            if str(Asset) == "None":
+                pass
+            else:
+                if Auto_WS1util.AutoChecker(datetime.strptime(Auto_WS1util.clean_str(row[Directories._WS1_Col['Last Seen Date']]).replace('"', ""), '%m/%d/%Y %I:%M:%S %p')) is True and Asset is not None:
+                    Auto_WS1util.save2db(Asset)   
+        messagebox.showinfo("WorkSpace One", "Automation Complete")         
     def Auto_CM(self):
         Auto_CMutil = Utilities()
         self._CMList = Auto_CMutil.CSV2List(filedialog.askopenfilename(initialdir = "./",title = "Select file",filetypes = (("CSV files","*.csv"),("all files","*.*"))))
@@ -1208,9 +1213,21 @@ class Windows:
         self._CurrentDate = date.today()
 
         for row in self._SCCMList:
-            Asset = Auto_SCCMutil.Serial2Asset(row[Directories._SCCM_Col['Serial #']])
-            if Auto_SCCMutil.AutoChecker(datetime.strptime(Auto_SCCMutil.clean_str(row[Directories._SCCM_Col['Last Sync Date']]).replace('"', ""), '%Y-%m-%d %I:%M %p')) is True and Asset is not None:
-                Auto_SCCMutil.save2db(Asset)
+            if len(row) <= 2:
+                pass
+            else:
+                # print(len(row), row)
+                Asset = Auto_SCCMutil.Serial2Asset(row[Directories._SCCM_Col['Serial #']])
+                if Asset == '' or Auto_SCCMutil.clean_str(row[Directories._SCCM_Col['Last Active Date']]) == '':
+                    pass
+                else:
+                    if row[Directories._SCCM_Col['Last Active Date']] == 'Last Activity':
+                        pass
+                    else:
+                        # print(datetime.strptime(Auto_SCCMutil.clean_str(row[Directories._SCCM_Col['Last Active Date']]).replace('"', ""), '%m/%d/%Y  %I:%M:%S %p'))
+                        if Auto_SCCMutil.AutoChecker(datetime.strptime(Auto_SCCMutil.clean_str(row[Directories._SCCM_Col['Last Active Date']]).replace('"', ""), '%m/%d/%Y  %I:%M:%S %p')) is True and Asset is not None:
+                            Auto_SCCMutil.save2db(Asset)
+        messagebox.showinfo("SCCM", "Automation Complete")
 
 #GUI Start
 # Main Windows
@@ -1246,7 +1263,7 @@ AutoMenu = Menu(menubar, tearoff=0)
 menubar.add_cascade(label="Automation", menu=AutoMenu)
 AutoMenu.add_command(label="WorkSpace One", command=autowin.Auto_WS1)
 AutoMenu.add_command(label="Google Managment", command=autowin.Auto_CM)
-# AutoMenu.add_command(label="SCCM", command='')
+AutoMenu.add_command(label="SCCM", command=autowin.Auto_SCCM)   
 # AutoMenu.add_command(label="", command='')
 
 # Help Menu
