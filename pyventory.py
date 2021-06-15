@@ -1,6 +1,6 @@
 #!/Python27/pythonw.exe
 #1/bin/python
-#python 3.7
+#python 3.9
 #Pyventory - 2.1
 # import all needed libraries
 import sys, os, csv, json, datetime
@@ -75,14 +75,14 @@ class Directories:          # Directories
     _WS1_Col = {
         "Last Seen Date":      0,
         "Serial #":           17,
-    }
+        }
     _CM_Col = {
         "Last Sync Date":      3,
         "Serial #":            1,
-    }
+        }
     _SCCM_Col = {
         "Serial #":            3,
-    }
+        }
 class Utilities:            # Utilities
     def BulkChecker(self):
         self.filename =  filedialog.askopenfilename(initialdir = "./",title = "Select file",filetypes = (("CSV files","*.csv")))
@@ -482,7 +482,7 @@ class Utilities:            # Utilities
         return("{0:}-{1:}".format(str(tyear)[2:], str(tyear+1)[2:]) if tmonth > 6 else "{0:}-{1:}".format(str(tyear-1)[2:], str(tyear)[2:]))
     def TimeStamp(self):
         self.p_print(4, Directories._TC['_HEADING'], '******ScanYearGen()******')
-        now = datetime.datetime.now()
+        now =  date.today()
         return(str(now.strftime("%Y")) + str(now.strftime("%m")) + str(now.strftime("%d")) + str(now.strftime("%H")) + str(now.strftime("%M")))
     def autoSave(self, _scan):                  # writes scan to the autosave file.
         self.p_print(4, Directories._TC['_HEADING'], '******autoSave()******')
@@ -705,6 +705,21 @@ class Utilities:            # Utilities
             return(True)
         else:
             return(False)
+    def DbCleanUp(self):
+        self.data = self.jsonOpenSave('OPEN', '')
+        deleterecordlist = []
+        for record in self.data:
+            # print(self.ScanYearGen(), self.data[record]["Scan Year"])
+            if self.ScanYearGen() not in self.data[record]["Scan Year"]:    # check if Year code is already in the list.
+                deleterecordlist.append(record)
+        # print(self.data['103059']['Asset'])
+        for record in deleterecordlist:
+            # print(self.data[record])
+            if self.data[record]['Asset'] in deleterecordlist:
+                self.data.pop(record, None)
+        self.jsonOpenSave('SAVE', self.data)
+        messagebox.showinfo("Database Cleanup", "the Database have been cleaned up")
+
 class Interface:
     def __init__(self):
         pass
@@ -1180,8 +1195,12 @@ class Windows:
 
         for row in self._CMList:
             Asset = Auto_CMutil.Serial2Asset(row[Directories._CM_Col['Serial #']])
-            if Auto_CMutil.AutoChecker(datetime.strptime(Auto_CMutil.clean_str(row[Directories._CM_Col['Last Sync Date']]).replace('"', ""), '%Y-%m-%d %I:%M %p')) is True and Asset is not None:
-                Auto_CMutil.save2db(Asset)
+            if Auto_CMutil.clean_str(row[Directories._CM_Col['Last Sync Date']]) == 'lastPolicySync':
+                pass
+            else:
+                if Auto_CMutil.AutoChecker(datetime.strptime(Auto_CMutil.clean_str(row[Directories._CM_Col['Last Sync Date']]).replace('"', ""), '%Y-%m-%d %I:%M %p')) is True and Asset is not None:
+                    Auto_CMutil.save2db(Asset)
+        messagebox.showinfo("Chrome MAnagment", "Automation Complete")
     def Auto_SCCM(self):
         Auto_SCCMutil = Utilities()
         self._SCCMList = Auto_SCCMutil.CSV2List(filedialog.askopenfilename(initialdir = "./",title = "Select file",filetypes = (("CSV files","*.csv"),("all files","*.*"))))
@@ -1218,6 +1237,7 @@ DatabaseMenu = Menu(menubar, tearoff=0)
 menubar.add_cascade(label="Database", menu=DatabaseMenu)
 DatabaseMenu.add_command(label="Update", command=dbwin.Updater)
 DatabaseMenu.add_command(label="Progress", command=dbwin.ProgressWindow)
+DatabaseMenu.add_command(label = "Cleanup", command=dbutil.DbCleanUp)
 # DatabaseMenu.add_command(label = "Delete", command='')
 
 # Automation Menu
