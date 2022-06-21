@@ -1,6 +1,6 @@
 #!/Python27/pythonw.exe
 #1/bin/python
-#python 3.7
+#python 3.9
 #Pyventory - 2.1
 # import all needed libraries
 import sys, os, csv, json, datetime
@@ -16,7 +16,7 @@ pyventory_db = ".pv_db.json"
 autoSave_file = "~autosave.csv"
 # ScannedFile =  ""
 currentscanlist = []
-versionnumber = '2.1 (beta)'
+versionnumber = '2.1'
 
 class Directories:          # Directories
     # http://ozzmaker.com/add-colour-to-text-in-python/
@@ -75,14 +75,15 @@ class Directories:          # Directories
     _WS1_Col = {
         "Last Seen Date":      0,
         "Serial #":           17,
-    }
+        }
     _CM_Col = {
         "Last Sync Date":      3,
         "Serial #":            1,
-    }
+        }
     _SCCM_Col = {
-        "Serial #":            3,
-    }
+        "Last Active Date":    2,
+        "Serial #":            1,
+        }
 class Utilities:            # Utilities
     def BulkChecker(self):
         self.filename =  filedialog.askopenfilename(initialdir = "./",title = "Select file",filetypes = (("CSV files","*.csv")))
@@ -92,79 +93,8 @@ class Utilities:            # Utilities
             self.p_print(4, Directories._TC['_INFO'], i[0])
             self.CheckScan(i[0])
         messagebox.showinfo('Bulk Checker', 'Bulk Check Complete')
-    def Logo(self, _head):      # Used to call the logo and headings for the UI.
-        if _head.upper() == 'MAIN':         # PYVENTORY
-            self.p_print(1, Directories._TC['_GREEN'], 
-                " _______________.___.____   _______________ __________________________ _______________.___.       \n"
-                " \______   \__  |   |\   \ /   /\_   _____/ \      \__    ___/\_____  \\\______   \__  |   |       \n"
-                "  |     ___//   |   | \   Y   /  |    __)_  /   |   \|    |    /   |   \|       _//   |   |       \n"
-                "  |    |    \____   |  \     /   |        \/    |    \    |   /    |    \    |   \\\____   |       \n"
-                "  |____|    / ______|   \___/   /_______  /\____|__  /____|   \_______  /____|_  // ______| v0.6.5 \n"
-                "            \/                          \/         \/                 \/       \/ \/              ")
-        elif _head.upper() == 'SCAN':       # SCAN AND CHECK       
-            self.p_print(1, Directories._TC["_GREEN"], 
-                # http://patorjk.com/software/taag/#p=display&f=Small&t=SCAN%20and%20CHECK 'SMALL' font
-                ' ___  ___   _   _  _                _    ___ _  _ ___ ___ _  __ \n'
-                '/ __|/ __| /_\ | \| |  __ _ _ _  __| |  / __| || | __/ __| |/ / \n'
-                '\__ | (__ / _ \| .` | / _` |   \/ _` | | (__| __ | _| (__| | <  \n'
-                '|___/\___/_/ \_|_|\_| \__,_|_||_\__,_|  \___|_||_|___\___|_|\_\ \n')
-        elif _head.upper() == 'PROGRESS':   # PROGRESS     
-            self.p_print(1, Directories._TC["_GREEN"], 
-                # http://patorjk.com/software/taag/#p=display&f=Small&t=SCAN%20and%20SHOW 'SMALL' font
-                " ___                             \n"
-                "| _ \_ _ ___  __ _ _ _ ___ ______\n"
-                "|  _/ '_/ _ \/ _` | '_/ -_|_-<_-<\n"
-                "|_| |_| \___/\__, |_| \___/__/__/\n"   
-                "             |___/               \n")
-        elif _head.upper() == 'DELETE':       #DELETE
-            self.p_print(1, Directories._TC["_GREEN"],
-                # http://patorjk.com/software/taag/#p=display&f=Small&t=DELETE%0A 'SMALL' font
-                " ___  ___ _    ___ _____ ___ \n"
-                "|   \| __| |  | __|_   _| __|\n"
-                "| |) | _|| |__| _|  | | | _| \n"
-                "|___/|___|____|___| |_| |___|\n")
-    def Help(self, _help):      # Used to call the Help info.
-        if _help.upper() == 'MAIN':         # Pyventory Main Menu Help
-            return(
-                "\n"
-                "Pyventory Help. \n"
-                "scan           Open scan and check screen.\n"
-                "update         Update inventory Database.\n"
-                "progress       Shows lists by school and room, of inventory stats.\n"
-                "delete         Delete screen to remove records from database\n"
-                "help           Open this menu.\n"
-                "x or exit      Quit Program\n"
-            )
-        elif _help.upper() == 'SCAN':       # Scan and Check Help Menu
-            return(
-                "ScanandCheck Help. \n"
-                "{ASSET TAG}    Enter the Asset tag to lookup\n"
-                "x or exit      Save and Exit to Main Menu\n"
-            )   
-        elif _help.upper() == 'PROGRESS':   # Progress Page Help Menu
-            return(
-                "Progress Help\n"
-                "all            Show all Room and there current Progress.\n"
-                "{school #}     Enter School # to show a list of only rooms in the school\n"
-                "{room #}       (Must enter school # fist) Lists all devices assigned to room#.\n"
-                "x or exit      Exit to Main Menu\n"
-            )
-        elif _help.upper() == "UPDATE":     # in place for the current interface setup, used for allowing the menu to run update.
-            return(
-                "Updateing Pyventory Database.......\n"
-            )
-        elif _help.upper() == 'DELETE':
-            return(
-                "Delete Help\n"
-                "{asset tag}    The Asset tag you wish to remove from the database.\n"
-                "help           Will Display This Message.\n"
-                "x or exit      Quit to Main Menu"
-                "\n"
-                "PLEASE NOTE: This will delete all record of the asset tage.\n"
-                "and you cannot recover from this action without a backup.\n"
-            )
-        else:
-            return('null')
+    
+    
     def pyventory_db_check(self):               # Used to check if the pyventory_db has been created then prompts user to updated if no database file is found.
         self.p_print(4, Directories._TC['_HEADING'], '******pyventory_db_check()******')
         if os.path.exists(pyventory_db):
@@ -391,7 +321,7 @@ class Utilities:            # Utilities
         self.p_print(4, Directories._TC['_HEADING'], '******AssetDisplay(_list(_list(see list _DEBUG = 5))******')
         self.p_print(5, Directories._TC['_HEADING'], '******AssetDisplay({0:})******'.format(_list))
         if len(_list) > 2:
-            return('{0:>18} : {1:19} : {2:26} : {3:10} : {4:20} : {5:20} : {6:3} - {7:}'.format(
+            return('{0:>12} : {1:12} : {2:26} : {3:25} : {4:15} : {5:18} : {6:18} : {7:3} - {8:}'.format(
                 _list[0], 
                 _list[1], 
                 _list[2], 
@@ -399,7 +329,8 @@ class Utilities:            # Utilities
                 _list[4], 
                 _list[5], 
                 _list[6], 
-                _list[7]))
+                _list[7],
+                _list[8]))
     def DisplayCurrentScan(self, _cscanlist, _rm='ALL'):    # Used to display asset info from the current scan list to the UI.
         self.p_print(4, Directories._TC["_HEADING"], "******DisplayCurrentScan(_cscanlist(_list(see list _DEBUG = 5), {0:})******".format(_rm))
         self.p_print(5, Directories._TC["_HEADING"], "******DisplayCurrentScan({0:}, {1:})******".format(_cscanlist, _rm))
@@ -429,6 +360,7 @@ class Utilities:            # Utilities
 
         if self._scan in self.data:
             self.data_list.append(self.data[self._scan]["Asset"])
+            self.data_list.append(self.data[self._scan]["Mfg Year"])
             self.data_list.append(self.data[self._scan]["Serial #"])
             self.data_list.append(self.data[self._scan]["Name"])
             self.data_list.append(self.data[self._scan]["Room #"])
@@ -439,6 +371,7 @@ class Utilities:            # Utilities
             self.p_print(5, Directories._TC['_INFO'], self.data_list)    
         else:
             self.data_list.append(_scan)
+            self.data_list.append('')
             self.data_list.append('')
             self.data_list.append('')
             self.data_list.append('')
@@ -482,7 +415,7 @@ class Utilities:            # Utilities
         return("{0:}-{1:}".format(str(tyear)[2:], str(tyear+1)[2:]) if tmonth > 6 else "{0:}-{1:}".format(str(tyear-1)[2:], str(tyear)[2:]))
     def TimeStamp(self):
         self.p_print(4, Directories._TC['_HEADING'], '******ScanYearGen()******')
-        now = datetime.datetime.now()
+        now =  date.today()
         return(str(now.strftime("%Y")) + str(now.strftime("%m")) + str(now.strftime("%d")) + str(now.strftime("%H")) + str(now.strftime("%M")))
     def autoSave(self, _scan):                  # writes scan to the autosave file.
         self.p_print(4, Directories._TC['_HEADING'], '******autoSave()******')
@@ -705,6 +638,21 @@ class Utilities:            # Utilities
             return(True)
         else:
             return(False)
+    def DbCleanUp(self):
+        self.data = self.jsonOpenSave('OPEN', '')
+        deleterecordlist = []
+        for record in self.data:
+            # print(self.ScanYearGen(), self.data[record]["Scan Year"])
+            if self.ScanYearGen() not in self.data[record]["Scan Year"]:    # check if Year code is already in the list.
+                deleterecordlist.append(record)
+        # print(self.data['103059']['Asset'])
+        for record in deleterecordlist:
+            # print(self.data[record])
+            if self.data[record]['Asset'] in deleterecordlist:
+                self.data.pop(record, None)
+        self.jsonOpenSave('SAVE', self.data)
+        messagebox.showinfo("Database Cleanup", "the Database have been cleaned up")
+
 class Interface:
     def __init__(self):
         pass
@@ -1084,8 +1032,9 @@ class Windows:
             self.IndividualMainWindow.rowconfigure(2, weight=1)        
 
             self.cScanList = Listbox(self.IndividualMainWindow, bg='black', fg='white', height=30, width=150)
-            self.cScanList.insert(END, '{0:>15} : {1:30} : {2:30} : {3:10} : {4:20} : {5:20} : {6:3} - {7:}'.format(
-                            'Asset Tag', 
+            self.cScanList.insert(END, '{0:>10} : {1:4} : {2:30} : {3:36} : {4:17} : {5:20} : {6:30} : {7:3} - {8:}'.format(
+                            'Asset Tag',
+                            'Mfg Year', 
                             'Serial #', 
                             'Name', 
                             'Room #', 
@@ -1170,8 +1119,12 @@ class Windows:
 
         for row in self._WS1List:
             Asset = Auto_WS1util.Serial2Asset(row[Directories._WS1_Col['Serial #']])
-            if Auto_WS1util.AutoChecker(datetime.strptime(Auto_WS1util.clean_str(row[Directories._WS1_Col['Last Seen Date']]).replace('"', ""), '%m/%d/%Y %I:%M:%S %p')) is True and Asset is not None:
-                Auto_WS1util.save2db(Asset)            
+            if str(Asset) == "None":
+                pass
+            else:
+                if Auto_WS1util.AutoChecker(datetime.strptime(Auto_WS1util.clean_str(row[Directories._WS1_Col['Last Seen Date']]).replace('"', ""), '%m/%d/%Y %I:%M:%S %p')) is True and Asset is not None:
+                    Auto_WS1util.save2db(Asset)   
+        messagebox.showinfo("WorkSpace One", "Automation Complete")         
     def Auto_CM(self):
         Auto_CMutil = Utilities()
         self._CMList = Auto_CMutil.CSV2List(filedialog.askopenfilename(initialdir = "./",title = "Select file",filetypes = (("CSV files","*.csv"),("all files","*.*"))))
@@ -1180,8 +1133,12 @@ class Windows:
 
         for row in self._CMList:
             Asset = Auto_CMutil.Serial2Asset(row[Directories._CM_Col['Serial #']])
-            if Auto_CMutil.AutoChecker(datetime.strptime(Auto_CMutil.clean_str(row[Directories._CM_Col['Last Sync Date']]).replace('"', ""), '%Y-%m-%d %I:%M %p')) is True and Asset is not None:
-                Auto_CMutil.save2db(Asset)
+            if Auto_CMutil.clean_str(row[Directories._CM_Col['Last Sync Date']]) == 'lastPolicySync':
+                pass
+            else:
+                if Auto_CMutil.AutoChecker(datetime.strptime(Auto_CMutil.clean_str(row[Directories._CM_Col['Last Sync Date']]).replace('"', ""), '%Y-%m-%d %I:%M %p')) is True and Asset is not None:
+                    Auto_CMutil.save2db(Asset)
+        messagebox.showinfo("Chrome MAnagment", "Automation Complete")
     def Auto_SCCM(self):
         Auto_SCCMutil = Utilities()
         self._SCCMList = Auto_SCCMutil.CSV2List(filedialog.askopenfilename(initialdir = "./",title = "Select file",filetypes = (("CSV files","*.csv"),("all files","*.*"))))
@@ -1189,9 +1146,21 @@ class Windows:
         self._CurrentDate = date.today()
 
         for row in self._SCCMList:
-            Asset = Auto_SCCMutil.Serial2Asset(row[Directories._SCCM_Col['Serial #']])
-            if Auto_SCCMutil.AutoChecker(datetime.strptime(Auto_SCCMutil.clean_str(row[Directories._SCCM_Col['Last Sync Date']]).replace('"', ""), '%Y-%m-%d %I:%M %p')) is True and Asset is not None:
-                Auto_SCCMutil.save2db(Asset)
+            if len(row) <= 2:
+                pass
+            else:
+                # print(len(row), row)
+                Asset = Auto_SCCMutil.Serial2Asset(row[Directories._SCCM_Col['Serial #']])
+                if Asset == '' or Auto_SCCMutil.clean_str(row[Directories._SCCM_Col['Last Active Date']]) == '':
+                    pass
+                else:
+                    if row[Directories._SCCM_Col['Last Active Date']] == 'Last Activity':
+                        pass
+                    else:
+                        # print(datetime.strptime(Auto_SCCMutil.clean_str(row[Directories._SCCM_Col['Last Active Date']]).replace('"', ""), '%m/%d/%Y  %I:%M:%S %p'))
+                        if Auto_SCCMutil.AutoChecker(datetime.strptime(Auto_SCCMutil.clean_str(row[Directories._SCCM_Col['Last Active Date']]).replace('"', ""), '%m/%d/%Y  %I:%M:%S %p')) is True and Asset is not None:
+                            Auto_SCCMutil.save2db(Asset)
+        messagebox.showinfo("SCCM", "Automation Complete")
 
 #GUI Start
 # Main Windows
@@ -1218,6 +1187,7 @@ DatabaseMenu = Menu(menubar, tearoff=0)
 menubar.add_cascade(label="Database", menu=DatabaseMenu)
 DatabaseMenu.add_command(label="Update", command=dbwin.Updater)
 DatabaseMenu.add_command(label="Progress", command=dbwin.ProgressWindow)
+DatabaseMenu.add_command(label = "Cleanup", command=dbutil.DbCleanUp)
 # DatabaseMenu.add_command(label = "Delete", command='')
 
 # Automation Menu
@@ -1226,7 +1196,7 @@ AutoMenu = Menu(menubar, tearoff=0)
 menubar.add_cascade(label="Automation", menu=AutoMenu)
 AutoMenu.add_command(label="WorkSpace One", command=autowin.Auto_WS1)
 AutoMenu.add_command(label="Google Managment", command=autowin.Auto_CM)
-# AutoMenu.add_command(label="SCCM", command='')
+AutoMenu.add_command(label="SCCM", command=autowin.Auto_SCCM)   
 # AutoMenu.add_command(label="", command='')
 
 # Help Menu
